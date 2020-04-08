@@ -8,10 +8,10 @@ Usage:
   spec_uploader.py (-h | --help)
 
 Options:
-  -h --help        Show this screen
-  --access-token   Access Token from apigee
-  --spec-file      Path to specification file
-  --friendly-name  Friendly (displayable) name for this API
+  -h --help                        Show this screen
+  --access-token=<access_token>    Access Token from apigee
+  --spec-file=<spec_file>          Path to specification file
+  --friendly-name=<friendly_name>  Friendly (displayable) name for this API
 """
 import os
 from docopt import docopt
