@@ -103,5 +103,5 @@ def upload_specs(envs, spec, client, friendly_name=None):
 
 if __name__ == "__main__":
     args = docopt(__doc__)
-    client = ApigeeClient(args['<apigee_org>'], access_token=args['<access_token>'])
-    upload_specs(ENV_NAMES[args['<apigee_org>']], args['<spec_file>'], client, friendly_name=args['<friendly_name>'])
+    client = ApigeeClient(args['<apigee_org>'], access_token=args['--access-token'])
+    upload_specs(ENV_NAMES[args['<apigee_org>']], args['--spec-file'], client, friendly_name=args['--friendly-name'])
