@@ -2,11 +2,13 @@ import requests
 
 
 class ApigeeClient:
-    def __init__(self, apigee_org, username, password, token):
+    def __init__(self, apigee_org, username=None, password=None, access_token=None):
         self.apigee_org = apigee_org
-        self.access_token = (
-            token if token else self._get_access_token(username, password)
-        )
+
+        if access_token:
+            self.access_token = access_token
+        elif username and password:
+            self.access_token = self._get_access_token(username, password)
 
     def list_specs(self):
         response = requests.get(
