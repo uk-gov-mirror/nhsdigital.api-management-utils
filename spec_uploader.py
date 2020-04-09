@@ -68,7 +68,7 @@ def upload_specs(envs, spec_path, client, friendly_name=None):
     portal_specs = {i['specId']: i for i in client.get_apidocs(portal_id).json()['data']}
     print(f'grabbed apidocs')
 
-    spec_name = os.path.splitext(spec_path)[0]
+    spec_name = os.path.splitext(os.path.basename(spec_path))[0]
 
     if spec_name in existing_specs:
         print(f'{spec_name} exists')
