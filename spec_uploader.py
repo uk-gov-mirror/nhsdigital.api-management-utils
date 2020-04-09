@@ -68,7 +68,7 @@ def upload_specs(envs, spec, client, friendly_name=None):
 
     print(f'{spec} id is {spec_id}')
 
-    with open(os.path.join(specs_dir, spec), 'r') as f:
+    with open(spec, 'r') as f:
         response = client.update_spec(spec_id, f.read())
         print(f'{spec} updated')
 
