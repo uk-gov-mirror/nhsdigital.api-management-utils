@@ -22,6 +22,9 @@ from apigee_client import ApigeeClient
 # A list of envs that we want to create but not publish specs or products for
 PORTAL_BLACKLIST = ['dev', 'prod']
 
+# A list of services not to create portal entries for
+SERVICE_BLACKLIST = ['identity-service']
+
 
 ENV_NAMES = {
     'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
@@ -88,33 +91,35 @@ def upload_specs(envs, spec_path, client, friendly_name=None):
         response = client.update_spec(spec_id, f.read())
         print(f'{spec_name} updated')
 
-    # For this, sometimes the product refs change between deploys: instead of updating, delete the old one and recreate.
-    for env in envs:
-        if env in PORTAL_BLACKLIST: # we don't want to publish in blacklisted envs
-            continue
-        if 'sandbox' in env: # we don't want to publish stuff for sandbox
-            continue
-        print(f'checking if this spec is on the portal in {env}')
-        ns_spec_name = f'{spec_name}-{env}'
-        if ns_spec_name in portal_specs:
-            print(f'{ns_spec_name} is on the portal, updating')
-            apidoc_id = portal_specs[ns_spec_name]['id']
-            client.update_portal_api(
-                apidoc_id,
-                to_friendly_name(spec_name, env, friendly_name),
-                ns_spec_name,
-                spec_id,
-                portal_id
-            )
-            client.update_spec_snapshot(portal_id, apidoc_id)
-        else:
-            print(f'{ns_spec_name} is not on the portal, adding it')
-            client.create_portal_api(
-                to_friendly_name(spec_name, env, friendly_name),
-                ns_spec_name,
-                spec_id,
-                portal_id
-            )
+    # Skip blacklisted services, e.g. identity service that do not need a portal entry
+    if spec_name not in SERVICE_BLACKLIST:
+        # For this, sometimes the product refs change between deploys: instead of updating, delete the old one and recreate.
+        for env in envs:
+            if env in PORTAL_BLACKLIST: # we don't want to publish in blacklisted envs
+                continue
+            if 'sandbox' in env: # we don't want to publish stuff for sandbox
+                continue
+            print(f'checking if this spec is on the portal in {env}')
+            ns_spec_name = f'{spec_name}-{env}'
+            if ns_spec_name in portal_specs:
+                print(f'{ns_spec_name} is on the portal, updating')
+                apidoc_id = portal_specs[ns_spec_name]['id']
+                client.update_portal_api(
+                    apidoc_id,
+                    to_friendly_name(spec_name, env, friendly_name),
+                    ns_spec_name,
+                    spec_id,
+                    portal_id
+                )
+                client.update_spec_snapshot(portal_id, apidoc_id)
+            else:
+                print(f'{ns_spec_name} is not on the portal, adding it')
+                client.create_portal_api(
+                    to_friendly_name(spec_name, env, friendly_name),
+                    ns_spec_name,
+                    spec_id,
+                    portal_id
+                )
 
     print('done.')
 
