@@ -19,10 +19,12 @@ from docopt import docopt
 from apigee_client import ApigeeClient
 
 
+# A list of envs that we want to create but not publish specs or products for
+PORTAL_BLACKLIST = ['dev', 'prod']
+
+
 ENV_NAMES = {
-    # dev and prod are disabled for now
-    #'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
-    'nhsd-prod': ['sandbox', 'int'],
+    'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
     'nhsd-nonprod': ['internal-dev', 'internal-qa-sandbox', 'internal-qa', 'ref']
 }
 
@@ -88,6 +90,8 @@ def upload_specs(envs, spec_path, client, friendly_name=None):
 
     # For this, sometimes the product refs change between deploys: instead of updating, delete the old one and recreate.
     for env in envs:
+        if env in PORTAL_BLACKLIST: # we don't want to publish in blacklisted envs
+            continue
         if 'sandbox' in env: # we don't want to publish stuff for sandbox
             continue
         print(f'checking if this spec is on the portal in {env}')
