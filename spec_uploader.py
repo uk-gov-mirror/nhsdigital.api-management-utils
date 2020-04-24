@@ -20,7 +20,9 @@ from apigee_client import ApigeeClient
 
 
 ENV_NAMES = {
-    'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
+    # dev and prod are disabled for now
+    #'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
+    'nhsd-prod': ['sandbox', 'int'],
     'nhsd-nonprod': ['internal-dev', 'internal-qa-sandbox', 'internal-qa', 'ref']
 }
 
