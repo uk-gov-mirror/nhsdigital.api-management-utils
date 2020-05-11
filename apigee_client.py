@@ -25,12 +25,14 @@ class ApigeeClient:
         self._session = session
         self._session.hooks = {"response": raise_for_status_hook}
 
-    def _request(self, method: str, url, **kwargs):
+    def _request(self, method: str, url: str, **kwargs):
         return self._session.request(
             method, url, headers=self._auth_headers, **kwargs
         )
 
-    get = partialmethod(_request, "GET")
+    def get(self, url: str, **kwargs):
+        return self._request("GET", url, **kwargs)
+
     post = partialmethod(_request, "POST")
     put = partialmethod(_request, "PUT")
     delete = partialmethod(_request, "DELETE")
