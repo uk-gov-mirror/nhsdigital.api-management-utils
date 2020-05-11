@@ -22,3 +22,13 @@ def test_get(client):
         "https://test.com",
         headers={'Authorization': 'Bearer test'}
     )
+
+
+def test_list_specs(client):
+    client.list_specs()
+
+    client._session.request.assert_called_with(
+        'GET',
+        "https://apigee.com/dapi/api/organizations/test/specs/folder/home",
+        headers={'Authorization': 'Bearer test'}
+    )
