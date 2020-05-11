@@ -14,117 +14,135 @@ Options:
   --friendly-name=<friendly_name>  Friendly (displayable) name for this API
 """
 import os
+from typing import List
 from glob import glob
 from docopt import docopt
 from apigee_client import ApigeeClient
 
 
-# A list of envs that we want to create but not publish specs or products for
-PORTAL_BLACKLIST = ['dev', 'prod']
+# A list of envs that we want to create but not publish specs or products for at all.
+PORTAL_BLACKLIST = ["dev"]
+
+# A set of envs that should have specs and products, but only released internally.
+INTERNAL_ONLY = {"prod"}
 
 # A list of services not to create portal entries for
-SERVICE_BLACKLIST = ['identity-service']
+SERVICE_BLACKLIST = ["identity-service"]
 
-
+# Map of org name to envs in that org
 ENV_NAMES = {
-    'nhsd-prod': ['sandbox', 'dev', 'int', 'prod'],
-    'nhsd-nonprod': ['internal-dev', 'internal-qa-sandbox', 'internal-qa', 'ref']
+    "nhsd-prod": ["sandbox", "dev", "int", "prod"],
+    "nhsd-nonprod": ["internal-dev", "internal-qa-sandbox", "internal-qa", "ref"],
 }
 
-
+# Human-readable env names
 FRIENDLY_ENV_NAMES = {
-    'prod': '(Production)',
-    'int': '(Integration Testing)',
-    'dev': '(Development)',
-    'ref': '(Reference)',
-    'internal-qa': '(Internal QA)',
-    'internal-dev': '(Internal Development)'
+    "prod": "(Production)",
+    "int": "(Integration Testing)",
+    "dev": "(Development)",
+    "ref": "(Reference)",
+    "internal-qa": "(Internal QA)",
+    "internal-dev": "(Internal Development)",
 }
 
 
-def to_friendly_name(spec_name, env, friendly_name=None):
+def to_friendly_name(spec_name: str, env: str, friendly_name: str = None):
     friendly_env = FRIENDLY_ENV_NAMES.get(env, env)
 
     friendly_api = friendly_name
     if not friendly_api:
-        friendly_api = FRIENDLY_ENV_NAMES.get(spec_name, spec_name.replace('-', ' ').title())
+        friendly_api = FRIENDLY_ENV_NAMES.get(
+            spec_name, spec_name.replace("-", " ").title()
+        )
 
-    return f'{friendly_api} {friendly_env}'
+    return f"{friendly_api} {friendly_env}"
 
 
-def upload_specs(envs, spec_path, client, friendly_name=None):
-    if '*' in spec_path:
+def upload_specs(
+    envs: List[str], spec_path: str, client: ApigeeClient, friendly_name: str = None
+):
+    if "*" in spec_path:
         spec_files = glob(spec_path, recursive=True)
 
         if not spec_files:
             raise RuntimeError(f"Could not find any files with glob {spec_path}")
 
         if len(spec_files) > 1:
-            raise RuntimeError(f"Found too many spec files for {spec_path}: {spec_files}")
+            raise RuntimeError(
+                f"Found too many spec files for {spec_path}: {spec_files}"
+            )
 
         spec_path = spec_files[0]
 
     # Grab a list of remote specs
     folder = client.list_specs()
-    folder_id = folder['id']
-    existing_specs = {v['name']: v['id'] for v in folder['contents']}
+    folder_id = folder["id"]
+    existing_specs = {v["name"]: v["id"] for v in folder["contents"]}
 
     # Figure out where the portal is
-    portal_id = client.get_portals().json()['data'][0]['id']
-    print(f'portal is {portal_id}')
-    portal_specs = {i['specId']: i for i in client.get_apidocs(portal_id).json()['data']}
-    print(f'grabbed apidocs')
+    portal_id = client.get_portals().json()["data"][0]["id"]
+    print(f"portal is {portal_id}")
+    portal_specs = {
+        i["specId"]: i for i in client.get_apidocs(portal_id).json()["data"]
+    }
+    print(f"grabbed apidocs")
 
     spec_name = os.path.splitext(os.path.basename(spec_path))[0]
 
     if spec_name in existing_specs:
-        print(f'{spec_name} exists')
+        print(f"{spec_name} exists")
         spec_id = existing_specs[spec_name]
     else:
-        print(f'{spec_name} does not exist, creating')
+        print(f"{spec_name} does not exist, creating")
         response = client.create_spec(spec_name, folder_id)
-        spec_id = response.json()['id']
+        spec_id = response.json()["id"]
 
-    print(f'{spec_name} id is {spec_id}')
+    print(f"{spec_name} id is {spec_id}")
 
-    with open(spec_path, 'r') as f:
+    with open(spec_path, "r") as f:
         response = client.update_spec(spec_id, f.read())
-        print(f'{spec_name} updated')
+        print(f"{spec_name} updated")
 
     # Skip blacklisted services, e.g. identity service that do not need a portal entry
     if spec_name not in SERVICE_BLACKLIST:
         # For this, sometimes the product refs change between deploys: instead of updating, delete the old one and recreate.
         for env in envs:
-            if env in PORTAL_BLACKLIST: # we don't want to publish in blacklisted envs
+            if env in PORTAL_BLACKLIST:  # we don't want to publish in blacklisted envs
                 continue
-            if 'sandbox' in env: # we don't want to publish stuff for sandbox
+            if "sandbox" in env:  # we don't want to publish stuff for sandbox
                 continue
-            print(f'checking if this spec is on the portal in {env}')
-            ns_spec_name = f'{spec_name}-{env}'
+            print(f"checking if this spec is on the portal in {env}")
+            ns_spec_name = f"{spec_name}-{env}"
             if ns_spec_name in portal_specs:
-                print(f'{ns_spec_name} is on the portal, updating')
-                apidoc_id = portal_specs[ns_spec_name]['id']
+                print(f"{ns_spec_name} is on the portal, updating")
+                apidoc_id = portal_specs[ns_spec_name]["id"]
                 client.update_portal_api(
                     apidoc_id,
                     to_friendly_name(spec_name, env, friendly_name),
                     ns_spec_name,
                     spec_id,
-                    portal_id
+                    portal_id,
+                    env in INTERNAL_ONLY,
                 )
                 client.update_spec_snapshot(portal_id, apidoc_id)
             else:
-                print(f'{ns_spec_name} is not on the portal, adding it')
+                print(f"{ns_spec_name} is not on the portal, adding it")
                 client.create_portal_api(
                     to_friendly_name(spec_name, env, friendly_name),
                     ns_spec_name,
                     spec_id,
-                    portal_id
+                    portal_id,
+                    env in INTERNAL_ONLY,
                 )
-
-    print('done.')
+    print("done.")
 
 
 if __name__ == "__main__":
     args = docopt(__doc__)
-    client = ApigeeClient(args['<apigee_org>'], access_token=args['--access-token'])
-    upload_specs(ENV_NAMES[args['<apigee_org>']], args['--spec-file'], client, friendly_name=args['--friendly-name'])
+    client = ApigeeClient(args["<apigee_org>"], access_token=args["--access-token"])
+    upload_specs(
+        ENV_NAMES[args["<apigee_org>"]],
+        args["--spec-file"],
+        client,
+        friendly_name=args["--friendly-name"],
+    )
