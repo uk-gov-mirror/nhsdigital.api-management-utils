@@ -13,7 +13,7 @@ class ApigeeClient:
         username: str = None,
         password: str = None,
         access_token: str = None,
-        session: requests.Session = requests.Session
+        session: requests.Session = requests.Session,
     ):
         self.apigee_org = apigee_org
 
@@ -25,9 +25,9 @@ class ApigeeClient:
         self._session = session
         self._session.hooks = {"response": raise_for_status_hook}
 
-    def _request(self, method: str, *args, **kwargs):
+    def _request(self, method: str, url, **kwargs):
         return self._session.request(
-            method, *args, headers=self._auth_headers, **kwargs
+            method, url, headers=self._auth_headers, **kwargs
         )
 
     get = partialmethod(_request, "GET")
