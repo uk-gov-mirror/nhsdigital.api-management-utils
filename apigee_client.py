@@ -13,7 +13,7 @@ class ApigeeClient:
         username: str = None,
         password: str = None,
         access_token: str = None,
-        session: requests.Session = requests.Session,
+        session: requests.Session = requests.Session(),
     ):
         self.apigee_org = apigee_org
 
@@ -30,9 +30,7 @@ class ApigeeClient:
             method, url, headers=self._auth_headers, **kwargs
         )
 
-    def get(self, url: str, **kwargs):
-        return self._request("GET", url, **kwargs)
-
+    get = partialmethod(_request, "GET")
     post = partialmethod(_request, "POST")
     put = partialmethod(_request, "PUT")
     delete = partialmethod(_request, "DELETE")
