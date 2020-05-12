@@ -23,9 +23,6 @@ from apigee_client import ApigeeClient
 # A list of envs that we want to create but not publish specs or products for at all.
 PORTAL_BLACKLIST = ["dev"]
 
-# A set of envs that should have specs and products, but only released internally.
-INTERNAL_ONLY = {"prod"}
-
 # A list of services not to create portal entries for
 SERVICE_BLACKLIST = ["identity-service"]
 
@@ -43,6 +40,15 @@ FRIENDLY_ENV_NAMES = {
     "ref": "(Reference)",
     "internal-qa": "(Internal QA)",
     "internal-dev": "(Internal Development)",
+}
+
+# Mapping of services to require callbacks on
+# TODO: this is horrible. Let's get this into terraform ASAP.
+CALLBACK_REQUIRED = {
+    "personal-demographics-service": True,
+    "identity-service": True,
+    "hello-world": True,
+    "covid-19-testing-channel-availability": False,
 }
 
 
@@ -122,8 +128,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    # env not in INTERNAL_ONLY,
-                    True,
+                    visible=True,
+                    requireCallbackUrl=CALLBACK_REQUIRED.get(spec_name, False),
                 )
                 client.update_spec_snapshot(portal_id, apidoc_id)
             else:
@@ -133,8 +139,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    # env not in INTERNAL_ONLY,
-                    True,
+                    visible=True,
+                    requireCallbackUrl=CALLBACK_REQUIRED.get(spec_name, False),
                 )
     print("done.")
 

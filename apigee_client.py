@@ -28,13 +28,11 @@ class ApigeeClient:
     def _request(self, method: str, url: str, **kwargs):
         headers = self._auth_headers
 
-        if 'headers' in kwargs:
-            headers.update(kwargs['headers'])
-            del kwargs['headers']
+        if "headers" in kwargs:
+            headers.update(kwargs["headers"])
+            del kwargs["headers"]
 
-        return self._session.request(
-            method, url, headers=headers, **kwargs
-        )
+        return self._session.request(method, url, headers=headers, **kwargs)
 
     get = partialmethod(_request, "GET")
     post = partialmethod(_request, "POST")
@@ -84,6 +82,7 @@ class ApigeeClient:
         spec_id: str,
         portal_id: str,
         visible: bool = True,
+        requireCallbackUrl: bool = False,
     ):
         response = self.post(
             f"https://apigee.com/portals/api/sites/{portal_id}/apidocs",
@@ -91,7 +90,7 @@ class ApigeeClient:
                 "anonAllowed": True,
                 "description": "",
                 "edgeAPIProductName": spec_name,
-                "requireCallbackUrl": True,
+                "requireCallbackUrl": requireCallbackUrl,
                 "specContent": spec_id,
                 "specId": spec_name,
                 "title": friendly_name,
