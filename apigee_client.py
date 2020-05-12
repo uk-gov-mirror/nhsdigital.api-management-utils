@@ -107,6 +107,7 @@ class ApigeeClient:
         spec_id: str,
         portal_id: str,
         visible: bool = True,
+        requireCallbackUrl: bool = False,
     ):
         response = self.put(
             f"https://apigee.com/portals/api/sites/{portal_id}/apidocs/{apidoc_id}",
@@ -114,7 +115,7 @@ class ApigeeClient:
                 "anonAllowed": True,
                 "description": "",
                 "edgeAPIProductName": spec_name,
-                "requireCallbackUrl": True,
+                "requireCallbackUrl": requireCallbackUrl,
                 "specContent": spec_id,
                 "specId": spec_name,
                 "title": friendly_name,

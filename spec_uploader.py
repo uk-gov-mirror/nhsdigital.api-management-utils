@@ -128,8 +128,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    visible=True,
-                    requireCallbackUrl=CALLBACK_REQUIRED.get(spec_name, False),
+                    True,
+                    CALLBACK_REQUIRED.get(spec_name, False),
                 )
                 client.update_spec_snapshot(portal_id, apidoc_id)
             else:
@@ -139,8 +139,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    visible=True,
-                    requireCallbackUrl=CALLBACK_REQUIRED.get(spec_name, False),
+                    True,
+                    CALLBACK_REQUIRED.get(spec_name, False),
                 )
     print("done.")
 
