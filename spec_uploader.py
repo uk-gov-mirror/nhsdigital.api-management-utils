@@ -122,7 +122,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    env not in INTERNAL_ONLY,
+                    # env not in INTERNAL_ONLY,
+                    True,
                 )
                 client.update_spec_snapshot(portal_id, apidoc_id)
             else:
@@ -132,7 +133,8 @@ def upload_specs(
                     ns_spec_name,
                     spec_id,
                     portal_id,
-                    env not in INTERNAL_ONLY,
+                    # env not in INTERNAL_ONLY,
+                    True,
                 )
     print("done.")
 
