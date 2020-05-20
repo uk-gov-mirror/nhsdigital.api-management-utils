@@ -4,8 +4,8 @@ env_cleaner.py
 A tool for cleaning up apigee-envs
 
 Usage:
-  spec_uploader.py <apigee_org> <apigee_env> --access-token=<access_token> [--specs] [--proxies] [--products] [--sandbox-only] [--dry-run] [--min-age=<min_age>] [--undeploy-only]
-  spec_uploader.py (-h | --help)
+  env_cleaner.py <apigee_org> <apigee_env> --access-token=<access_token> [--specs] [--proxies] [--products] [--sandbox-only] [--dry-run] [--min-age=<min_age>] [--undeploy-only]
+  env_cleaner.py (-h | --help)
 
 Options:
   -h --help                      Show this screen
