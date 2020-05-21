@@ -48,19 +48,25 @@ class ApigeeClient:
         )
         return response.json()
 
+    def list_env_proxy_deployments(self, env: str):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/environments/{env}/deployments"
+        )
+        return response.json()
+
     def get_proxy(self, proxy):
         response = self.get(
             f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis/{proxy}"
         )
         return response.json()
 
-    def get_proxy_revision(self, proxy, revision):
+    def get_proxy_revision(self, proxy: str, revision: str):
         response = self.get(
             f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis/{proxy}/revisions/{revision}"
         )
         return response.json()
 
-    def undeploy_proxy_revision(self, env, proxy, revision):
+    def undeploy_proxy_revision(self, env: str, proxy: str, revision: str):
         response = self.delete(
             f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/environments/{env}/apis/{proxy}/revisions/{revision}/deployments"
         )

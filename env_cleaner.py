@@ -49,23 +49,45 @@ def clean_specs(client: ApigeeClient, env: str, dry_run: bool = False):
 
 
 def clean_proxies(
-        client: ApigeeClient, env: str, dry_run: bool = False, sandboxes_only: bool = False, min_age: Optional[int] = None, undeploy_only: bool = False
+    client: ApigeeClient,
+    env: str,
+    dry_run: bool = False,
+    sandboxes_only: bool = False,
+    min_age: Optional[int] = None,
+    undeploy_only: bool = False,
 ):
     proxies = client.list_proxies()
     pr_proxies = [proxy for proxy in proxies if PROXY_MATCHER.match(proxy)]
+    proxy_deployments = client.list_env_proxy_deployments(env)[
+        "aPIProxy"
+    ]  # This is not a typo, it's actually spelled like that in the response
+
+    deployed_proxy_revisions = set()
+    for deployment in proxy_deployments:
+        for revision in deployment["revision"]:
+            if revision["state"] == "deployed":
+                deployed_proxy_revisions.add((deployment["name"], revision["name"]))
 
     if sandboxes_only:
-        pr_proxies = [proxy for proxy in proxies if SANDBOX_MATCHER.match(proxy) and not SANDBOX_ANTIMATCHER.match(proxy)]
+        pr_proxies = [
+            proxy
+            for proxy in proxies
+            if SANDBOX_MATCHER.match(proxy) and not SANDBOX_ANTIMATCHER.match(proxy)
+        ]
 
+    # TODO: clean up pyramids of doom
     for proxy in pr_proxies:
         proxy_info = client.get_proxy(proxy)
-        for revision in proxy_info['revision']:
-            print(f"UNDEPLOY {proxy} REVISION {revision}")
-            if not dry_run:
-                try:
-                    client.undeploy_proxy_revision(env, proxy, revision)
-                except requests.exceptions.HTTPError as e:
-                    print(f"ERROR UNDEPLOYING {proxy} REVISION {revision}: may already be undeployed")
+        for revision in proxy_info["revision"]:
+            if (proxy, revision) in deployed_proxy_revisions:
+                print(f"UNDEPLOY {proxy} REVISION {revision}")
+                if not dry_run:
+                    try:
+                        client.undeploy_proxy_revision(env, proxy, revision)
+                    except requests.exceptions.HTTPError:
+                        print(
+                            f"ERROR UNDEPLOYING {proxy} REVISION {revision}: may already be undeployed"
+                        )
 
         if not undeploy_only:
             print(f"DELETE PROXY {proxy}")
@@ -92,7 +114,7 @@ def clean_env(
     sandboxes_only: bool = False,
     dry_run: bool = False,
     min_age: Optional[int] = None,
-    undeploy_only: bool = False
+    undeploy_only: bool = False,
 ):
     if should_clean_specs:
         clean_specs(client, env, dry_run)
@@ -116,5 +138,5 @@ if __name__ == "__main__":
         sandboxes_only=args["--sandbox-only"],
         dry_run=args["--dry-run"],
         min_age=args["--min-age"],
-        undeploy_only=args["--undeploy-only"]
+        undeploy_only=args["--undeploy-only"],
     )

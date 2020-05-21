@@ -16,12 +16,36 @@ def list_proxies_response():
     return [
         "personal-demographics-internal-dev",
         "personal-demographics-internal-dev-test",
+        "personal-demographics-internal-dev-test-not-deployed",
         "personal-demographics-internal-dev-test-sandbox",
     ]
 
 
+def list_env_proxy_deployments_response(_):
+    return {
+        "aPIProxy": [  # Again, not a typo
+            {
+                "name": "personal-demographics-internal-dev",
+                "revision": [{"name": "1", "state": "deployed"}]
+            },
+            {
+                "name": "personal-demographics-internal-dev-test",
+                "revision": [{"name": "1", "state": "deployed"}]
+            },
+            {
+                "name": "personal-demographics-internal-dev-test-sandbox",
+                "revision": [{"name": "1", "state": "deployed"}]
+            },
+        ]
+    }
+
+
 def list_products_response():
-    return list_proxies_response()  # Left intentionally because they usually match up
+    return [
+        "personal-demographics-internal-dev",
+        "personal-demographics-internal-dev-test",
+        "personal-demographics-internal-dev-test-sandbox",
+    ]
 
 
 def get_proxy_response(proxy):
@@ -37,6 +61,8 @@ def client():
         list_proxies.side_effect = list_proxies_response
         list_products = Mock()
         list_products.side_effect = list_products_response
+        list_env_proxy_deployments = Mock()
+        list_env_proxy_deployments.side_effect = list_env_proxy_deployments_response
         get_proxy = Mock()
         get_proxy.side_effect = get_proxy_response
         undeploy_proxy_revision = Mock()
@@ -59,6 +85,8 @@ def test_clean_everything(client):
         undeploy_only=False,
     )
 
+    client.list_env_proxy_deployments("blah")
+
     client.list_specs.assert_called()
     client.list_proxies.assert_called()
     client.list_products.assert_called()
@@ -66,6 +94,7 @@ def test_clean_everything(client):
     client.get_proxy.assert_has_calls(
         [
             call("personal-demographics-internal-dev-test"),
+            call("personal-demographics-internal-dev-test-not-deployed"),
             call("personal-demographics-internal-dev-test-sandbox"),
         ]
     )
@@ -80,6 +109,7 @@ def test_clean_everything(client):
     client.delete_proxy.assert_has_calls(
         [
             call("personal-demographics-internal-dev-test"),
+            call("personal-demographics-internal-dev-test-not-deployed"),
             call("personal-demographics-internal-dev-test-sandbox"),
         ]
     )
@@ -98,6 +128,7 @@ def test_proxy_dry_run(client):
     client.get_proxy.assert_has_calls(
         [
             call("personal-demographics-internal-dev-test"),
+            call("personal-demographics-internal-dev-test-not-deployed"),
             call("personal-demographics-internal-dev-test-sandbox"),
         ]
     )
@@ -113,7 +144,7 @@ def test_proxy_sandboxes_only(client):
     client.list_proxies.assert_called()
     client.get_proxy.assert_has_calls(
         [
-            call("personal-demographics-internal-dev-test-sandbox")
+            call("personal-demographics-internal-dev-test-sandbox"),
         ]
     )
     client.undeploy_proxy_revision.assert_has_calls(
@@ -133,6 +164,7 @@ def test_proxy_undeploy_only(client):
     client.get_proxy.assert_has_calls(
         [
             call("personal-demographics-internal-dev-test"),
+            call("personal-demographics-internal-dev-test-not-deployed"),
             call("personal-demographics-internal-dev-test-sandbox"),
         ]
     )
