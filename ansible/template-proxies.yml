@@ -7,10 +7,13 @@
 
   vars:
     PROXIES_DIR: "{{ lookup('env','PROXIES_DIR') }}"
-    SERVICE_BASEPATH: "{{ lookup('env','SERVICE_BASEPATH') }}"
+    SERVICE_BASE_PATH: "{{ lookup('env','SERVICE_BASE_PATH') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
+    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
 
   tasks:
+    - debug:
+        var: APIGEE_HOSTNAME
     - stat:
         path: "{{ PROXIES_DIR }}"
       register: st
