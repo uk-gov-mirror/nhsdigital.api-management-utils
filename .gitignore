@@ -133,3 +133,6 @@ dmypy.json
 
 # Local access tokens
 .access_token
+
+# intelliJ
+.idea/
