@@ -29,7 +29,7 @@ SERVICE_BLACKLIST = ["identity-service"]
 
 # Map of org name to envs in that org
 ENV_NAMES = {
-    "pull-request": ["internal-qa"],
+    "pull-request": ["internal-dev"],
     "nhsd-prod": ["sandbox", "dev", "int", "prod"],
     "nhsd-nonprod": ["internal-dev", "internal-qa-sandbox", "internal-qa", "ref"],
 }
