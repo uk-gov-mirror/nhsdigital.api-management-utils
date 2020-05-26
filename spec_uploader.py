@@ -4,7 +4,7 @@ spec_uploader.py
 A tool for uploading apigee specs
 
 Usage:
-  spec_uploader.py <apigee_org> --spec-file=<spec_file> --access-token=<apigee_token> [--friendly-name=<friendly_name>]
+  spec_uploader.py <apigee_org> --spec-file=<spec_file> --access-token=<apigee_token> [--friendly-name=<friendly_name>] [--pull-request]
   spec_uploader.py (-h | --help)
 
 Options:
@@ -12,6 +12,7 @@ Options:
   --access-token=<access_token>    Access Token from apigee
   --spec-file=<spec_file>          Path to specification file
   --friendly-name=<friendly_name>  Friendly (displayable) name for this API
+  --pull-request                   Set if Deploying a Pull Request
 """
 import os
 from typing import List
@@ -28,6 +29,7 @@ SERVICE_BLACKLIST = ["identity-service"]
 
 # Map of org name to envs in that org
 ENV_NAMES = {
+    "pull-request": ["internal-qa"],
     "nhsd-prod": ["sandbox", "dev", "int", "prod"],
     "nhsd-nonprod": ["internal-dev", "internal-qa-sandbox", "internal-qa", "ref"],
 }
@@ -148,8 +150,9 @@ def upload_specs(
 if __name__ == "__main__":
     args = docopt(__doc__)
     client = ApigeeClient(args["<apigee_org>"], access_token=args["--access-token"])
+    env_names = ENV_NAMES["pull-request"] if args["--pull-request"] else ENV_NAMES[args["<apigee_org>"]]
     upload_specs(
-        ENV_NAMES[args["<apigee_org>"]],
+        env_names,
         args["--spec-file"],
         client,
         friendly_name=args["--friendly-name"],
