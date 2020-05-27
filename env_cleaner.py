@@ -46,21 +46,22 @@ def canonicalize(name: str) -> str:
     return name.replace(" ", "-").replace("/", "-")
 
 
-def get_open_prs(env: str) -> Set[str]:
-    """ Returns names of open pull requests """
-    canonical_prs = set()
-    for repo_name in REPO_NAMES.keys():
-        prs = requests.get(
-            f"https://api.github.com/repos/NHSDigital/{repo_name}/pulls"
-        ).json()
-        for pr in prs:
-            branch = pr["head"]["ref"]
-            service_name = REPO_NAMES[repo_name]
-            canonical_name = canonicalize(f"{service_name}-{env}-{branch}")
-            canonical_prs.add(canonical_name)
-            canonical_prs.add(canonical_name + "-sandbox")
+class GithubClient:
+    def get_open_prs(self, env: str) -> Set[str]:
+        """ Returns names of open pull requests """
+        canonical_prs = set()
+        for repo_name in REPO_NAMES.keys():
+            prs = requests.get(
+                f"https://api.github.com/repos/NHSDigital/{repo_name}/pulls"
+            ).json()
+            for pr in prs:
+                branch = pr["head"]["ref"]
+                service_name = REPO_NAMES[repo_name]
+                canonical_name = canonicalize(f"{service_name}-{env}-{branch}")
+                canonical_prs.add(canonical_name)
+                canonical_prs.add(canonical_name + "-sandbox")
 
-    return canonical_prs
+        return canonical_prs
 
 
 def clean_specs(client: ApigeeClient, env: str, dry_run: bool = False):
@@ -79,6 +80,7 @@ def clean_specs(client: ApigeeClient, env: str, dry_run: bool = False):
 
 def clean_proxies(
     client: ApigeeClient,
+    github_client: GithubClient,
     env: str,
     dry_run: bool = False,
     sandboxes_only: bool = False,
@@ -89,7 +91,7 @@ def clean_proxies(
     open_prs = set()
     if respect_prs:
         # Get open PRs, if there are any
-        open_prs = get_open_prs(env)
+        open_prs = github_client.get_open_prs(env)
 
     proxies = client.list_proxies()
     pr_proxies = [proxy for proxy in proxies if PROXY_MATCHER.match(proxy)]
@@ -148,6 +150,7 @@ def clean_products(client: ApigeeClient, env: str, dry_run: bool = False):
 
 def clean_env(
     client: ApigeeClient,
+    github_client: GithubClient,
     env: str,
     should_clean_specs: bool = False,
     should_clean_proxies: bool = False,
@@ -162,7 +165,7 @@ def clean_env(
         clean_specs(client, env, dry_run)
 
     if should_clean_proxies:
-        clean_proxies(client, env, dry_run, sandboxes_only, min_age, undeploy_only, respect_prs)
+        clean_proxies(client, github_client, env, dry_run, sandboxes_only, min_age, undeploy_only, respect_prs)
 
     if should_clean_products:
         clean_products(client, env, dry_run)
@@ -171,8 +174,10 @@ def clean_env(
 if __name__ == "__main__":
     args = docopt(__doc__)
     client = ApigeeClient(args["<apigee_org>"], access_token=args["--access-token"])
+    github_client = GithubClient()
     clean_env(
         client,
+        github_client,
         args["<apigee_env>"],
         should_clean_specs=args["--specs"],
         should_clean_proxies=args["--proxies"],
