@@ -120,7 +120,7 @@ def upload_specs(
             if "sandbox" in env:  # we don't want to publish stuff for sandbox
                 continue
             print(f"checking if this spec is on the portal in {env}")
-            ns_spec_name = f"{spec_name}-{env}"
+            ns_spec_name = spec_name if args["--pull-request"] else f"{spec_name}-{env}"
             if ns_spec_name in portal_specs:
                 print(f"{ns_spec_name} is on the portal, updating")
                 apidoc_id = portal_specs[ns_spec_name]["id"]
