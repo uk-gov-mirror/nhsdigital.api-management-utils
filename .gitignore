@@ -130,3 +130,9 @@ dmypy.json
 
 # Emacs
 .#*
+
+# Local access tokens
+.access_token
+
+# intelliJ
+.idea/

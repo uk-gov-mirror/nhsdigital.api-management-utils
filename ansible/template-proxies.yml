@@ -1,0 +1,50 @@
+- name: template proxies
+  hosts: 127.0.0.1
+  connection: local
+
+  environment:
+    AWS_DEFAULT_REGION: eu-west-2
+
+  vars:
+    PROXIES_DIR: "{{ lookup('env','PROXIES_DIR') }}"
+    SERVICE_BASE_PATH: "{{ lookup('env','SERVICE_BASE_PATH') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
+    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+
+  tasks:
+    - debug:
+        var: APIGEE_HOSTNAME
+    - stat:
+        path: "{{ PROXIES_DIR }}"
+      register: st
+
+    - fail:
+        msg: "{{ PROXIES_DIR }} does not exist"
+      when: not st.stat.exists
+
+    - name: create temporary directory
+      tempfile:
+        state: directory
+        suffix: proxies
+      register: temp_dir
+
+    - debug: var=temp_dir
+
+    - name: move proxies to temp location
+      shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
+
+    - name: create target directories
+      file:
+        path: "{{ PROXIES_DIR }}/{{ item.path }}"
+        state: directory
+        mode: '{{ item.mode }}'
+      with_filetree: "{{ temp_dir.path }}"
+      when: item.state == 'directory'
+
+    - name: template proxies files
+      template:
+        src: '{{ item.src }}'
+        dest: "{{ PROXIES_DIR }}/{{ item.path }}"
+        mode: '{{ item.mode }}'
+      with_filetree: "{{ temp_dir.path }}"
+      when: item.state == 'file'

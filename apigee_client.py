@@ -13,7 +13,7 @@ class ApigeeClient:
         username: str = None,
         password: str = None,
         access_token: str = None,
-        session: requests.Session = requests.Session(),
+        session: requests.Session = requests.Session()
     ):
         self.apigee_org = apigee_org
 
@@ -42,6 +42,55 @@ class ApigeeClient:
     head = partialmethod(_request, "HEAD")
     options = partialmethod(_request, "OPTIONS")
 
+    def list_proxies(self):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis"
+        )
+        return response.json()
+
+    def list_env_proxy_deployments(self, env: str):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/environments/{env}/deployments"
+        )
+        return response.json()
+
+    def get_proxy(self, proxy):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis/{proxy}"
+        )
+        return response.json()
+
+    def get_proxy_revision(self, proxy: str, revision: str):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis/{proxy}/revisions/{revision}"
+        )
+        return response.json()
+
+    def undeploy_proxy_revision(self, env: str, proxy: str, revision: str):
+        response = self.delete(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/environments/{env}/apis/{proxy}/revisions/{revision}/deployments"
+        )
+        return response.json()
+
+    def delete_proxy(self, proxy: str):
+        response = self.delete(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apis/{proxy}"
+        )
+        return response.json()
+
+    def list_products(self):
+        response = self.get(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apiproducts"
+        )
+        return response.json()
+
+    def delete_product(self, product: str):
+        # TODO implement cascade behaviour
+        response = self.delete(
+            f"https://api.enterprise.apigee.com/v1/organizations/{self.apigee_org}/apiproducts/{product}"
+        )
+        return response.json()
+
     def list_specs(self):
         response = self.get(
             f"https://apigee.com/dapi/api/organizations/{self.apigee_org}/specs/folder/home"
@@ -60,6 +109,12 @@ class ApigeeClient:
             f"https://apigee.com/dapi/api/organizations/{self.apigee_org}/specs/doc/{spec_id}/content",
             headers=dict(**{"Content-Type": "text/plain"}, **self._auth_headers),
             data=content.encode("utf-8"),
+        )
+        return response
+
+    def delete_spec(self, spec_id: str):
+        response = self.delete(
+            f"https://apigee.com/dapi/api/organizations/{self.apigee_org}/specs/doc/{spec_id}",
         )
         return response
 
