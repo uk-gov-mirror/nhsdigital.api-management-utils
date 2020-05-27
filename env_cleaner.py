@@ -4,7 +4,7 @@ env_cleaner.py
 A tool for cleaning up apigee-envs
 
 Usage:
-  env_cleaner.py <apigee_org> <apigee_env> --access-token=<access_token> [--specs] [--proxies] [--products] [--sandbox-only] [--dry-run] [--min-age=<min_age>] [--undeploy-only]
+  env_cleaner.py <apigee_org> <apigee_env> --access-token=<access_token> [--specs] [--proxies] [--products] [--sandbox-only] [--dry-run] [--min-age=<min_age>] [--undeploy-only] [--respect-prs]
   env_cleaner.py (-h | --help)
 
 Options:
@@ -16,11 +16,12 @@ Options:
   --sandbox-only                 Only delete sandbox proxies
   --dry-run                      Print a listing of what will be deleted, but don't delete it.
   --undeploy-only                Don't delete any proxies, just undeploy them
-  --min-age=<min_age>            Minimum age in seconds
+  --min-age=<min_age>            (NOT IMPLEMENTED) Minimum age in seconds
+  --respect-prs                  Don't undeploy if there's a PR open for it
 """
 import re
 import requests
-from typing import Optional
+from typing import Optional, Set
 from docopt import docopt
 from apigee_client import ApigeeClient
 
@@ -32,6 +33,34 @@ PROXY_MATCHER = re.compile(
 PRODUCT_MATCHER = PROXY_MATCHER
 SANDBOX_MATCHER = re.compile(".+-sandbox$")
 SANDBOX_ANTIMATCHER = re.compile(".+-internal-qa-sandbox")
+
+# Map of repository names to service names
+REPO_NAMES = {
+    "personal-demographics-service-api": "personal-demographics",
+    "identity-service-api": "identity-service",
+    "hello-world-api": "hello-world"
+}
+
+
+def canonicalize(name: str) -> str:
+    return name.replace(" ", "-").replace("/", "-")
+
+
+def get_open_prs(env: str) -> Set[str]:
+    """ Returns names of open pull requests """
+    canonical_prs = set()
+    for repo_name in REPO_NAMES.keys():
+        prs = requests.get(
+            f"https://api.github.com/repos/NHSDigital/{repo_name}/pulls"
+        ).json()
+        for pr in prs:
+            branch = pr["head"]["ref"]
+            service_name = REPO_NAMES[repo_name]
+            canonical_name = canonicalize(f"{service_name}-{env}-{branch}")
+            canonical_prs.add(canonical_name)
+            canonical_prs.add(canonical_name + "-sandbox")
+
+    return canonical_prs
 
 
 def clean_specs(client: ApigeeClient, env: str, dry_run: bool = False):
@@ -55,7 +84,13 @@ def clean_proxies(
     sandboxes_only: bool = False,
     min_age: Optional[int] = None,
     undeploy_only: bool = False,
+    respect_prs: bool = False
 ):
+    open_prs = set()
+    if respect_prs:
+        # Get open PRs, if there are any
+        open_prs = get_open_prs(env)
+
     proxies = client.list_proxies()
     pr_proxies = [proxy for proxy in proxies if PROXY_MATCHER.match(proxy)]
     proxy_deployments = client.list_env_proxy_deployments(env)[
@@ -71,11 +106,17 @@ def clean_proxies(
     if sandboxes_only:
         pr_proxies = [
             proxy
-            for proxy in proxies
+            for proxy in pr_proxies
             if SANDBOX_MATCHER.match(proxy) and not SANDBOX_ANTIMATCHER.match(proxy)
         ]
 
-    # TODO: clean up pyramids of doom
+    if respect_prs:
+        pr_proxies = [
+            proxy
+            for proxy in pr_proxies
+            if proxy not in open_prs
+        ]
+
     for proxy in pr_proxies:
         proxy_info = client.get_proxy(proxy)
         for revision in proxy_info["revision"]:
@@ -115,12 +156,13 @@ def clean_env(
     dry_run: bool = False,
     min_age: Optional[int] = None,
     undeploy_only: bool = False,
+    respect_prs: bool = False
 ):
     if should_clean_specs:
         clean_specs(client, env, dry_run)
 
     if should_clean_proxies:
-        clean_proxies(client, env, dry_run, sandboxes_only, min_age, undeploy_only)
+        clean_proxies(client, env, dry_run, sandboxes_only, min_age, undeploy_only, respect_prs)
 
     if should_clean_products:
         clean_products(client, env, dry_run)
@@ -139,4 +181,5 @@ if __name__ == "__main__":
         dry_run=args["--dry-run"],
         min_age=args["--min-age"],
         undeploy_only=args["--undeploy-only"],
+        respect_prs=args["--respect-prs"]
     )
