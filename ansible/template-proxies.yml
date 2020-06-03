@@ -10,6 +10,7 @@
     SERVICE_BASE_PATH: "{{ lookup('env','SERVICE_BASE_PATH') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
 
   tasks:
     - debug:
