@@ -1,0 +1,6 @@
+---
+aws_profile: "deploy-{{ service_name }}-{{ APIGEE_ENVIRONMENT }}"
+aws_region: "eu-west-2"
+aws_cmd: "aws --profile=deploy-{{ service_name }}-{{ APIGEE_ENVIRONMENT }} --region={{ aws_region }}"
+apigee_access_token: "{{ lookup('env','API_ACCESS_TOKEN') }}"
+env_apigee_org: "{{ lookup('env','API_ORG') }}"
