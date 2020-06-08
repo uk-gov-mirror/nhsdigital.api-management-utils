@@ -12,6 +12,7 @@
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
     RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
+    SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
 
   tasks:
     - debug:
