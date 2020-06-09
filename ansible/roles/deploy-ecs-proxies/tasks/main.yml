@@ -1,0 +1,5 @@
+
+- name: check build_label
+  fail: msg="you must specify an build_label"
+  when: not build_label
+

@@ -5,16 +5,11 @@
 
   vars:
     SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     SERVICE_BASE_PATH:  "{{ lookup('env','SERVICE_BASE_PATH') }}"
-    APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
-    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
-    aws_cmd: "aws --profile=deploy-{{ service_name }}-{{ APIGEE_ENVIRONMENT }} --region=eu-west-2"
+    aws_profile: "deploy-{{ SERVICE_NAME | lower }}-{{ APIGEE_ENVIRONMENT | lower }}"
 
   pre_tasks:
-    - name: check SERVICE_BASE_PATH
-      fail:
-        msg: "SERVICE_BASE_PATH not set"
-      when: not SERVICE_BASE_PATH
 
     - name: check SERVICE_NAME
       fail:
@@ -26,7 +21,15 @@
         msg: "APIGEE_ENVIRONMENT not set"
       when: not APIGEE_ENVIRONMENT
 
+    - name: check SERVICE_BASE_PATH
+      fail:
+        msg: "SERVICE_BASE_PATH not set"
+      when: not SERVICE_BASE_PATH
+
+    - name: include vars
+      include_vars:
+        file: "{{ playbook_dir }}/../../ecs-proxies.yml"
 
   roles:
     - setup-facts
-    - deploy-proxy-ecs
+    - deploy-ecs-proxies
