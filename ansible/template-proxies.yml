@@ -31,23 +31,30 @@
         suffix: proxies
       register: temp_dir
 
-    - debug: var=temp_dir
+    - name: template proxies
+      block:
 
-    - name: move proxies to temp location
-      shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
+        - name: move proxies to temp location
+          shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
 
-    - name: create target directories
-      file:
-        path: "{{ PROXIES_DIR }}/{{ item.path }}"
-        state: directory
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ temp_dir.path }}"
-      when: item.state == 'directory'
+        - name: create target directories
+          file:
+            path: "{{ PROXIES_DIR }}/{{ item.path }}"
+            state: directory
+            mode: '{{ item.mode }}'
+          with_filetree: "{{ temp_dir.path }}"
+          when: item.state == 'directory'
 
-    - name: template proxies files
-      template:
-        src: '{{ item.src }}'
-        dest: "{{ PROXIES_DIR }}/{{ item.path }}"
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ temp_dir.path }}"
-      when: item.state == 'file'
+        - name: template proxies files
+          template:
+            src: '{{ item.src }}'
+            dest: "{{ PROXIES_DIR }}/{{ item.path }}"
+            mode: '{{ item.mode }}'
+          with_filetree: "{{ temp_dir.path }}"
+          when: item.state == 'file'
+
+      always:
+        - name: remove temp dir
+          file:
+            path: "{{ temp_dir.path }}"
+            state: absent

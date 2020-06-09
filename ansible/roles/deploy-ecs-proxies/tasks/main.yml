@@ -3,3 +3,36 @@
   fail: msg="you must specify an build_label"
   when: not build_label
 
+- name: create temporary directory
+  tempfile:
+    state: directory
+  register: temp_dir
+
+- name: template terraform
+  block:
+
+    - name: template directories
+      file:
+        path: "{{ temp_dir.path }}/{{ item.path }}"
+        state: directory
+        mode: '{{ item.mode }}'
+      with_filetree: "../templates"
+      when: item.state == 'directory'
+
+    - name: template proxies files
+      template:
+        src: '{{ item.src }}'
+        dest: "{{ temp_dir.path }}/{{ item.path }}"
+        mode: '{{ item.mode }}'
+      with_filetree: "../templates"
+      when: item.state == 'file'
+
+    - debug: var=temp_dir
+
+
+
+#  always:
+#    - name: remove temp dir
+#      file:
+#        path: "{{ temp_dir.path }}"
+#        state: absent

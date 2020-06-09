@@ -7,9 +7,18 @@
     SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     SERVICE_BASE_PATH:  "{{ lookup('env','SERVICE_BASE_PATH') }}"
-    aws_profile: "deploy-{{ SERVICE_NAME | lower }}-{{ APIGEE_ENVIRONMENT | lower }}"
+    _NAMESPACE: "{{ lookup('env','_NAMESPACE') }}"
+    account:  "{{ lookup('env','account') }}"
+    sub_namespace: "{{ '-' + _NAMESPACE if _NAMESPACE else '' }}"
+    aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}{{ sub_namespace }}"
+
 
   pre_tasks:
+
+    - name: check account
+      fail:
+        msg: "account not set"
+      when: not account
 
     - name: check SERVICE_NAME
       fail:
