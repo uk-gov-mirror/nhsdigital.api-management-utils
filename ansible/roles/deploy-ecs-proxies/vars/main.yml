@@ -4,3 +4,14 @@ images: "{{ docker_containers | json_query('[].name') | unique | sort }}"
 service_base_path: "{{ SERVICE_BASE_PATH | regex_replace('^\\/|\\/$', '') }}"
 sub_workspace: "{{ ':' + _NAMESPACE if _NAMESPACE else '' }}"
 workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
+
+container_defaults:
+  protocol: "TCP"
+  environment: []
+  mountPoints: []
+  secrets: []
+  expose: true
+  health_check:
+    matcher: "200"
+    path: "/"
+  lb_protocol: "HTTP"

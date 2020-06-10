@@ -14,18 +14,6 @@ provider "aws" {
   profile = var.profile
 }
 
-data "terraform_remote_state" "account" {
-  backend   = "s3"
-  workspace = "management:${var.account}"
-
-  config = {
-    profile = var.profile
-    key     = "account/terraform.tfstate"
-    region  = "eu-west-2"
-    bucket  = var.state_bucket
-    encrypt = true
-  }
-}
 
 data "terraform_remote_state" "pre-reqs" {
   backend   = "s3"

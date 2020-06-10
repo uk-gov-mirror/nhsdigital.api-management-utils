@@ -32,3 +32,13 @@ variable "namespace" {
   type = string
   description = "String appended to the end of proxy and product names to allow namespaced deploys, for PRs and such"
 }
+
+variable "build_label" {
+  type = string
+  description = "docker container label"
+}
+
+variable "service_base_path" {
+  type = string
+  description = "service base path (not slashy)"
+}

@@ -8,6 +8,8 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     SERVICE_BASE_PATH:  "{{ lookup('env','SERVICE_BASE_PATH') }}"
     _NAMESPACE: "{{ lookup('env','_NAMESPACE') }}"
+    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     account:  "{{ lookup('env','account') }}"
     sub_namespace: "{{ '-' + _NAMESPACE if _NAMESPACE else '' }}"
     aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}{{ sub_namespace }}"

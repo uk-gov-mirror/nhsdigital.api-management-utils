@@ -8,12 +8,22 @@
     state: directory
   register: temp_dir
 
+- name: check just one exposed service
+  fail:
+    msg: "you must have exactly one exposed service, set 'expose: false' on others"
+  when: (docker_containers | selectattr('expose', 'equalto', True) | list | length) != 1
+
+- name: set output dir
+  set_fact:
+#    out_dir: "{{ temp_dir.path }}"
+    out_dir: "/tmp/terratest"
+
 - name: template terraform
   block:
 
     - name: template directories
       file:
-        path: "{{ temp_dir.path }}/{{ item.path }}"
+        path: "{{ out_dir }}/{{ item.path }}"
         state: directory
         mode: '{{ item.mode }}'
       with_filetree: "../templates"
@@ -22,17 +32,13 @@
     - name: template proxies files
       template:
         src: '{{ item.src }}'
-        dest: "{{ temp_dir.path }}/{{ item.path }}"
+        dest: "{{ out_dir }}/{{ item.path }}"
         mode: '{{ item.mode }}'
       with_filetree: "../templates"
       when: item.state == 'file'
 
-    - debug: var=temp_dir
-
-
-
-#  always:
-#    - name: remove temp dir
-#      file:
-#        path: "{{ temp_dir.path }}"
-#        state: absent
+  always:
+    - name: remove temp dir
+      file:
+        path: "{{ temp_dir.path }}"
+        state: absent
