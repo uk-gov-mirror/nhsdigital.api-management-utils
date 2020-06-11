@@ -30,11 +30,11 @@ locals {
     secretOptions= [
       {
         name = "splunk-url"
-        valueFrom = "arn:aws:ssm:eu-west-2:${local.account_id}:parameter/${var.account}/api-deployment-common/splunk_hec_url"
+        valueFrom = "/${var.account}/platform-common/splunk/hec_url"
       },
       {
         name = "splunk-token"
-        valueFrom = "arn:aws:ssm:eu-west-2:${local.account_id}:parameter/${var.account}/api-deployment-common/splunk_hec_token"
+        valueFrom = "/${var.account}/platform-common/splunk/hec_token"
       }
     ]
   }

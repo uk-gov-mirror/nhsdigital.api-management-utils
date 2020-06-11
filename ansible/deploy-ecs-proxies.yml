@@ -39,7 +39,7 @@
 
     - name: include vars
       include_vars:
-        file: "{{ playbook_dir }}/../../ecs-proxies.yml"
+        file: "{{ playbook_dir }}/../../deploy-ecs-proxies.yml"
 
   roles:
     - setup-facts

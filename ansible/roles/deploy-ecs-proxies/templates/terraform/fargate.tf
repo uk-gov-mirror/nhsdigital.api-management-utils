@@ -73,5 +73,4 @@ resource "aws_ecs_service" "service" {
     aws_lb_listener_rule.service
   ]
 
-  tags = local.common_tags
 }

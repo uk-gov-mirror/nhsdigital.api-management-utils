@@ -23,7 +23,7 @@
     new_repos: "{{ images | difference(current_repos) }}"
 
 - name: create new repos
-  command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }}"
+  command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_name }}"
   with_items: "{{ new_repos }}"
   when: new_repos
 
