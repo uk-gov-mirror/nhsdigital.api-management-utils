@@ -7,24 +7,24 @@ resource "aws_ecs_task_definition" "service" {
   family                   = local.env_namespaced_name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 2048
+  cpu                      = {{ service_cpu }}
+  memory                   = {{ service_memory }}
   execution_role_arn       = data.aws_iam_role.ecs-execution-role.arn
 
   container_definitions = jsonencode(
   [
   for container in local.docker_services:
   {
-    cpu              = 0
-    essential        = true
+    cpu              = container.cpu
+    essential        = container.essential
     image            = container.image
     name             = container.name
     logConfiguration = local.logConfig[container.name]
     portMappings = [
       {
-        protocol      = "tcp"
         containerPort = container.port
         hostPort      = container.port
+        protocol      = lower(container.protocol)
       }
     ]
     mountPoints = []
@@ -47,14 +47,12 @@ resource "aws_ecs_service" "service" {
   cluster          = data.terraform_remote_state.pre-reqs.outputs.ecs_cluster_id
   task_definition  = aws_ecs_task_definition.service.arn
 
-
   desired_count = 1
   launch_type   = "FARGATE"
 
-  deployment_maximum_percent         = 100
-  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
   force_new_deployment               = true
-
 
   network_configuration {
     security_groups = [data.terraform_remote_state.pre-reqs.outputs.ecs_sg_id]
@@ -73,4 +71,12 @@ resource "aws_ecs_service" "service" {
     aws_lb_listener_rule.service
   ]
 
+}
+
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 2
+  min_capacity       = 0
+  resource_id        = "service/apis-${var.apigee_environment}/${aws_ecs_service.service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
 }

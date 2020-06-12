@@ -1,0 +1,20 @@
+
+variable "profile" {
+  type = string
+}
+
+terraform {
+  backend "s3" {
+    key     = "deployment/terraform.tfstate"
+    region  = "eu-west-2"
+    encrypt = true
+  }
+}
+
+provider "aws" {
+  region  = "eu-west-2"
+  version = "~> 2.33"
+  profile = var.profile
+}
+
+

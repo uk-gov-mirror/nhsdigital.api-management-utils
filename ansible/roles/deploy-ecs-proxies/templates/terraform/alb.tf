@@ -17,7 +17,6 @@ resource "aws_alb_target_group" "service" {
 
 resource "aws_lb_listener_rule" "service" {
   listener_arn = data.terraform_remote_state.pre-reqs.outputs.public_alb_listener_arn
-  priority     = 10
 
   action {
     order            = 1
@@ -26,8 +25,10 @@ resource "aws_lb_listener_rule" "service" {
   }
 
   condition {
-    path_pattern {
-      values = ["/${var.service_base_path}/*"]
+    host_header {
+      values = [
+        "${local.namespaced_name}.*"
+      ]
     }
   }
 

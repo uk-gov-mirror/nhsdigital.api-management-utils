@@ -7,8 +7,6 @@
     SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     _NAMESPACE: "{{ lookup('env','_NAMESPACE') }}"
-    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
-    apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     account:  "{{ lookup('env','account') }}"
     aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}{{ '-' + _NAMESPACE if _NAMESPACE else '' }}"
 
@@ -30,10 +28,7 @@
         msg: "APIGEE_ENVIRONMENT not set"
       when: not APIGEE_ENVIRONMENT
 
-    - name: include vars
-      include_vars:
-        file: "{{ playbook_dir }}/../../deploy-ecs-proxies.yml"
 
   roles:
     - setup-facts
-    - deploy-ecs-proxies
+    - destroy-ecs-proxies

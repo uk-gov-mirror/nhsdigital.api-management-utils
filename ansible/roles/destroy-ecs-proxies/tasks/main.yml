@@ -1,0 +1,58 @@
+
+- name: scale down
+  command: >
+    {{ aws_cmd }} ecs update-service --desired-count 0
+    --cluster apis-{{ apigee_environment }} --service {{ namespaced_name }}
+
+- name: wait 5
+  pause:
+    seconds: 15
+
+- name: create temporary directory
+  tempfile:
+    state: directory
+  register: temp_dir
+
+- name: template terraform
+  block:
+
+    - name: template directories
+      file:
+        path: "{{ temp_dir.path }}/{{ item.path }}"
+        state: directory
+        mode: '{{ item.mode }}'
+      with_filetree: "{{ '../templates' }}"
+      when: item.state == 'directory'
+
+    - name: template proxies files
+      template:
+        src: '{{ item.src }}'
+        dest: "{{ temp_dir.path }}/{{ item.path }}"
+        mode: '{{ item.mode }}'
+      with_filetree: "{{ '../templates' }}"
+      when: item.state == 'file'
+
+    - name: terraform destroy
+      shell: "make -C {{ temp_dir.path }}/terraform apply args='-no-color --auto-approve' tf-command=destroy"
+      register: tfapply
+
+  rescue:
+    - name: output stdout
+      debug:
+        var: tfapply.stdout_lines
+      when: tfapply is defined
+
+    - name: output stderr
+      debug:
+        var: tfapply.stderr_lines
+      when: tfapply is defined
+
+    - name: force fail
+      fail:
+        msg: terraform failed
+
+  always:
+    - name: remove temp dir
+      file:
+        path: "{{ temp_dir.path }}"
+        state: absent

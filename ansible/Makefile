@@ -23,5 +23,9 @@ template-proxies: guard-PROXIES_DIR guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRON
 build-ecs-proxies: guard-build_label guard-SERVICE_NAME
 	@build_label=$(build_label) SERVICE_NAME=$(SERVICE_NAME) poetry run ansible-playbook -i local build-ecs-proxies.yml
 
-deploy-ecs-proxies: guard-build_label guard-SERVICE_NAME guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT
-	@build_label=$(build_label) SERVICE_NAME=$(SERVICE_NAME) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local deploy-ecs-proxies.yml
+deploy-ecs-proxies: guard-build_label guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT
+	@build_label=$(build_label) temp_out_dir=$(temp_out_dir) SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local deploy-ecs-proxies.yml
+
+destroy-ecs-proxies: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT
+	@SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local destroy-ecs-proxies.yml
+

@@ -42,12 +42,12 @@ locals {
   }
 
   docker_services = [
-  {% for service in docker_containers %}
+  {% for container in docker_service %}
     {{
         (
-          (container_defaults | combine(service))
+          (container_defaults | combine(container))
           | combine(
-            {'image': '${local.account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + service.name + ':' + build_label }
+            {'image': '${local.account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + container.name + ':' + build_label }
           )
         ) | to_json
     }},

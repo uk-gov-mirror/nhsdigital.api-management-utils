@@ -15,13 +15,14 @@
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
 
   tasks:
-    - debug:
-        var: APIGEE_HOSTNAME
-    - stat:
+
+    - name: stat proxies dir
+      stat:
         path: "{{ PROXIES_DIR }}"
       register: st
 
-    - fail:
+    - name: check dir exists
+      fail:
         msg: "{{ PROXIES_DIR }} does not exist"
       when: not st.stat.exists
 

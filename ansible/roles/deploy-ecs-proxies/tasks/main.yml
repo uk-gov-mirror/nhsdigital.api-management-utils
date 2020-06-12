@@ -11,12 +11,15 @@
 - name: check just one exposed service
   fail:
     msg: "you must have exactly one exposed service, set 'expose: false' on others"
-  when: (docker_containers | selectattr('expose', 'equalto', True) | list | length) != 1
+  when: (docker_service | selectattr('expose', 'equalto', True) | list | length) != 1
 
-- name: set output dir
+- name: set output dir ( allows override with  temp_out_dir )
   set_fact:
-#    out_dir: "{{ temp_dir.path }}"
-    out_dir: "/tmp/terratest"
+    out_dir: "{{ lookup('env', 'temp_out_dir') + '/_deploy' if lookup('env', 'temp_out_dir') else temp_dir.path }}"
+
+- name: clean out dir
+  shell: "rm -r {{ out_dir }}/* || true"
+  when: out_dir != temp_dir.path
 
 - name: template terraform
   block:
@@ -26,7 +29,7 @@
         path: "{{ out_dir }}/{{ item.path }}"
         state: directory
         mode: '{{ item.mode }}'
-      with_filetree: "../templates"
+      with_filetree: "{{ '../templates' }}"
       when: item.state == 'directory'
 
     - name: template proxies files
@@ -34,8 +37,42 @@
         src: '{{ item.src }}'
         dest: "{{ out_dir }}/{{ item.path }}"
         mode: '{{ item.mode }}'
-      with_filetree: "../templates"
+      with_filetree: "{{ '../templates' }}"
       when: item.state == 'file'
+
+    - name: terraform plan
+      shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -out tfplan.out'"
+      register: tfplan
+      failed_when: tfplan.rc not in (0, 2)
+
+    - name: terraform apply
+      shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color --auto-approve tfplan.out'"
+      register: tfapply
+
+  rescue:
+    - name: output plan
+      debug:
+        var: tfplan.stdout_lines
+      when: tfplan is defined
+
+    - name: output apply
+      debug:
+        var: tfapply.stdout_lines
+      when: tfapply is defined
+
+    - name: output plan
+      debug:
+        var: tfplan.stderr_lines
+      when: tfplan is defined
+
+    - name: output apply
+      debug:
+        var: tfapply.stderr_lines
+      when: tfapply is defined
+
+    - name: force fail
+      fail:
+        msg: terraform failed
 
   always:
     - name: remove temp dir

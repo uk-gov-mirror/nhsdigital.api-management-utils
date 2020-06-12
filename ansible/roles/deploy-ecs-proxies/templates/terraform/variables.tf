@@ -37,8 +37,3 @@ variable "build_label" {
   type = string
   description = "docker container label"
 }
-
-variable "service_base_path" {
-  type = string
-  description = "service base path (not slashy)"
-}
