@@ -19,22 +19,6 @@ ansible-lint:
 	@# Only swallow checking errors (rc=2), not other problems (rc=1)
 	poetry run ansible-lint -c ansible-lint.yml -p ansible/*.yml || test $$? -eq 2
 
-build-prereqs:
-	@if ! hash poetry 2>/dev/null; then \
-		sudo apt-get -yq install python3-pip; \
-	fi; \
-	if ! dpkg -l | grep python3-venv > /dev/null; then \
-		sudo apt-get -yq install python3-venv; \
-	fi; \
-	pip3 install --upgrade pip setuptools; \
-	if ! python --version | grep 'Python 3' > /dev/null; then \
-		sudo unlink /usr/bin/python; \
-		sudo ln -s /usr/bin/python3 /usr/bin/python; \
-	fi;
-	if ! hash poetry 2>/dev/null; then \
-		curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3; \
-	fi
-
 install:
 	$(poetry) install
 
