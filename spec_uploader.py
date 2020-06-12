@@ -47,7 +47,7 @@ FRIENDLY_ENV_NAMES = {
 # Mapping of services to require callbacks on
 # TODO: this is horrible. Let's get this into terraform ASAP.
 CALLBACK_REQUIRED = {
-    "personal-demographics-service": True,
+    "personal-demographics": True,
     "identity-service": True,
     "hello-world": True,
     "covid-19-testing-channel-availability": False,
