@@ -23,12 +23,12 @@ ansible-lint:
 ensure-poetry:
 	@if ! hash poetry 2>/dev/null; then \
 		pip install --upgrade pip setuptools; \
-        pip install poetry; \
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python; \
 	fi
 
 
 install: ensure-poetry
-	@source $HOME/.poetry/env; \
+	@source $$HOME/.poetry/env; \
 	poetry install
 
 #########################################################################################################################
