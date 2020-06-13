@@ -1,13 +1,18 @@
 
+parameters:
+  - name: 'utils_dir'
+    type: string
+    default: 'utils'
+
 steps:
 
   - task: Cache@2
     displayName: "Cache Utils python Dependencies"
     inputs:
-      key:  nhsd-utils-pyenv | $(Agent.OS) | utils/poetry.lock
-      path: "utils/.venv"
+      key:  nhsd-utils-pyenv | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
+      path: "${{ parameters.utils_dir }}/.venv"
       restoreKeys: |
-        nhsd-utils-pyenv | $(Agent.OS) | utils/poetry.lock
+        nhsd-utils-pyenv | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
         nhsd-utils-pyenv | $(Agent.OS)
 
   - bash: |
@@ -25,7 +30,7 @@ steps:
       if ! hash poetry 2>/dev/null; then
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
       fi
-      make -C utils install
+      make -C ${{ parameters.utils_dir }} install
     displayName: setup utils
 
 
