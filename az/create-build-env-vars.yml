@@ -1,0 +1,24 @@
+
+parameters:
+  - name: 'out_dir'
+    type: string
+    default: './'
+  - name: 'source_root'
+    type: string
+    default: './'
+  - name: 'service_name'
+    type: string
+steps:
+
+  - bash: |
+      outfile="${{ parameters.out_dir }}/.build_env_vars"
+      commit_hash="$(git -C ${{ parameters.source_root }} rev-parse --short HEAD)"
+      echo export commit_hash=\"${commit_hash}\" > ${outfile}
+      # sha prefix is required docker gets upset if names contain -0 iirc
+      echo export build_label=\"$(Build.BuildId)-sha${commit_hash}\" > ${outfile}
+      echo export pr_number=\"$(System.PullRequest.PullRequestNumber 2>/dev/null || true)\" > ${outfile}
+      echo export SERVICE_NAME=\"${{ parameters.service_name }}\" > ${outfile}
+    displayName: output build env vars for artifact
+
+
+

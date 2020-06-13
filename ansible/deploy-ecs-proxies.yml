@@ -32,7 +32,7 @@
 
     - name: include vars
       include_vars:
-        file: "{{ playbook_dir }}/../../deploy-ecs-proxies.yml"
+        file: "{{ lookup('env', 'PROXY_VARS_FILE') | expandvars | expanduser | realpath }}"
 
   roles:
     - setup-facts

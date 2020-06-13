@@ -16,7 +16,7 @@
 
     - name: include vars
       include_vars:
-        file: "{{ playbook_dir }}/../../build-ecs-proxies.yml"
+        file: "{{ lookup('env', 'CONTAINER_VARS_FILE') | expandvars | expanduser | realpath }}"
 
   roles:
     - setup-facts

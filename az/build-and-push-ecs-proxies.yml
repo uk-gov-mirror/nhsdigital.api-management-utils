@@ -1,0 +1,23 @@
+
+parameters:
+  - name: 'container_vars'
+    type: string
+    default: '../ecs-proxies-containers.yml'
+  - name: 'env_vars_dir'
+    type: string
+    default: './'
+  - name: 'utils_dir'
+    type: string
+    default: 'utils'
+
+steps:
+
+  - bash: |
+      source "${{ parameters.env_vars_dir }}/.build_env_vars"
+      CONTAINER_VARS="$(realpath ${{ parameters.env_vars_dir }})" \
+      build_label=${build_label} SERVICE_NAME=${SERVICE_NAME} \
+      make -C ${{ parameters.utils_dir }}/ansible build-ecs-proxies
+    displayName: build ecs proxies
+
+
+
