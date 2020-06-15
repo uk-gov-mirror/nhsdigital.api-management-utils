@@ -29,3 +29,20 @@ deploy-ecs-proxies: guard-build_label guard-SERVICE_NAME guard-APIGEE_ENVIRONMEN
 destroy-ecs-proxies: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT
 	@SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local destroy-ecs-proxies.yml
 
+create-api-deployment-user-access-key: guard-account guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-SERVICE_BASE_PATH
+	@account=$(account) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local create-api-deployment-user-access-key.yml
+
+remove-api-deployment-user-access-key: guard-account guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT
+	@account=$(account) SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local remove-api-deployment-user-access-key.yml
+
+create-ecr-build-user: guard-account guard-SERVICE_NAME
+	@account=$(account) SERVICE_NAME=$(SERVICE_NAME) poetry run ansible-playbook -i local create-ecr-build-user.yml
+
+remove-ecr-build-user: guard-account guard-SERVICE_NAME
+	@account=$(account) SERVICE_NAME=$(SERVICE_NAME) poetry run ansible-playbook -i local remove-ecr-build-user.yml
+
+create-api-deployment-pre-reqs: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-account
+	@temp_out_dir=$(temp_out_dir) SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local create-api-deployment-pre-reqs.yml
+
+create-api-deployment-dns-entry: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-account
+	@temp_out_dir=$(temp_out_dir) SERVICE_NAME=$(SERVICE_NAME) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local create-api-deployment-dns-entry.yml

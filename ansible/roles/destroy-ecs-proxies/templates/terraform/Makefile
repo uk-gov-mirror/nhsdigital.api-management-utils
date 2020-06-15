@@ -35,7 +35,7 @@ run:
 init: guard-workspace
 	@ if [ $(init) -eq 1 ]; then \
 		TF_PLUGIN_CACHE_DIR="$$HOME/.terraform.d/plugin-cache" terraform init $(vars) $(backend); \
-		if terraform workspace list | grep $(workspace); then terraform workspace select $(workspace); else terraform workspace new $(workspace); fi; \
+		if terraform workspace list | grep -e $(workspace)$$; then terraform workspace select $(workspace); else terraform workspace new $(workspace); fi; \
 	fi
 
 clean:

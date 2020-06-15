@@ -1,0 +1,19 @@
+- name: build-ecr-images
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
+
+  pre_tasks:
+
+    - name: check SERVICE_NAME
+      fail:
+        msg: "SERVICE_NAME not set"
+      when: not SERVICE_NAME
+
+
+  roles:
+    - setup-facts
+    - create-ecr-build-user

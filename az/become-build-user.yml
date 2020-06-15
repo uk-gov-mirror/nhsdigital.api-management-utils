@@ -23,6 +23,3 @@ steps:
       aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${SERVICE_NAME}/aws_config --query SecretString --output text > ~/.aws/config
       chmod 600 ~/.aws/config
     displayName: "Become build user"
-
-
-

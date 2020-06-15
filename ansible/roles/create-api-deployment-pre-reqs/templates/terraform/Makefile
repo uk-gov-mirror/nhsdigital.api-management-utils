@@ -44,7 +44,7 @@ clean:
 	rm -r terraform.tfstate.d 2>/dev/null | true
 	rm errored.tfstate 2>/dev/null | true
 
-echo:
+echo: vars
 	@echo account: $(account)
 	@echo workspace: $(workspace)
 
