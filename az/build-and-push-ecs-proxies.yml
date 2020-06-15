@@ -13,6 +13,7 @@ parameters:
 steps:
 
   - bash: |
+      source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       CONTAINER_VARS_FILE="$(realpath \"${{ parameters.env_vars_dir }}\")" \
       build_label=${build_label} SERVICE_NAME=${SERVICE_NAME} \
