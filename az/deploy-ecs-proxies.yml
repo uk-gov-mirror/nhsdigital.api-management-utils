@@ -1,8 +1,8 @@
 
 parameters:
-  - name: 'container_vars'
+  - name: 'proxy_vars'
     type: string
-    default: 'ecs-proxies-containers.yml'
+    default: 'ecs-proxies-deploy.yml'
   - name: 'env_vars_dir'
     type: string
     default: './'
@@ -15,7 +15,8 @@ steps:
   - bash: |
       source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
-      CONTAINER_VARS_FILE="$(realpath ${{ parameters.container_vars }})" \
+      PROXY_VARS_FILE="$(realpath ${{ parameters.proxy_vars }})" \
+      SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
       make -C ${{ parameters.utils_dir }}/ansible build-ecs-proxies
     displayName: build ecs proxies
 
