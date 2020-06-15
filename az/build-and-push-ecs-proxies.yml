@@ -14,7 +14,7 @@ steps:
 
   - bash: |
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
-      CONTAINER_VARS="$(realpath ${{ parameters.env_vars_dir }})" \
+      CONTAINER_VARS_FILE="$(realpath \"${{ parameters.env_vars_dir }}\")" \
       build_label=${build_label} SERVICE_NAME=${SERVICE_NAME} \
       make -C ${{ parameters.utils_dir }}/ansible build-ecs-proxies
     displayName: build ecs proxies
