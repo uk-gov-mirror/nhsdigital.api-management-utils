@@ -5,22 +5,22 @@ variable "account" {
 }
 
 variable "profile" {
-  type = string
+  type        = string
   description = "aws profile for remote state"
 }
 
 variable "workspace" {
-  type = string
+  type        = string
   description = "terraform workspace required for management remote state"
 }
 
 variable "state_bucket" {
-  type = string
+  type        = string
   description = "terraform state bucket"
 }
 
 variable "service_name" {
-  type = string
+  type        = string
   description = "The name of the apigee environment to deploy to"
 }
 
@@ -29,11 +29,11 @@ variable "apigee_environment" {
 }
 
 variable "namespace" {
-  type = string
+  type        = string
   description = "String appended to the end of proxy and product names to allow namespaced deploys, for PRs and such"
 }
 
 variable "build_label" {
-  type = string
+  type        = string
   description = "docker container label"
 }

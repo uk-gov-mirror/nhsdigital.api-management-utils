@@ -18,7 +18,9 @@
     out_dir: "{{ lookup('env', 'temp_out_dir') + '/_deploy' if lookup('env', 'temp_out_dir') else temp_dir.path }}"
 
 - name: clean out dir
-  shell: "rm -r {{ out_dir }}/* || true"
+  file:
+    path: "{{ out_dir }}"
+    state: absent
   when: out_dir != temp_dir.path
 
 - name: template terraform
@@ -41,13 +43,13 @@
       when: item.state == 'file'
 
     - name: terraform plan
-      shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -out tfplan.out'"
+      shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -out tfplan.out'" # noqa 305
       register: tfplan
       failed_when: tfplan.rc not in (0, 2)
       when: not do_not_terraform
 
     - name: terraform apply
-      shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color --auto-approve tfplan.out'"
+      shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color --auto-approve tfplan.out'" # noqa 305
       register: tfapply
       when: not do_not_terraform
 

@@ -3,12 +3,14 @@
   command: >
     {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
     --service {{ namespaced_name }} --desired-count 0
+  changed_when: yes
 
 - name: list tasks
   command: >
     {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
     --service {{ namespaced_name }} --query taskArns
   register: list_tasks
+  changed_when: no
 
 - name: parse tasks
   set_fact:
@@ -19,6 +21,7 @@
     {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
   with_items: "{{ task_arns }}"
   no_log: true
+  changed_when: yes
 
 - name: create temporary directory
   tempfile:
@@ -45,7 +48,7 @@
       when: item.state == 'file'
 
     - name: terraform destroy
-      shell: "make -C {{ temp_dir.path }}/terraform apply args='-no-color --auto-approve' tf-command=destroy"
+      shell: "make -C {{ temp_dir.path }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
       register: tfapply
 
   rescue:

@@ -15,7 +15,7 @@ steps:
   - bash: |
       source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
-      CONTAINER_VARS_FILE="$(realpath \"${{ parameters.env_vars_dir }}\")" \
+      CONTAINER_VARS_FILE="$(realpath ${{ parameters.container_vars }})" \
       make -C ${{ parameters.utils_dir }}/ansible build-ecs-proxies
     displayName: build ecs proxies
 

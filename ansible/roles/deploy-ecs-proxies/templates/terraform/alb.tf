@@ -9,7 +9,7 @@ resource "aws_alb_target_group" "service" {
 
   health_check {
     matcher = local.exposed_service.health_check.matcher
-    path = local.exposed_service.health_check.path
+    path    = local.exposed_service.health_check.path
   }
 
   tags = local.common_tags
