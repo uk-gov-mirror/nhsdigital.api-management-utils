@@ -18,6 +18,7 @@ steps:
       echo export build_label=\"$(Build.BuildId)-sha${commit_hash}\" >> ${outfile}
       echo export PR_NUMBER=\"$(System.PullRequest.PullRequestNumber 2>/dev/null || true)\" >> ${outfile}
       echo export SERVICE_NAME=\"${{ parameters.service_name }}\" >> ${outfile}
+      cat ${outfile}
     displayName: output build env vars for artifact
 
 
