@@ -6,9 +6,9 @@
   vars:
     SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
-    _NAMESPACE: "{{ lookup('env','_NAMESPACE') }}"
+    PR_NUMBER: "{{ lookup('env','PR_NUMBER') }}"
     account:  "{{ lookup('env','account') }}"
-    aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}{{ '-' + _NAMESPACE if _NAMESPACE else '' }}"
+    aws_profile: "apm_{{ account }}"
 
 
   pre_tasks:

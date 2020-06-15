@@ -1,5 +1,5 @@
 ---
 service_base_path: "{{ SERVICE_BASE_PATH | regex_replace('^\\/|\\/$', '') }}"
-sub_workspace: "{{ ':' + _NAMESPACE if _NAMESPACE else '' }}"
+sub_workspace: "{{ ':pr-' + PR_NUMBER if PR_NUMBER else '' }}"
 workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
-namespaced_name: "{{service_name}}{{ '-' + _NAMESPACE if _NAMESPACE else '' }}"
+namespaced_name: "{{service_name}}{{ '-pr-' + PR_NUMBER if PR_NUMBER else '' }}"

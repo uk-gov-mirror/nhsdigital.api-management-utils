@@ -1,6 +1,6 @@
 
 data "aws_iam_role" "ecs-execution-role" {
-  name = "apis-ecs-execution-role-${local.env_namespaced_name}"
+  name = "apis-ecs-x-role-${local.env_service_name}"
 }
 
 resource "aws_ecs_task_definition" "service" {

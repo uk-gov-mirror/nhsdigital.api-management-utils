@@ -6,6 +6,7 @@ data "aws_region" "current" {}
 locals {
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
+  env_service_name = "${var.apigee_environment}-${var.service_name}"
   namespaced_name = "${var.service_name}${var.namespace == "" ? "" : "-"}${var.namespace}"
   env_namespaced_name = "${var.apigee_environment}-${local.namespaced_name}"
 

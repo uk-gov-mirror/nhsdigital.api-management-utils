@@ -44,10 +44,12 @@
       shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -out tfplan.out'"
       register: tfplan
       failed_when: tfplan.rc not in (0, 2)
+      when: not do_not_terraform
 
     - name: terraform apply
       shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color --auto-approve tfplan.out'"
       register: tfapply
+      when: not do_not_terraform
 
   rescue:
     - name: output plan

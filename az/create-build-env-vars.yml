@@ -16,7 +16,7 @@ steps:
       echo export commit_hash=\"${commit_hash}\" > ${outfile}
       # sha prefix is required docker gets upset if names contain -0 iirc
       echo export build_label=\"$(Build.BuildId)-sha${commit_hash}\" >> ${outfile}
-      echo export pr_number=\"$(System.PullRequest.PullRequestNumber 2>/dev/null || true)\" >> ${outfile}
+      echo export PR_NUMBER=\"$(System.PullRequest.PullRequestNumber 2>/dev/null || true)\" >> ${outfile}
       echo export SERVICE_NAME=\"${{ parameters.service_name }}\" >> ${outfile}
     displayName: output build env vars for artifact
 

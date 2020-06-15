@@ -1,12 +1,24 @@
 
 - name: scale down
   command: >
-    {{ aws_cmd }} ecs update-service --desired-count 0
-    --cluster apis-{{ apigee_environment }} --service {{ namespaced_name }}
+    {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
+    --service {{ namespaced_name }} --desired-count 0
 
-- name: wait 5
-  pause:
-    seconds: 15
+- name: list tasks
+  command: >
+    {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
+    --service {{ namespaced_name }} --query taskArns
+  register: list_tasks
+
+- name: parse tasks
+  set_fact:
+    task_arns: "{{ list_tasks.stdout | from_json }}"
+
+- name: stop tasks
+  command: >
+    {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
+  with_items: "{{ task_arns }}"
+  no_log: true
 
 - name: create temporary directory
   tempfile:

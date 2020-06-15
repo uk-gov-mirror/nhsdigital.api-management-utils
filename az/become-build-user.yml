@@ -1,0 +1,28 @@
+
+parameters:
+  - name: 'env_vars_dir'
+    type: string
+    default: './'
+
+steps:
+
+  - task: DownloadSecureFile@1
+    name: aws_config
+    inputs:
+      secureFile: ptl_aws_config
+
+  - bash: |
+      mkdir -p ~/.aws
+      mv $(aws_config.secureFilePath) ~/.aws/config
+      chmod 600 ~/.aws/config
+    displayName: "setup aws config"
+
+  - bash: |
+      source $HOME/.poetry/env
+      source "${{ parameters.env_vars_dir }}/.build_env_vars"
+      aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${SERVICE_NAME}/aws_config --query SecretString --output text > ~/.aws/config
+      chmod 600 ~/.aws/config
+    displayName: build ecs proxies
+
+
+

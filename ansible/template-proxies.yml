@@ -8,8 +8,12 @@
   vars:
     PROXIES_DIR: "{{ lookup('env','PROXIES_DIR') }}"
     SERVICE_BASE_PATH: "{{ lookup('env','SERVICE_BASE_PATH') }}"
+    SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis{{ '' if APIGEE_ENVIRONMENT == 'prod' else '.ptl' }}.apim.uk"
+    PR_NUMBER: "{{ lookup('env','PR_NUMBER') }}"
+    APIM_PROXY_HOSTNAME: "{{ SERVICE_NAME }}{{ '-pr-' + PR_NUMBER if PR_NUMBER else '' }}.{{ APIM_BASENAME }}"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
     RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
