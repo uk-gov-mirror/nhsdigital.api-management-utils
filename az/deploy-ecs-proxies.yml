@@ -17,7 +17,7 @@ steps:
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       PROXY_VARS_FILE="$(realpath ${{ parameters.proxy_vars }})" \
       SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
-      make -C ${{ parameters.utils_dir }}/ansible build-ecs-proxies
+      make --no-print-directory -C ${{ parameters.utils_dir }}/ansible deploy-ecs-proxies
     displayName: build ecs proxies
 
 
