@@ -116,6 +116,7 @@ data "aws_iam_policy_document" "deploy-user" {
       "application-autoscaling:DeregisterScalableTarget"
     ]
 
+    # these actions can't be restricted by resource
     resources = [
       "*"
     ]
