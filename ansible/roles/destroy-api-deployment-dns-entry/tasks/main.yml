@@ -1,35 +1,4 @@
 
-- name: scale down
-  command: >
-    {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
-    --service {{ namespaced_name }} --desired-count 0
-  register: scale_down
-  changed_when: yes
-  failed_when: scale_down.rc != 0 and 'ServiceNotActiveException' not in scale_down.stderr and 'ServiceNotFoundException' not in scale_down.stderr
-
-- name: wait for graceful stop
-  pause:
-    seconds: 20
-  when: scale_down.rc == 0
-
-- name: list tasks
-  command: >
-    {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
-    --service {{ namespaced_name }} --query taskArns
-  register: list_tasks
-  changed_when: no
-
-- name: parse tasks
-  set_fact:
-    task_arns: "{{ list_tasks.stdout | from_json }}"
-
-- name: kill tasks
-  command: >
-    {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
-  with_items: "{{ task_arns }}"
-  no_log: true
-  changed_when: yes
-
 - name: create temporary directory
   tempfile:
     state: directory

@@ -28,6 +28,13 @@ deploy-ecs-proxies: guard-build_label guard-service_basename guard-APIGEE_ENVIRO
 destroy-ecs-proxies: guard-service_basename guard-APIGEE_ENVIRONMENT
 	@service_basename=$(service_basename) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local destroy-ecs-proxies.yml
 
+destroy-api-deployment-dns-entry: guard-service_basename guard-APIGEE_ENVIRONMENT
+	@service_basename=$(service_basename) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local destroy-api-deployment-dns-entry.yml
+
+remove-ecs-proxy-deployment: guard-service_basename guard-APIGEE_ENVIRONMENT
+	@service_basename=$(service_basename) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local remove-ecs-proxy-deployment.yml
+
+
 create-api-deployment-user-access-key: guard-account guard-service_basename guard-APIGEE_ENVIRONMENT guard-SERVICE_BASE_PATH
 	@account=$(account) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) service_basename=$(service_basename) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) poetry run ansible-playbook -i local create-api-deployment-user-access-key.yml
 
