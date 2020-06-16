@@ -38,7 +38,8 @@ SANDBOX_ANTIMATCHER = re.compile(".+-internal-qa-sandbox")
 REPO_NAMES = {
     "personal-demographics-service-api": "personal-demographics",
     "identity-service-api": "identity-service",
-    "hello-world-api": "hello-world"
+    "hello-world-api": "hello-world",
+    "electronic-prescription-service-api": "electronic-prescriptions"
 }
 
 
