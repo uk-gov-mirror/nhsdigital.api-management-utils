@@ -15,12 +15,13 @@ steps:
       mkdir -p ~/.aws
       mv $(aws_config.secureFilePath) ~/.aws/config
       chmod 600 ~/.aws/config
+      ls -al ~/.aws/config
     displayName: "Get AWS config"
 
   - bash: |
       source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
-      aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${SERVICE_NAME}/aws_config --query SecretString --output text > ~/.aws/config
+      poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${SERVICE_NAME}/aws_config --query SecretString --output text > ~/.aws/config
       chmod 600 ~/.aws/config
     displayName: "Become deployment user"
 

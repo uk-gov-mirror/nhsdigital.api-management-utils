@@ -48,6 +48,45 @@ tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.i
 
 [[package]]
 category = "main"
+description = "Universal Command Line Environment for AWS."
+name = "awscli"
+optional = false
+python-versions = "*"
+version = "1.18.80"
+
+[package.dependencies]
+botocore = "1.17.3"
+docutils = ">=0.10,<0.16"
+rsa = ">=3.1.2,<=3.5.0"
+s3transfer = ">=0.3.0,<0.4.0"
+
+[package.dependencies.PyYAML]
+python = "<3.4.0 || >=3.5.0"
+version = ">=3.10,<5.4"
+
+[package.dependencies.colorama]
+python = "<3.4.0 || >=3.5.0"
+version = ">=0.2.5,<0.4.4"
+
+[[package]]
+category = "main"
+description = "Low-level, data-driven core of boto 3."
+name = "botocore"
+optional = false
+python-versions = "*"
+version = "1.17.3"
+
+[package.dependencies]
+docutils = ">=0.10,<0.16"
+jmespath = ">=0.7.1,<1.0.0"
+python-dateutil = ">=2.1,<3.0.0"
+
+[package.dependencies.urllib3]
+python = "<3.4.0 || >=3.5.0"
+version = ">=1.20,<1.26"
+
+[[package]]
+category = "main"
 description = "Python package for providing Mozilla's CA Bundle."
 name = "certifi"
 optional = false
@@ -65,7 +104,7 @@ version = "3.0.4"
 [[package]]
 category = "main"
 description = "Cross-platform colored terminal text."
-marker = "sys_platform == \"win32\""
+marker = "sys_platform == \"win32\" or python_version != \"3.4\""
 name = "colorama"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -114,6 +153,14 @@ name = "docopt"
 optional = false
 python-versions = "*"
 version = "0.6.2"
+
+[[package]]
+category = "main"
+description = "Docutils -- Python Documentation Utilities"
+name = "docutils"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "0.15.2"
 
 [[package]]
 category = "main"
@@ -239,6 +286,14 @@ version = "1.8.1"
 
 [[package]]
 category = "main"
+description = "ASN.1 types and codecs"
+name = "pyasn1"
+optional = false
+python-versions = "*"
+version = "0.4.8"
+
+[[package]]
+category = "main"
 description = "Python style guide checker"
 name = "pycodestyle"
 optional = false
@@ -300,6 +355,17 @@ testing = ["fields", "hunter", "process-tests (2.0.2)", "six", "pytest-xdist", "
 
 [[package]]
 category = "main"
+description = "Extensions to the standard Python datetime module"
+name = "python-dateutil"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+version = "2.8.1"
+
+[package.dependencies]
+six = ">=1.5"
+
+[[package]]
+category = "main"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
@@ -323,6 +389,17 @@ urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
+
+[[package]]
+category = "main"
+description = "Pure-Python RSA implementation"
+name = "rsa"
+optional = false
+python-versions = "*"
+version = "3.4.2"
+
+[package.dependencies]
+pyasn1 = ">=0.1.3"
 
 [[package]]
 category = "main"
@@ -350,6 +427,17 @@ name = "ruamel.yaml.clib"
 optional = false
 python-versions = "*"
 version = "0.2.0"
+
+[[package]]
+category = "main"
+description = "An Amazon S3 Transfer Manager"
+name = "s3transfer"
+optional = false
+python-versions = "*"
+version = "0.3.3"
+
+[package.dependencies]
+botocore = ">=1.12.36,<2.0a.0"
 
 [[package]]
 category = "main"
@@ -408,7 +496,7 @@ version = "0.57.0"
 six = "*"
 
 [metadata]
-content-hash = "caa2cce2eb9d7070a2c1eaae206272ebd1370cb112c80571d2d497be1f55687b"
+content-hash = "6f717b3437e3b77b27b8fceb2b7096d89c5587e276771ed338f3fb2cd678921d"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -426,6 +514,14 @@ atomicwrites = [
 attrs = [
     {file = "attrs-19.3.0-py2.py3-none-any.whl", hash = "sha256:08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c"},
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
+]
+awscli = [
+    {file = "awscli-1.18.80-py2.py3-none-any.whl", hash = "sha256:05be15e54d4d0a650814d9cb570b0870baf2011a4bfb2a74073237f7a707f470"},
+    {file = "awscli-1.18.80.tar.gz", hash = "sha256:53accac94383af4559853f1bcd6f71f1e96d42f9b4147d9e4208810a18cd2914"},
+]
+botocore = [
+    {file = "botocore-1.17.3-py2.py3-none-any.whl", hash = "sha256:0ad4fb7b731e924490305584f7dcfd3e9fe955b307392b054a3d132a902a2528"},
+    {file = "botocore-1.17.3.tar.gz", hash = "sha256:13f4d92589ae9bd8c2c5ce8ea2f59d01a0ac4c14e9f99772ee4d1eb6cf9a3357"},
 ]
 certifi = [
     {file = "certifi-2020.4.5.2-py2.py3-none-any.whl", hash = "sha256:9cd41137dc19af6a5e03b630eefe7d1f458d964d406342dd3edf625839b944cc"},
@@ -482,6 +578,11 @@ docker-pycreds = [
 ]
 docopt = [
     {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
+]
+docutils = [
+    {file = "docutils-0.15.2-py2-none-any.whl", hash = "sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827"},
+    {file = "docutils-0.15.2-py3-none-any.whl", hash = "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"},
+    {file = "docutils-0.15.2.tar.gz", hash = "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"},
 ]
 flake8 = [
     {file = "flake8-3.8.3-py2.py3-none-any.whl", hash = "sha256:15e351d19611c887e482fb960eae4d44845013cc142d42896e9862f775d8cf5c"},
@@ -574,6 +675,21 @@ py = [
     {file = "py-1.8.1-py2.py3-none-any.whl", hash = "sha256:c20fdd83a5dbc0af9efd622bee9a5564e278f6380fffcacc43ba6f43db2813b0"},
     {file = "py-1.8.1.tar.gz", hash = "sha256:5e27081401262157467ad6e7f851b7aa402c5852dbcb3dae06768434de5752aa"},
 ]
+pyasn1 = [
+    {file = "pyasn1-0.4.8-py2.4.egg", hash = "sha256:fec3e9d8e36808a28efb59b489e4528c10ad0f480e57dcc32b4de5c9d8c9fdf3"},
+    {file = "pyasn1-0.4.8-py2.5.egg", hash = "sha256:0458773cfe65b153891ac249bcf1b5f8f320b7c2ce462151f8fa74de8934becf"},
+    {file = "pyasn1-0.4.8-py2.6.egg", hash = "sha256:5c9414dcfede6e441f7e8f81b43b34e834731003427e5b09e4e00e3172a10f00"},
+    {file = "pyasn1-0.4.8-py2.7.egg", hash = "sha256:6e7545f1a61025a4e58bb336952c5061697da694db1cae97b116e9c46abcf7c8"},
+    {file = "pyasn1-0.4.8-py2.py3-none-any.whl", hash = "sha256:39c7e2ec30515947ff4e87fb6f456dfc6e84857d34be479c9d4a4ba4bf46aa5d"},
+    {file = "pyasn1-0.4.8-py3.1.egg", hash = "sha256:78fa6da68ed2727915c4767bb386ab32cdba863caa7dbe473eaae45f9959da86"},
+    {file = "pyasn1-0.4.8-py3.2.egg", hash = "sha256:08c3c53b75eaa48d71cf8c710312316392ed40899cb34710d092e96745a358b7"},
+    {file = "pyasn1-0.4.8-py3.3.egg", hash = "sha256:03840c999ba71680a131cfaee6fab142e1ed9bbd9c693e285cc6aca0d555e576"},
+    {file = "pyasn1-0.4.8-py3.4.egg", hash = "sha256:7ab8a544af125fb704feadb008c99a88805126fb525280b2270bb25cc1d78a12"},
+    {file = "pyasn1-0.4.8-py3.5.egg", hash = "sha256:e89bf84b5437b532b0803ba5c9a5e054d21fec423a89952a74f87fa2c9b7bce2"},
+    {file = "pyasn1-0.4.8-py3.6.egg", hash = "sha256:014c0e9976956a08139dc0712ae195324a75e142284d5f87f1a87ee1b068a359"},
+    {file = "pyasn1-0.4.8-py3.7.egg", hash = "sha256:99fcc3c8d804d1bc6d9a099921e39d827026409a58f2a720dcdb89374ea0c776"},
+    {file = "pyasn1-0.4.8.tar.gz", hash = "sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba"},
+]
 pycodestyle = [
     {file = "pycodestyle-2.6.0-py2.py3-none-any.whl", hash = "sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367"},
     {file = "pycodestyle-2.6.0.tar.gz", hash = "sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e"},
@@ -594,6 +710,10 @@ pytest-cov = [
     {file = "pytest-cov-2.10.0.tar.gz", hash = "sha256:1a629dc9f48e53512fcbfda6b07de490c374b0c83c55ff7a1720b3fccff0ac87"},
     {file = "pytest_cov-2.10.0-py2.py3-none-any.whl", hash = "sha256:6e6d18092dce6fad667cd7020deed816f858ad3b49d5b5e2b1cc1c97a4dba65c"},
 ]
+python-dateutil = [
+    {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
+    {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
+]
 pyyaml = [
     {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},
     {file = "PyYAML-5.3.1-cp27-cp27m-win_amd64.whl", hash = "sha256:240097ff019d7c70a4922b6869d8a86407758333f02203e0fc6ff79c5dcede76"},
@@ -610,6 +730,10 @@ pyyaml = [
 requests = [
     {file = "requests-2.23.0-py2.py3-none-any.whl", hash = "sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee"},
     {file = "requests-2.23.0.tar.gz", hash = "sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6"},
+]
+rsa = [
+    {file = "rsa-3.4.2-py2.py3-none-any.whl", hash = "sha256:43f682fea81c452c98d09fc316aae12de6d30c4b5c84226642cf8f8fd1c93abd"},
+    {file = "rsa-3.4.2.tar.gz", hash = "sha256:25df4e10c263fb88b5ace923dd84bf9aa7f5019687b5e55382ffcdb8bede9db5"},
 ]
 "ruamel.yaml" = [
     {file = "ruamel.yaml-0.16.10-py2.py3-none-any.whl", hash = "sha256:0962fd7999e064c4865f96fb1e23079075f4a2a14849bcdc5cdba53a24f9759b"},
@@ -635,6 +759,10 @@ requests = [
     {file = "ruamel.yaml.clib-0.2.0-cp37-cp37m-win_amd64.whl", hash = "sha256:b1b7fcee6aedcdc7e62c3a73f238b3d080c7ba6650cd808bce8d7761ec484070"},
     {file = "ruamel.yaml.clib-0.2.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:be018933c2f4ee7de55e7bd7d0d801b3dfb09d21dad0cce8a97995fd3e44be30"},
     {file = "ruamel.yaml.clib-0.2.0.tar.gz", hash = "sha256:b66832ea8077d9b3f6e311c4a53d06273db5dc2db6e8a908550f3c14d67e718c"},
+]
+s3transfer = [
+    {file = "s3transfer-0.3.3-py2.py3-none-any.whl", hash = "sha256:2482b4259524933a022d59da830f51bd746db62f047d6eb213f2f8855dcb8a13"},
+    {file = "s3transfer-0.3.3.tar.gz", hash = "sha256:921a37e2aefc64145e7b73d50c71bb4f26f46e4c9f414dc648c6245ff92cf7db"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
