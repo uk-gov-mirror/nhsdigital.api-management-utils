@@ -4,13 +4,13 @@
   gather_facts: yes
 
   vars:
-    SERVICE_NAME:  "{{ lookup('env','SERVICE_NAME') }}"
+    service_basename:  "{{ lookup('env','service_basename') }}"
 
   pre_tasks:
-    - name: check SERVICE_NAME
+    - name: check service_basename
       fail:
-        msg: "SERVICE_NAME not set"
-      when: not SERVICE_NAME
+        msg: "service_basename not set"
+      when: not service_basename
 
   roles:
     - setup-facts

@@ -4,13 +4,13 @@
   gather_facts: yes
 
   vars:
-    SERVICE_NAME: "{{ lookup('env','SERVICE_NAME') }}"
+    service_basename: "{{ lookup('env','service_basename') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     PR_NUMBER: "{{ lookup('env','PR_NUMBER') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
     apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     account:  "{{ lookup('env','account') }}"
-    aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}"
+    aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ service_basename | lower }}"
 
 
   pre_tasks:
@@ -20,10 +20,10 @@
         msg: "account not set"
       when: not account
 
-    - name: check SERVICE_NAME
+    - name: check service_basename
       fail:
-        msg: "SERVICE_NAME not set"
-      when: not SERVICE_NAME
+        msg: "service_basename not set"
+      when: not service_basename
 
     - name: check APIGEE_ENVIRONMENT
       fail:
