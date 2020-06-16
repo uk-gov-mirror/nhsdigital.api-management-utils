@@ -6,34 +6,35 @@ parameters:
 
 steps:
 
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
+
   - task: Cache@2
     displayName: "Cache Utils python Dependencies"
     inputs:
-      key:  nhsd-utils-pyenv | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
+      key:  nhsd-utils-pyenv-3 | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
       path: "${{ parameters.utils_dir }}/.venv"
       restoreKeys: |
-        nhsd-utils-pyenv | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
-        nhsd-utils-pyenv | $(Agent.OS)
+        nhsd-utils-pyenv-3 | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
+        nhsd-utils-pyenv-3 | $(Agent.OS)
 
   - bash: |
       if ! hash pip3 2>/dev/null; then
         sudo apt-get -yq install python3-pip
       fi
-      if ! dpkg -l | grep python3-venv > /dev/null; then
-        sudo apt-get -yq install python3-venv
-      fi
-      pip3 install --upgrade pip setuptools
-      if ! python --version | grep 'Python 3' > /dev/null; then
-        sudo unlink /usr/bin/python
-        sudo ln -s /usr/bin/python3 /usr/bin/python
-      fi
+      #      if ! dpkg -l | grep python3-venv > /dev/null; then
+      #        sudo apt-get -yq install python3-venv
+      #      fi
+      pip3 install --upgrade pip setuptools virtualenv
       if [ -f $HOME/.poetry/env ]; then
         source $HOME/.poetry/env
       fi
       if ! hash poetry 2>/dev/null; then
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3
       fi
-      make --no-print-directory -C ${{ parameters.utils_dir }} install
+      cd ${{ parameters.utils_dir }}
+      make install
     displayName: "Install Utils dependencies"
 
 
