@@ -2,7 +2,7 @@
 build_label: "{{ lookup('env', 'build_label') }}"
 images: "{{ docker_service | json_query('[].name') | unique | sort }}"
 service_base_path: "{{ SERVICE_BASE_PATH | regex_replace('^\\/|\\/$', '') }}"
-sub_workspace: "{{ ':pr-' + PR_NUMBER if PR_NUMBER else '' }}"
+sub_workspace: "{{ ':pr-' + pr_number if pr_number else '' }}"
 workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
 service_cpu: "{{ docker_service_cpu | default(256) }}"
 service_memory: "{{ docker_service_memory | default(512) }}"

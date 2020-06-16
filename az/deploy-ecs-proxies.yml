@@ -13,7 +13,6 @@ parameters:
 steps:
 
   - bash: |
-      source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       PROXY_VARS_FILE="$(realpath ${{ parameters.proxy_vars }})" \
       SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \

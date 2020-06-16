@@ -6,7 +6,7 @@
   vars:
     service_basename: "{{ lookup('env','service_basename') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
-    PR_NUMBER: "{{ lookup('env','PR_NUMBER') }}"
+    pr_number: "{{ lookup('env','pr_number') }}"
     account:  "{{ lookup('env','account') }}"
     aws_profile: "apm_{{ account }}"
 

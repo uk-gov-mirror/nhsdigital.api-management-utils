@@ -22,7 +22,6 @@ steps:
     displayName: "Get AWS config"
 
   - bash: |
-      source $HOME/.poetry/env
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       cd ${{ parameters.utils_dir }}
       poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${service_basename}/aws_config --query SecretString --output text > ~/.aws/config.tmp
