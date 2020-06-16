@@ -1,4 +1,4 @@
-- name: build-ecr-images
+- name: "deploy ecs proxies"
   hosts: 127.0.0.1
   connection: local
   gather_facts: yes
@@ -11,7 +11,6 @@
     apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     account:  "{{ lookup('env','account') }}"
     aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ SERVICE_NAME | lower }}"
-
 
 
   pre_tasks:
