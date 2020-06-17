@@ -1,0 +1,5 @@
+
+service_name: "{{ service_basename|lower }}"
+build_user_name: "build-{{ service_name }}"
+build_user_secret: "{{ account }}/api-deploy-users/{{ build_user_name }}/aws_config"
+

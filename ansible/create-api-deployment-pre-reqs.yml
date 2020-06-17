@@ -1,0 +1,34 @@
+- name: build-ecr-images
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    service_basename: "{{ lookup('env','service_basename') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+    pr_number: "{{ lookup('env','pr_number') }}"
+    account:  "{{ lookup('env','account') }}"
+    aws_profile: "apm_{{ account }}"
+
+  pre_tasks:
+
+    - name: check account
+      fail:
+        msg: "account not set"
+      when: not account
+
+    - name: check service_basename
+      fail:
+        msg: "service_basename not set"
+      when: not service_basename
+
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+  roles:
+    - setup-facts
+    - create-api-deployment-pre-reqs
+    - create-api-deployment-user-access-key
+    - create-api-deployment-dns-entry

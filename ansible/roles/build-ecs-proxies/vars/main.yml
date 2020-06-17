@@ -1,0 +1,4 @@
+---
+build_label: "{{ lookup('env', 'build_label') }}"
+images: "{{ docker_containers | json_query('[].name') | unique | sort }}"
+base_dir: "{{ playbook_dir }}/../.."

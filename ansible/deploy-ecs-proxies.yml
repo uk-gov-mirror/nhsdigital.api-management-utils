@@ -1,0 +1,39 @@
+- name: "deploy ecs proxies"
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    service_basename: "{{ lookup('env','service_basename') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+    pr_number: "{{ lookup('env','pr_number') }}"
+    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
+    account:  "{{ lookup('env','account') }}"
+    aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ service_basename | lower }}"
+
+
+  pre_tasks:
+
+    - name: check account
+      fail:
+        msg: "account not set"
+      when: not account
+
+    - name: check service_basename
+      fail:
+        msg: "service_basename not set"
+      when: not service_basename
+
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+    - name: include vars
+      include_vars:
+        file: "{{ lookup('env', 'PROXY_VARS_FILE') | expandvars | expanduser | realpath }}"
+
+  roles:
+    - setup-facts
+    - deploy-ecs-proxies

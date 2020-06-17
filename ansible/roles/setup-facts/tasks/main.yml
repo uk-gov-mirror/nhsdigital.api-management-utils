@@ -1,0 +1,22 @@
+
+- name: set aws_facts fact
+  set_fact:
+    aws_profile: "{{ aws_profile }}"
+    aws_region: "{{ aws_region }}"
+    aws_cmd: "{{ aws_cmd }}"
+    service_name: "{{ service_name }}"
+    apigee_environment: "{{ (APIGEE_ENVIRONMENT | default('')) }}"
+
+- name: get aws account_id
+  command: "{{ aws_cmd }} sts get-caller-identity --query Account --output text"
+  register: account_id
+  changed_when: false
+
+- name: set aws_facts fact
+  set_fact:
+    aws_account_id: "{{ account_id.stdout }}"
+    ecr_registry: "{{ account_id.stdout }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
+
+- name: setup apigee_orgs
+  set_fact:
+    apigee_orgs: "{{ [env_apigee_org] }}"

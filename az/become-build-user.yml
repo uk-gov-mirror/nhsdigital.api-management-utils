@@ -1,0 +1,29 @@
+
+parameters:
+  - name: 'env_vars_dir'
+    type: string
+    default: './'
+  - name: 'utils_dir'
+    type: string
+    default: 'utils'
+
+steps:
+
+  - task: DownloadSecureFile@1
+    name: aws_config
+    inputs:
+      secureFile: ptl_aws_config
+
+  - bash: |
+      mkdir -p ~/.aws
+      mv $(aws_config.secureFilePath) ~/.aws/config
+      chmod 400 ~/.aws/config
+    displayName: "Get AWS config"
+
+  - bash: |
+      source "${{ parameters.env_vars_dir }}/.build_env_vars"
+      cd ${{ parameters.utils_dir }}
+      poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${service_basename}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+      mv -f ~/.aws/config.tmp ~/.aws/config
+      chmod 400 ~/.aws/config
+    displayName: "Become build user"

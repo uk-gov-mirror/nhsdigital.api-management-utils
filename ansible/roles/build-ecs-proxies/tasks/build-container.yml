@@ -1,0 +1,22 @@
+- name: set image_name fact
+  set_fact:
+    image_name: "{{ ecr_registry }}/{{ item }}:{{ build_label }}"
+
+- name: pull latest if exists - to ensure cache  {{ item }}
+  docker_image:
+    name: "{{ ecr_registry }}/{{ item }}:latest"
+    source: pull
+  ignore_errors: true
+  no_log: true
+
+- name: build and push ecr image {{ item }}
+  docker_image:
+    name: "{{ image_name }}"
+    build:
+      path: "{{ base_dir }}/{{ images_map[item].path }}"
+      dockerfile: "{{ base_dir }}/{{ images_map[item].dockerfile }}"
+      pull: yes
+    source: build
+    force_source: yes
+    push: yes
+    timeout: 300

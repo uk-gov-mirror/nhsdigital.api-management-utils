@@ -1,0 +1,40 @@
+
+- name: check build_label
+  fail: msg="you must specify an build_label"
+  when: not build_label
+
+- name: get current ecr repos
+  command: "{{ aws_cmd }} ecr describe-repositories --query 'repositories[].repositoryName'"
+  register: current_repos
+  changed_when: no
+
+- name: set variables
+  set_fact:
+    current_repos: "{{ current_repos.stdout | from_json }}"
+    images_map: "{{ dict() }}"
+
+- name: create repos map
+  set_fact:
+    images_map: "{{ images_map | combine({item['name']: item}) }}"
+  with_items: '{{ docker_containers }}'
+
+- name: set variables
+  set_fact:
+    new_repos: "{{ images | difference(current_repos) }}"
+
+- name: create new repos
+  command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_name }}"
+  with_items: "{{ new_repos }}"
+  when: new_repos
+
+#- name: grant cross accout policy
+#  command: "{{ aws_cmd }} ecr set-repository-policy --repository-name {{ item }} --policy-text '{{ cross_account_policy }}'"
+#  with_items: "{{ new_repos }}"
+
+- name: ecr login
+  shell: "eval $({{ aws_cmd }} ecr get-login --no-include-email)"
+  changed_when: no
+
+- name: build and push ecr images
+  include: build-container.yml
+  with_items: "{{ images }}"

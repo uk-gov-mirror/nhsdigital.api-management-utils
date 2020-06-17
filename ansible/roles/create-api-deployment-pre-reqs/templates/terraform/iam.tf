@@ -1,0 +1,262 @@
+data "aws_iam_policy_document" "ecs-tasks-assume-role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ecs-execution-role" {
+
+
+  statement {
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:GetParametersByPath",
+    ]
+
+    resources = [
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/platform-common/splunk/*",
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/api-deployment/${var.service_name}/*"
+    ]
+  }
+
+  statement {
+
+    actions = [
+      "ecr:GetAuthorizationToken"
+    ]
+
+    resources = [
+      "*"
+    ]
+
+  }
+
+  statement {
+
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetRepositoryPolicy",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "s3:GetObject"
+    ]
+
+    resources = [
+      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_name}",
+      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_name}_*",
+      "arn:aws:s3:::${local.aws_ecr_bucket}/*",
+    ]
+
+  }
+
+}
+
+
+resource "aws_iam_role" "ecs-execution-role" {
+  name               = "apis-ecs-x-role-${local.env_service_name}"
+  assume_role_policy = data.aws_iam_policy_document.ecs-tasks-assume-role.json
+
+  tags = {
+    Name   = "apis-ecs-x-role-${local.env_service_name}"
+    source = "terraform"
+  }
+}
+
+resource "aws_iam_role_policy" "ecs-execution-role" {
+  name   = aws_iam_role.ecs-execution-role.name
+  role   = aws_iam_role.ecs-execution-role.name
+  policy = data.aws_iam_policy_document.ecs-execution-role.json
+}
+
+
+resource "aws_iam_role_policy_attachment" "attach_AmazonECSTaskExecutionRolePolicy_to_monitoring-ecs-tasks" {
+  role       = aws_iam_role.ecs-execution-role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+
+resource "aws_iam_user" "deploy-user" {
+  name = "deploy-${local.env_service_name}"
+}
+
+resource "aws_iam_policy" "deploy-user" {
+  name   = "deploy-${local.env_service_name}"
+  policy = data.aws_iam_policy_document.deploy-user.json
+}
+
+resource "aws_iam_user_policy_attachment" "deploy-user" {
+  user       = aws_iam_user.deploy-user.name
+  policy_arn = aws_iam_policy.deploy-user.arn
+}
+
+data "aws_iam_policy_document" "deploy-user" {
+
+
+  statement {
+
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecs:DescribeTaskDefinition",
+      "ec2:DescribeAccountAttributes",
+      "ecs:DeregisterTaskDefinition",
+      "elasticloadbalancing:DescribeTargetGroup*",
+      "elasticloadbalancing:DescribeTags",
+      "elasticloadbalancing:DescribeRules",
+      "application-autoscaling:RegisterScalableTarget",
+      "application-autoscaling:DescribeScalableTargets",
+      "application-autoscaling:DeregisterScalableTarget"
+    ]
+
+    # these actions can't be restricted by resource
+    resources = [
+      "*"
+    ]
+
+  }
+
+  statement {
+    actions = [
+      "s3:ListBucket",
+      "s3:ListBucketVersions",
+      "s3:GetBucketLocation",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.state_bucket}",
+      "arn:aws:dynamodb:${local.region}:${local.account_id}:table/terraform-state-lock"
+
+    ]
+  }
+
+  statement {
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = concat(
+      [
+        "arn:aws:s3:::${var.state_bucket}/env:",
+      ],
+      [for ws in local.workspaces : "arn:aws:s3:::${var.state_bucket}/env:/${ws}/*"]
+    )
+  }
+
+  statement {
+
+    actions = [
+      "s3:PutObject",
+      "iam:GetRole",
+      "iam:PassRole"
+    ]
+
+    resources = concat(
+      [
+        aws_iam_role.ecs-execution-role.arn
+      ],
+      [for ws in local.workspaces : "arn:aws:s3:::${var.state_bucket}/env:/${ws}/deployment/*"]
+    )
+  }
+
+
+  statement {
+
+    actions = [
+      "ecs:RegisterTaskDefinition"
+    ]
+
+    resources = [
+      "*"
+    ]
+
+    condition {
+      test = "StringEquals"
+      values = [
+      var.service_name]
+      variable = "aws:RequestTag/api-service"
+    }
+
+    condition {
+      test = "StringEquals"
+      values = [
+      var.apigee_environment]
+      variable = "aws:RequestTag/api-environment"
+    }
+
+  }
+
+  statement {
+
+    actions = [
+      "elasticloadbalancing:*TargetGroup*",
+      "elasticloadbalancing:AddTags",
+      "elasticloadbalancing:*Rule"
+    ]
+    resources = concat(
+      [
+        "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener/app/apis-public-${var.apigee_environment}/*",
+        "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener-rule/app/apis-public-${var.apigee_environment}/*",
+      ],
+      [for ns in local.env_service_namespaces : "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:targetgroup/${ns}/*"],
+      [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"]
+    )
+  }
+
+  statement {
+
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:UpdateService",
+      "ecs:DeleteService"
+    ]
+
+    resources = [
+      for ns in local.service_namespaces :
+      "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      values   = [local.ecs_cluster.arn]
+      variable = "ecs:cluster"
+    }
+
+  }
+
+  statement {
+
+    actions = [
+      "ecs:CreateService"
+    ]
+
+    resources = [
+      for ns in local.service_namespaces :
+      "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      values   = [local.ecs_cluster.arn]
+      variable = "ecs:cluster"
+    }
+
+    condition {
+      test     = "StringLike"
+      values   = [for ns in local.env_service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:task-definition/${ns}:*"]
+      variable = "ecs:task-definition"
+    }
+
+  }
+
+}

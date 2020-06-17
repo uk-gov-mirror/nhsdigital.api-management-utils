@@ -1,0 +1,35 @@
+
+parameters:
+  - name: 'utils_dir'
+    type: string
+    default: 'utils'
+
+steps:
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
+
+  - task: Cache@2
+    displayName: "Cache Utils python Dependencies"
+    inputs:
+      key:  nhsd-utils-pyenv-3 | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
+      path: "${{ parameters.utils_dir }}/.venv"
+      restoreKeys: |
+        nhsd-utils-pyenv-3 | $(Agent.OS) | ${{ parameters.utils_dir }}/poetry.lock
+        nhsd-utils-pyenv-3 | $(Agent.OS)
+
+  - bash: |
+      if ! hash pip3 2>/dev/null; then
+        sudo apt-get -yq install python3-pip
+      fi
+      pip3 install --upgrade pip setuptools virtualenv
+      if ! hash poetry 2>/dev/null; then
+        pip3 install poetry
+      fi
+      cd ${{ parameters.utils_dir }}
+      make install
+    displayName: "Install Utils dependencies"
+
+
+

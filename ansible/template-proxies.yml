@@ -8,20 +8,25 @@
   vars:
     PROXIES_DIR: "{{ lookup('env','PROXIES_DIR') }}"
     SERVICE_BASE_PATH: "{{ lookup('env','SERVICE_BASE_PATH') }}"
+    service_basename: "{{ lookup('env','service_basename') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis{{ '' if APIGEE_ENVIRONMENT == 'prod' else '.ptl' }}.apim.uk"
+    pr_number: "{{ lookup('env','pr_number') }}"
+    APIM_PROXY_HOSTNAME: "{{ service_basename }}{{ '-pr-' + pr_number if pr_number else '' }}.{{ APIM_BASENAME }}"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
     RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
 
   tasks:
-    - debug:
-        var: APIGEE_HOSTNAME
-    - stat:
+
+    - name: stat proxies dir
+      stat:
         path: "{{ PROXIES_DIR }}"
       register: st
 
-    - fail:
+    - name: check dir exists
+      fail:
         msg: "{{ PROXIES_DIR }} does not exist"
       when: not st.stat.exists
 
@@ -31,23 +36,30 @@
         suffix: proxies
       register: temp_dir
 
-    - debug: var=temp_dir
+    - name: template proxies
+      block:
 
-    - name: move proxies to temp location
-      shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
+        - name: move proxies to temp location
+          shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
 
-    - name: create target directories
-      file:
-        path: "{{ PROXIES_DIR }}/{{ item.path }}"
-        state: directory
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ temp_dir.path }}"
-      when: item.state == 'directory'
+        - name: create target directories
+          file:
+            path: "{{ PROXIES_DIR }}/{{ item.path }}"
+            state: directory
+            mode: '{{ item.mode }}'
+          with_filetree: "{{ temp_dir.path }}"
+          when: item.state == 'directory'
 
-    - name: template proxies files
-      template:
-        src: '{{ item.src }}'
-        dest: "{{ PROXIES_DIR }}/{{ item.path }}"
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ temp_dir.path }}"
-      when: item.state == 'file'
+        - name: template proxies files
+          template:
+            src: '{{ item.src }}'
+            dest: "{{ PROXIES_DIR }}/{{ item.path }}"
+            mode: '{{ item.mode }}'
+          with_filetree: "{{ temp_dir.path }}"
+          when: item.state == 'file'
+
+      always:
+        - name: remove temp dir
+          file:
+            path: "{{ temp_dir.path }}"
+            state: absent
