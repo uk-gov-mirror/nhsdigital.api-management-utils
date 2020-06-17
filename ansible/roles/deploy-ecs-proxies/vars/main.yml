@@ -10,6 +10,7 @@ do_not_terraform: "{{ lookup('env','do_not_terraform') }}"
 
 container_defaults:
   cpu: 0
+  port: 9000
   protocol: "TCP"
   environment: []
   mountPoints: []
