@@ -22,6 +22,11 @@ steps:
 
   - bash: |
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
+      account=ptl make --no-print-directory -C ${{ parameters.utils_dir }}/ansible create-ecr-build-user
+    displayName: "Ensure build user"
+
+  - bash: |
+      source "${{ parameters.env_vars_dir }}/.build_env_vars"
       cd ${{ parameters.utils_dir }}
       poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${service_basename}/aws_config --query SecretString --output text > ~/.aws/config.tmp
       mv -f ~/.aws/config.tmp ~/.aws/config

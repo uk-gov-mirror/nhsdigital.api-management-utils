@@ -2,10 +2,18 @@
   set_fact:
     image_name: "{{ ecr_registry }}/{{ item }}:{{ build_label }}"
 
+- name: find most recent tag
+  command: >
+    {{ aws_cmd }} ecr describe-images --repository-name {{ item }} --filter tagStatus=TAGGED --no-paginate
+    --query 'imageDetails[0].imageTags[0]' --output text
+  register: describe_images
+  changed_when: no
+
 - name: pull latest if exists - to ensure cache  {{ item }}
   docker_image:
-    name: "{{ ecr_registry }}/{{ item }}:latest"
+    name: "{{ ecr_registry }}/{{ item }}:{{ describe_images.stdout }}"
     source: pull
+  when: describe_images.stdout != 'None'
   ignore_errors: true
   no_log: true
 

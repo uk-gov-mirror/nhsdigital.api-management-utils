@@ -4,12 +4,23 @@
     state: directory
   register: temp_dir
 
+- name: set output dir ( allows override with  temp_out_dir )
+  set_fact:
+    out_dir: "{{ lookup('env', 'temp_out_dir') + '/_deploy' if lookup('env', 'temp_out_dir') else temp_dir.path }}"
+
+- name: clean out dir
+  file:
+    path: "{{ out_dir }}"
+    state: absent
+  when: out_dir != temp_dir.path
+
+
 - name: template terraform
   block:
 
     - name: template directories
       file:
-        path: "{{ temp_dir.path }}/{{ item.path }}"
+        path: "{{ out_dir }}/{{ item.path }}"
         state: directory
         mode: '{{ item.mode }}'
       with_filetree: "{{ '../templates' }}"
@@ -18,13 +29,13 @@
     - name: template proxies files
       template:
         src: '{{ item.src }}'
-        dest: "{{ temp_dir.path }}/{{ item.path }}"
+        dest: "{{ out_dir }}/{{ item.path }}"
         mode: '{{ item.mode }}'
       with_filetree: "{{ '../templates' }}"
       when: item.state == 'file'
 
     - name: terraform destroy
-      shell: "make -C {{ temp_dir.path }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
+      shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
       register: tfapply
 
   rescue:
