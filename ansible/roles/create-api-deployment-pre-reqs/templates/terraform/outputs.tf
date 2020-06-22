@@ -18,3 +18,10 @@ output "ecs_cluster_id" {
 output "ecs_sg_id" {
   value = data.terraform_remote_state.account.outputs.apis.sg.apis-ecs-cluster[var.apigee_environment].id
 }
+
+output "security_groups" {
+  value = [
+    data.terraform_remote_state.account.outputs.apis.sg.apis-ecs-cluster[var.apigee_environment].id,
+    aws_security_group.api-deployment.id
+  ]
+}

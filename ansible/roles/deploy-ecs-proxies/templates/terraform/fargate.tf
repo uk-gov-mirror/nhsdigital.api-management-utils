@@ -55,7 +55,7 @@ resource "aws_ecs_service" "service" {
   force_new_deployment               = true
 
   network_configuration {
-    security_groups = [data.terraform_remote_state.pre-reqs.outputs.ecs_sg_id]
+    security_groups = data.terraform_remote_state.pre-reqs.outputs.security_groups
     subnets         = data.terraform_remote_state.pre-reqs.outputs.subnet_ids
   }
 
