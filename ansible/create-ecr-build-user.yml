@@ -5,8 +5,15 @@
 
   vars:
     service_basename: "{{ lookup('env','service_basename') }}"
+    account: "{{ lookup('env','account') }}"
+    aws_profile: "apm_{{ account }}"
 
   pre_tasks:
+
+    - name: check account
+      fail:
+        msg: "account not set"
+      when: not account
 
     - name: check service_basename
       fail:
