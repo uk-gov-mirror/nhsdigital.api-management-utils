@@ -46,7 +46,7 @@
 # TODO: fix for when service basename is different from service name
 - name: ping deployed proxy
   shell:
-    cmd: "curl https://{{ APIGEE_ENVIRONMENT }}.api.service.nhs.uk/{{ SERVICE_NAME }}/_ping"
+    cmd: "curl {{ api_uri }}/_ping"
     warn: false
   register: "proxy_ping_response"
 
