@@ -42,8 +42,6 @@
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
 
 # NOTE: uri isn't used here because for some reason ansible's 'uri' module does not return the body of the request!
-# TODO: fix for prod
-# TODO: fix for when service basename is different from service name
 - name: ping deployed proxy
   shell:
     cmd: "curl {{ api_uri }}/_ping"
