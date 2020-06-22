@@ -1,31 +1,29 @@
-- name: zip proxy directory
-  # Not using archive because we need the -X and -D options for it to produce the same hash every time
-  shell: "cd {{ PROXY_DIR }} && zip -rXD9 /tmp/proxy.zip apiproxy"
+# - name: zip proxy directory
+#   # Not using archive because we need the -X and -D options for it to produce the same hash every time
+#   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /tmp/proxy.zip apiproxy"
 
-- name: calculate proxy zip hash
-  shell: "sha256sum /tmp/proxy.zip | cut -d' ' -f1"
-  register: "hash"
+# - name: calculate proxy zip hash
+#   shell: "sha512sum -b /tmp/proxy.zip | cut -d' ' -f1"
+#   register: "hash"
 
-- name: set proxy_hash
-  set_fact:
-    proxy_hash: "{{ hash.stdout }}"
+# - name: set proxy_hash
+#   set_fact:
+#     proxy_hash: "{{ hash.stdout }}"
 
-# NOTE: this is left here as a caution in case anyone else tries this. Apigee will give you errors with this.
-# Weirdly it's totally fine with curl.
-# - name: upload proxy bundle
-#   uri:
-#     url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
-#     method: "POST"
-#     headers:
-#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-#       Content-Type: "multipart/form-data"
-#     src: "/tmp/proxy.zip"
-
+# NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
 - name: upload proxy bundle
   shell:
     cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/tmp/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
     warn: false
   register: "proxy_upload_response"
+
+# - name: show uploaded proxy hash response
+#   debug:
+#     msg: "{{ (proxy_upload_response.stdout | from_json).manifestVersion }}"
+
+# - name: show hash we got
+#   debug:
+#     msg: "{{ proxy_hash }}"
 
 - name: get revision number of upload
   set_fact:
@@ -43,5 +41,20 @@
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
 
-- name: check deployed proxy is as expected
-  shell: "echo check deployed proxy is as expected"
+# NOTE: uri isn't used here because for some reason ansible's 'uri' module does not return the body of the request!
+# TODO: fix for prod
+# TODO: fix for when service basename is different from service name
+- name: ping deployed proxy
+  shell:
+    cmd: "curl https://{{ APIGEE_ENVIRONMENT }}.api.service.nhs.uk/{{ SERVICE_NAME }}/_ping"
+    warn: false
+  register: "proxy_ping_response"
+
+- name: set proxy_deployed_revision
+  set_fact:
+    proxy_deployed_revision: "{{ (proxy_ping_response.stdout | from_json).revision }}"
+
+- name: check correct revision was deployed
+  fail:
+    msg: "Incorrect revision {{ proxy_deployed_revision }}, was expecting {{ revision }}"
+  when: proxy_deployed_revision != revision
