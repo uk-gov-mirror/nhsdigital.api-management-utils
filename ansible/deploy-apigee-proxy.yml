@@ -24,10 +24,10 @@
         msg: "SERVICE_NAME not set"
       when: not SERVICE_NAME
 
-    - name: check SERVICE_NAME
+    - name: check SERVICE_BASE_PATH
       fail:
-        msg: "SERVICE_NAME not set"
-      when: not SERVICE_NAME
+        msg: "SERVICE_BASE_PATH not set"
+      when: not SERVICE_BASE_PATH
 
     - name: check APIGEE_ENVIRONMENT
       fail:
