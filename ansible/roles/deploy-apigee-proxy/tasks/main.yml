@@ -1,11 +1,16 @@
+- name: create a temp dir for zipping the proxy
+  tempfile:
+    state: directory
+  register: tempdir
+
 - name: zip proxy directory
   # Not using archive because we need the -X and -D options for it to produce the same hash every time
-  shell: "cd {{ PROXY_DIR }} && zip -rXD9 /tmp/proxy.zip apiproxy"
+  shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
 
 # NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
 - name: upload proxy bundle
   shell:
-    cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/tmp/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
+    cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
     warn: false
   register: "proxy_upload_response"
 
