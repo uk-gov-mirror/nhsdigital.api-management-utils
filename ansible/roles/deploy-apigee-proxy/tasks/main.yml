@@ -1,0 +1,47 @@
+- name: create a temp dir for zipping the proxy
+  tempfile:
+    state: directory
+  register: tempdir
+
+- name: zip proxy directory
+  # Not using archive because we need the -X and -D options for it to produce the same hash every time
+  shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
+
+# NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
+- name: upload proxy bundle
+  shell:
+    cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
+    warn: false
+  register: "proxy_upload_response"
+
+- name: get revision number of upload
+  set_fact:
+    revision: "{{ (proxy_upload_response.stdout | from_json).revision }}"
+
+- name: update proxy deployment
+  uri:
+    url: "{{ env_apis_api_uri }}/{{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}/revisions/{{ revision }}/deployments"
+    method: "POST"
+    body:
+      override: true
+      delay: 60
+    body_format: "form-urlencoded"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
+
+# NOTE: uri isn't used here because for some reason ansible's 'uri' module does not return the body of the request!
+- name: ping deployed proxy
+  shell:
+    cmd: "curl {{ api_uri }}/_ping"
+    warn: false
+  register: "proxy_ping_response"
+
+- name: set proxy_deployed_revision
+  set_fact:
+    proxy_deployed_revision: "{{ (proxy_ping_response.stdout | from_json).revision }}"
+
+- name: check correct revision was deployed
+  fail:
+    msg: "Incorrect revision {{ proxy_deployed_revision }}, was expecting {{ revision }}"
+  when: proxy_deployed_revision != revision
