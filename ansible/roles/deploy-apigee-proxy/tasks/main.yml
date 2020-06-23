@@ -1,29 +1,9 @@
-# - name: zip proxy directory
-#   # Not using archive because we need the -X and -D options for it to produce the same hash every time
-#   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /tmp/proxy.zip apiproxy"
-
-# - name: calculate proxy zip hash
-#   shell: "sha512sum -b /tmp/proxy.zip | cut -d' ' -f1"
-#   register: "hash"
-
-# - name: set proxy_hash
-#   set_fact:
-#     proxy_hash: "{{ hash.stdout }}"
-
 # NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
 - name: upload proxy bundle
   shell:
     cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/tmp/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
     warn: false
   register: "proxy_upload_response"
-
-# - name: show uploaded proxy hash response
-#   debug:
-#     msg: "{{ (proxy_upload_response.stdout | from_json).manifestVersion }}"
-
-# - name: show hash we got
-#   debug:
-#     msg: "{{ proxy_hash }}"
 
 - name: get revision number of upload
   set_fact:
