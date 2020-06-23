@@ -8,17 +8,26 @@ parameters:
     default: './'
   - name: 'service_name'
     type: string
+    default: ''
+  - name: 'service_id'
+    type: string
+    default: ''
+  - name: 'utils_dir'
+    type: string
+    default: 'utils'
 steps:
 
   - bash: |
-      outfile="${{ parameters.out_dir }}/.build_env_vars"
-      commit_hash="$(git -C ${{ parameters.source_root }} rev-parse --short HEAD)"
-      echo export commit_hash=\"${commit_hash}\" > ${outfile}
+      export out_dir="$(realpath ${{ parameters.out_dir }})"
+      export commit_hash="$(git -C ${{ parameters.source_root }} rev-parse --short HEAD)"
       # sha prefix is required docker gets upset if names contain -0 iirc
-      echo export build_label=\"$(Build.BuildId)-sha${commit_hash}\" >> ${outfile}
-      echo export pr_number=\"$(System.PullRequest.PullRequestNumber)\" >> ${outfile}
-      echo export service_basename=\"${{ parameters.service_name }}\" >> ${outfile}
-      cat ${outfile}
+      export build_label="$(Build.BuildId)-sha${commit_hash}"
+      export pr_number="$(System.PullRequest.PullRequestNumber)"
+      export service_name="${{ parameters.service_name }}"
+      export service_id="${{ parameters.service_id }}"
+
+      make --no-print-directory -C ${{ parameters.utils_dir }}/ansible create-build-env-vars
+
     displayName: output build env vars for artifact
 
 

@@ -1,11 +1,10 @@
-
 variable "profile" {
   type = string
 }
 
 terraform {
   backend "s3" {
-    key     = "route53/terraform.tfstate"
+    key            = "pre-reqs/terraform.tfstate"
     region  = "eu-west-2"
     encrypt = true
     dynamodb_table = "terraform-state-lock"
@@ -17,3 +16,5 @@ provider "aws" {
   version = "~> 2.33"
   profile = var.profile
 }
+
+

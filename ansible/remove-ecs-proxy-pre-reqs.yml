@@ -1,4 +1,4 @@
-- name: remove ecs proxy deployment
+- name: remove ecs pre reqs
   hosts: 127.0.0.1
   connection: local
   gather_facts: no
@@ -6,7 +6,6 @@
   vars:
     service_id: "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
-    pr_number: "{{ lookup('env','pr_number') }}"
     account:  "{{ lookup('env','account') }}"
     aws_profile: "apm_{{ account }}"
 
@@ -31,5 +30,5 @@
 
   roles:
     - setup-facts
-    - destroy-api-deployment-dns-entry
-    - destroy-ecs-proxies
+    - remove-api-deployment-user-access-key
+    - destroy-api-deployment-pre-reqs
