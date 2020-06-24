@@ -1,3 +1,17 @@
+- name: create temporary build directory
+  tempfile:
+    state: directory
+  register: build_temp_dir
+
+- name: set build_dir
+  set_fact:
+    build_dir: "{{ build_temp_dir.path }}"
+
+- name: download swagger-codegen
+  get_url:
+    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.20/swagger-codegen-cli-3.0.20.jar"
+    dest: "{{ build_dir }}/swagger-codegen-cli.jar"
+
 - name: load project config oas
   include_vars:
     file: "{{ CONFIG }}"
@@ -15,7 +29,7 @@
   set_fact:
     repo_location: "{{ DEST }}/{{ config.meta.canonical_name }}"
 
-- name: create repository dir
+- name: clone template repository
   git:
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
@@ -32,17 +46,27 @@
     cmd: "git init"
     chdir: "{{ repo_location }}"
 
-- name: input variables
+- name: template README.md
   template: 
     src: "{{ repo_location }}/README.md"
     dest: "{{ repo_location }}/README.md"
 
-- name: Create a specification directory if it does not exist
+- name: ensure specification folder exists
   file:
-    path: "{{ repo_location}}/specification/"
+    path: "{{ repo_location }}/specification"
     state: directory
 
-- name: copy specification
+- name: copy config oas to repo
   copy:
     src: "{{ CONFIG }}"
-    dest: "{{ repo_location}}/specification/{{ config.meta.canonical_name }}.yaml"
+    dest: "{{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml"
+
+- name: generate sandbox server
+  shell:
+    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
+
+- name: set sandbox server default port to 9000
+  replace:
+    path: "{{ repo_location }}/sandbox/index.js"
+    regexp: "8080"
+    replace: "9000"
