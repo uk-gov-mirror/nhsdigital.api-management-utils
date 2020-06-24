@@ -31,3 +31,10 @@
   shell:
     cmd: "git init"
     chdir: "{{ repo_location }}"
+
+- name: input variables 
+  template: 
+    src: "{{ item }}"
+    dest: "{{ item }}"
+  with_fileglob:
+    - "{{ repo_location }}/**/*"
