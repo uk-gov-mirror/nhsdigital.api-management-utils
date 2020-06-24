@@ -8,7 +8,6 @@ locals {
 
   env_service_id       = "${var.apigee_environment}-${var.service_id}"
   service_namespaces     = var.apigee_environment == "internal-dev" ? [var.service_id, "${var.service_id}-*"] : [var.service_id]
-  short_service_namespaces     = var.apigee_environment == "internal-dev" ? [var.service_id, "${var.service_id}-*"] : [var.service_id]
   env_service_namespaces = [for ns in local.service_namespaces : "${var.apigee_environment}-${ns}"]
   short_env_service_namespaces = [for ns in local.service_namespaces : "${var.apigee_shortenv}-${ns}"]
   workspaces             = var.apigee_environment == "internal-dev" ? [var.workspace, "${var.workspace}:*"] : [var.workspace]
