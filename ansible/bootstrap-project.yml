@@ -6,12 +6,19 @@
     AWS_DEFAULT_REGION: eu-west-2
 
   vars:
-    DEST: "{{ lookup('env', 'DEST') }}"
+    DEST: "{{ lookup('env', 'DEST') | realpath }}"
+    CONFIG: "{{ lookup('env', 'CONFIG') | realpath }}"
 
-  tasks:
-    - name: hello world
-      debug:
-        msg: "hello world"
+  pre_tasks:
+    - name: check DEST is set
+      fail:
+        msg: 'DEST is not set'
+      when: not DEST
+
+    - name: check CONFIG is set
+      fail:
+        msg: 'CONFIG is not set'
+      when: not CONFIG
 
   roles:
     - bootstrap-project

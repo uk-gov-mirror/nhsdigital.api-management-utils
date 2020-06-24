@@ -1,0 +1,39 @@
+- name: load project config oas
+  include_vars:
+    file: "{{ CONFIG }}"
+    name: config_oas
+
+- name: extract x-nhsd-api-platform data
+  set_fact:
+    config: "{{ config_oas['x-nhsd-api-platform'] }}"
+
+- name: show config values
+  debug:
+    var: config
+
+- name: set repo_location
+  set_fact:
+    repo_location: "{{ DEST }}/{{ config.meta.canonical_name }}"
+
+- name: check if repository dir is present
+  stat:
+    path: "{{ repo_location }}"
+  register: repo_present
+
+- name: create repository dir
+  git:
+    repo: "https://github.com/NHSDigital/api-management-service-template.git"
+    dest: "{{ repo_location }}"
+    version: "APM-1119-Update-template-api"
+    depth: 1
+  when: not repo_present
+
+- name: delete git history
+  file:
+    path: "{{ repo_location }}/.git"
+    state: absent
+
+- name: init git repository
+  shell:
+    cmd: "git init"
+    chdir: "{{ repo_location }}"
