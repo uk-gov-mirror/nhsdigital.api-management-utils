@@ -15,18 +15,12 @@
   set_fact:
     repo_location: "{{ DEST }}/{{ config.meta.canonical_name }}"
 
-- name: check if repository dir is present
-  stat:
-    path: "{{ repo_location }}"
-  register: repo_present
-
 - name: create repository dir
   git:
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
     version: "APM-1119-Update-template-api"
     depth: 1
-  when: not repo_present.stat.isdir is defined and (not repo_present.stat.isdir)
 
 - name: delete git history
   file:
