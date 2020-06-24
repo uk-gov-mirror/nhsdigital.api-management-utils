@@ -57,6 +57,41 @@
     - "{{ repo_location }}/terraform/main.tf"
     - "{{ repo_location }}/Makefile"
 
+- name: template live proxy.xml
+  template: 
+    src: "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
+    dest: "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
+
+- name: template sandbox proxy.xml
+  template: 
+    src: "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
+    dest: "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
+
+- name: template live KeyValueMapOpertions.GetSecureVariables.xml
+  template: 
+    src: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
+    dest: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
+
+- name: template live KeyValueMapOpertions.GetVariables.xml
+  template: 
+    src: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+    dest: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+
+- name: template live proxies/default.xml
+  template: 
+    src: "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
+    dest: "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
+
+- name: template live targets/target.xml
+  template: 
+    src: "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
+    dest: "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
+
+- name: template live KeyValueMapOperations.GetAsid.xml
+  template: 
+    src: "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
+    dest: "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
+
 - name: ensure specification folder exists
   file:
     path: "{{ repo_location }}/specification"
