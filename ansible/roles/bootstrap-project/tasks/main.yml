@@ -48,8 +48,14 @@
 
 - name: template README.md
   template: 
-    src: "{{ repo_location }}/README.md"
-    dest: "{{ repo_location }}/README.md"
+    src: "{{ item }}"
+    dest: "{{ item }}"
+  with_items:
+    - "{{ repo_location }}/README.md"
+    - "{{ repo_location }}/package.json"
+    - "{{ repo_location }}/pyproject.toml"
+    - "{{ repo_location }}/terraform/main.tf"
+    - "{{ repo_location }}/Makefile"
 
 - name: ensure specification folder exists
   file:
