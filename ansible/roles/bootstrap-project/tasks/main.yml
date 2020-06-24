@@ -26,7 +26,7 @@
     dest: "{{ repo_location }}"
     version: "APM-1119-Update-template-api"
     depth: 1
-  when: not repo_present
+  when: not repo_present.stat.isdir is defined and (not repo_present.stat.isdir)
 
 - name: delete git history
   file:
