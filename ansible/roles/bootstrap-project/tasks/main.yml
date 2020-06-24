@@ -36,3 +36,13 @@
   template: 
     src: "{{ repo_location }}/README.md"
     dest: "{{ repo_location }}/README.md"
+
+- name: Create a specification directory if it does not exist
+  file:
+    path: "{{ repo_location}}/specification/"
+    state: directory
+
+- name: copy specification
+  copy:
+    src: "{{ CONFIG }}"
+    dest: "{{ repo_location}}/specification/{{ config.meta.canonical_name }}.yaml"
