@@ -1,8 +1,10 @@
 
+
 - name: create temporary directory
   tempfile:
     state: directory
   register: temp_dir
+
 
 - name: set output dir ( allows override with  temp_out_dir )
   set_fact:
@@ -13,7 +15,6 @@
     path: "{{ out_dir }}"
     state: absent
   when: out_dir != temp_dir.path
-
 
 - name: template terraform
   block:
@@ -26,7 +27,7 @@
       with_filetree: "{{ '../templates' }}"
       when: item.state == 'directory'
 
-    - name: template proxies files
+    - name: template files
       template:
         src: '{{ item.src }}'
         dest: "{{ out_dir }}/{{ item.path }}"
@@ -44,12 +45,22 @@
       when: not do_not_terraform
 
   rescue:
-    - name: output stdout
+    - name: output plan
+      debug:
+        var: tfplan.stdout_lines
+      when: tfplan is defined
+
+    - name: output apply
       debug:
         var: tfapply.stdout_lines
       when: tfapply is defined
 
-    - name: output stderr
+    - name: output plan
+      debug:
+        var: tfplan.stderr_lines
+      when: tfplan is defined
+
+    - name: output apply
       debug:
         var: tfapply.stderr_lines
       when: tfapply is defined

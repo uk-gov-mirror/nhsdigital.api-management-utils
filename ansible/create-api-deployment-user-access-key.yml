@@ -1,24 +1,24 @@
 - name: create api deployment user access key
   hosts: 127.0.0.1
   connection: local
-  gather_facts: yes
+  gather_facts: no
 
   vars:
-    service_basename: "{{ lookup('env','service_basename') }}"
-    SERVICE_BASE_PATH:  "{{ lookup('env','SERVICE_BASE_PATH') }}"
+    service_id: "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
-    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    account: "{{ lookup('env', 'account') }}"
+    aws_profile: "apm_{{ account }}"
 
   pre_tasks:
-    - name: check SERVICE_BASE_PATH
+    - name: check account
       fail:
-        msg: "SERVICE_BASE_PATH not set"
-      when: not SERVICE_BASE_PATH
+        msg: "account not set"
+      when: not account
 
-    - name: check service_basename
+    - name: check service_id
       fail:
-        msg: "service_basename not set"
-      when: not service_basename
+        msg: "service_id not set"
+      when: not service_id
 
     - name: check APIGEE_ENVIRONMENT
       fail:

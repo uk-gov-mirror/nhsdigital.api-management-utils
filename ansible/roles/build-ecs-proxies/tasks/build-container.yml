@@ -1,10 +1,10 @@
 - name: set image_name fact
   set_fact:
-    image_name: "{{ ecr_registry }}/{{ item }}:{{ build_label }}"
+    image_name: "{{ ecr_registry }}/{{ service_id }}_{{ item }}:{{ build_label }}"
 
 - name: find most recent tag
   command: >
-    {{ aws_cmd }} ecr describe-images --repository-name {{ item }} --filter tagStatus=TAGGED --no-paginate
+    {{ aws_cmd }} ecr describe-images --repository-name {{ service_id }}_{{ item }} --filter tagStatus=TAGGED --no-paginate
     --query 'imageDetails[0].imageTags[0]' --output text
   register: describe_images
   changed_when: no

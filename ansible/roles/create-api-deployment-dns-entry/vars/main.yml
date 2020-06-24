@@ -1,7 +1,5 @@
 ---
-namespaced_name: "{{service_name}}{{ '-pr-' + pr_number if pr_number else '' }}"
-apigee_environment: "{{ APIGEE_ENVIRONMENT | lower }}"
-service_name: "{{ service_basename | lower }}"
-sub_workspace: "{{ ':pr-' + pr_number if pr_number else '' }}"
-workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
+namespaced_name: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}"
+sub_workspace: "{{ ':' + pr_number if pr_number else '' }}"
+workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{ service_id }}{{ sub_workspace }}"
 do_not_terraform: "{{ lookup('env','do_not_terraform') }}"

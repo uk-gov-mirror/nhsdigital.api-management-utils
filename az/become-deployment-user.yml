@@ -24,7 +24,7 @@ steps:
   - bash: |
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       cd ${{ parameters.utils_dir }}
-      poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${service_basename}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+      poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
       mv -f ~/.aws/config.tmp ~/.aws/config
       chmod 400 ~/.aws/config
     displayName: "Become deployment user"

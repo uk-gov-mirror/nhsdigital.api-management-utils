@@ -1,6 +1,6 @@
 
 data "aws_iam_role" "ecs-execution-role" {
-  name = "apis-ecs-x-role-${local.env_service_name}"
+  name = "ecs-x-${local.env_service_id}"
 }
 
 resource "aws_ecs_task_definition" "service" {
@@ -43,7 +43,7 @@ resource "aws_ecs_task_definition" "service" {
 
 resource "aws_ecs_service" "service" {
   platform_version = "1.4.0"
-  name             = local.namespaced_name
+  name             = var.namespaced_name
   cluster          = data.terraform_remote_state.pre-reqs.outputs.ecs_cluster_id
   task_definition  = aws_ecs_task_definition.service.arn
 

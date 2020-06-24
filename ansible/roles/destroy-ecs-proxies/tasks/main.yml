@@ -17,18 +17,22 @@
     {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
     --service {{ namespaced_name }} --query taskArns
   register: list_tasks
+  failed_when: list_tasks.rc != 0 and 'ServiceNotActiveException' not in list_tasks.stderr and 'ServiceNotFoundException' not in list_tasks.stderr
   changed_when: no
 
 - name: parse tasks
   set_fact:
     task_arns: "{{ list_tasks.stdout | from_json }}"
+  when: list_tasks.rc == 0
 
 - name: kill tasks
   command: >
     {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
   with_items: "{{ task_arns }}"
+  when: list_tasks.rc == 0
   no_log: true
   changed_when: yes
+
 
 - name: create temporary directory
   tempfile:
@@ -64,9 +68,14 @@
       with_filetree: "{{ '../templates' }}"
       when: item.state == 'file'
 
+    - name: terraform init
+      shell: "make -C {{ out_dir }}/terraform clean init" # noqa 305
+      when: not do_not_terraform
+
     - name: terraform destroy
       shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
       register: tfapply
+      when: not do_not_terraform
 
   rescue:
     - name: output stdout

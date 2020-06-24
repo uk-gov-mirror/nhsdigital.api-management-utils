@@ -1,3 +1,7 @@
+- name: check service_id max length
+  fail:
+    msg: "service_id is too long"
+  when: (service_id | length) > 40
 
 - name: check if user exists
   command: "{{ aws_cmd }} iam get-user --user-name {{ build_user_name }} --query User"

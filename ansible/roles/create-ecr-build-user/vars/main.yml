@@ -1,6 +1,5 @@
 
-service_name: "{{ service_basename|lower }}"
-build_user_name: "build-{{ service_name }}"
+build_user_name: "build-{{ service_id }}"
 build_user_secret: "{{ account }}/api-deploy-users/{{ build_user_name }}/aws_config"
 aws_ecs_policy_name: ecs-build-policy
 aws_ecs_policy:
@@ -12,12 +11,11 @@ aws_ecs_policy:
         - "ecr:CreateRepository"
         - "ecr:TagResource"
       Resource: [
-        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_name }}",
-        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_name }}_*"
+        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_id }}_*"
       ]
       Condition:
         StringEquals:
-          aws:RequestTag/api-service: "{{ service_name }}"
+          aws:RequestTag/api-service: "{{ service_id }}"
     - Sid: ecr
       Effect: Allow
       Action:
@@ -39,8 +37,7 @@ aws_ecs_policy:
         - "ecr:StartLifecyclePolicyPreview"
         - "ecr:UploadLayerPart"
       Resource: [
-        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_name }}",
-        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_name }}_*"
+        "arn:aws:ecr:{{ aws_region }}:{{ aws_account_id }}:repository/{{ service_id }}_*"
       ]
     - Sid: ecrdesc
       Effect: Allow
@@ -56,10 +53,10 @@ aws_ecs_policy:
         - "ssm:GetParametersByPath"
       Resource:
         - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/platform-common/*"
-        - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/api-deployment/{{ service_name }}/*"
+        - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/api-deployment/{{ service_id }}/*"
     - Sid: ssmput
       Effect: Allow
       Action:
         - "ssm:PutParameter"
       Resource:
-        - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/api-deployment/{{ service_name }}/*"
+        - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/api-deployment/{{ service_id }}/*"
