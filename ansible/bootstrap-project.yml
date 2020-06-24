@@ -1,0 +1,17 @@
+- name: bootstrap project
+  hosts: 127.0.0.1
+  connection: local
+
+  environment:
+    AWS_DEFAULT_REGION: eu-west-2
+
+  vars:
+    DEST: "{{ lookup('env', 'DEST') }}"
+
+  tasks:
+    - name: hello world
+      debug:
+        msg: "hello world"
+
+  roles:
+    - bootstrap-project
