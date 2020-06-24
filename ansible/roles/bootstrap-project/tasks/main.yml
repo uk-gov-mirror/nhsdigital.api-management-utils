@@ -46,7 +46,7 @@
     cmd: "git init"
     chdir: "{{ repo_location }}"
 
-- name: template README.md
+- name: template files
   template: 
     src: "{{ item }}"
     dest: "{{ item }}"
@@ -56,42 +56,23 @@
     - "{{ repo_location }}/pyproject.toml"
     - "{{ repo_location }}/terraform/main.tf"
     - "{{ repo_location }}/Makefile"
+    - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
+    - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
+    - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
 
-- name: template live proxy.xml
-  template: 
-    src: "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
-    dest: "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
+- name: rename live proxy file
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_name }}.xml"
 
-- name: template sandbox proxy.xml
-  template: 
-    src: "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
-    dest: "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
+- name: rename sandbox proxy file
+  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config.meta.short_name }}.xml"
 
-- name: template live KeyValueMapOpertions.GetSecureVariables.xml
-  template: 
-    src: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
-    dest: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
-
-- name: template live KeyValueMapOpertions.GetVariables.xml
-  template: 
-    src: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
-    dest: "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
-
-- name: template live proxies/default.xml
-  template: 
-    src: "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
-    dest: "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
-
-- name: template live targets/target.xml
-  template: 
-    src: "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
-    dest: "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
-
-- name: template live KeyValueMapOperations.GetAsid.xml
-  template: 
-    src: "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
-    dest: "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
-
+- name: rename live target file
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config.meta.short_name }}-target.xml"
+  
 - name: ensure specification folder exists
   file:
     path: "{{ repo_location }}/specification"
