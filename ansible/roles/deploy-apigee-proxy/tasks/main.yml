@@ -36,14 +36,14 @@
     cmd: "curl --fail {{ api_uri }}/_ping"
     warn: false
   register: "proxy_ping_response"
-  when: not NO_PING
+  when: NO_PING != "true"
 
 - name: set proxy_deployed_revision
   set_fact:
     proxy_deployed_revision: "{{ (proxy_ping_response.stdout | from_json).revision }}"
-  when: not NO_PING
+  when: NO_PING != "true"
 
 - name: check correct revision was deployed
   fail:
     msg: "Incorrect revision {{ proxy_deployed_revision }}, was expecting {{ revision }}"
-  when: not NO_PING and proxy_deployed_revision != revision
+  when: NO_PING != "true" and proxy_deployed_revision != revision
