@@ -13,6 +13,7 @@
     cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}"
     warn: false
   register: "proxy_upload_response"
+  no_log: true
 
 - name: get revision number of upload
   set_fact:
@@ -37,6 +38,7 @@
     warn: false
   register: "proxy_ping_response"
   when: NO_PING != "true"
+  no_log: true
 
 - name: set proxy_deployed_revision
   set_fact:
