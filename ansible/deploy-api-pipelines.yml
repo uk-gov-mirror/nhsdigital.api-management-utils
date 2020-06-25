@@ -1,0 +1,24 @@
+- name: deploy api pipelines
+  hosts: 127.0.0.1
+  connection: local
+
+  environment:
+    AWS_DEFAULT_REGION: eu-west-2
+
+  vars:
+    DEST: "{{ lookup('env', 'USERNAME') | realpath }}"
+    CONFIG: "{{ lookup('env', 'PASSWORD') | realpath }}"
+
+  pre_tasks:
+    - name: check USERNAME is set
+      fail:
+        msg: 'USERNAME is not set'
+      when: not USERNAME
+
+    - name: check PASSWORD is set
+      fail:
+        msg: 'PASSWORD is not set'
+      when: not PASSWORD
+
+  roles:
+    - deploy-api-pipelines
