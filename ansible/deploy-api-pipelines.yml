@@ -6,19 +6,37 @@
     AWS_DEFAULT_REGION: eu-west-2
 
   vars:
-    DEST: "{{ lookup('env', 'USERNAME') | realpath }}"
-    CONFIG: "{{ lookup('env', 'PASSWORD') | realpath }}"
+    PREFIX: "{{ lookup('env', 'PREFIX') }}"
+    ORG: "{{ lookup('env', 'ORG') }}"
+    PROJECT: "{{ lookup('env', 'PROJECT') }}"
+    REPO: "{{ lookup('env', 'REPO') }}"
+    SERVICE_CONNECTION: "{{ lookup('env', 'SERVICE_CONNECTION') }}"
 
   pre_tasks:
-    - name: check USERNAME is set
+    - name: check PREFIX is set
       fail:
-        msg: 'USERNAME is not set'
-      when: not USERNAME
+        msg: 'PREFIX is not set'
+      when: not PREFIX
 
-    - name: check PASSWORD is set
+    - name: check ORG is set
       fail:
-        msg: 'PASSWORD is not set'
-      when: not PASSWORD
+        msg: 'ORG is not set'
+      when: not ORG
+
+    - name: check PROJECT is set
+      fail:
+        msg: 'PROJECT is not set'
+      when: not PROJECT
+
+    - name: check REPO is set
+      fail:
+        msg: 'REPO is not set'
+      when: not REPO
+    
+    - name: check SERVICE_CONNECTION is set
+      fail:
+        msg: 'SERVICE_CONNECTION is not set'
+      when: not SERVICE_CONNECTION
 
   roles:
     - deploy-api-pipelines
