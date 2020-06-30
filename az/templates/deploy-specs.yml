@@ -1,6 +1,5 @@
 steps:
-- bash: |
-   echo "Deploying specs to $(APIGEE_ENVIRONMENT)"
+- bash: echo "Deploying specs to $(APIGEE_ENVIRONMENT)"
   displayName: 'Deploy Specs to $(APIGEE_ENVIRONMENT) > Deploy Summary'
 
 - bash: 'sudo apt-get install npm curl jq -y'
@@ -12,17 +11,13 @@ steps:
     versionSpec: 3.8
 
 - template: ../components/setup-utils.yml
-  parameters:
-    serviceName: $(SERVICE_NAME)
 
 - template: ../components/get-mfa-code.yml
   parameters:
-    serviceName: $(SERVICE_NAME)
     apigeeOTPKey: $(APIGEE_OTP_KEY)
 
 - template: ../components/get-access-token.yml
   parameters:
-    serviceName: $(SERVICE_NAME)
     apigeeUsername: $(APIGEE_USERNAME)
     apigeePassword: $(APIGEE_PASSWORD)
 

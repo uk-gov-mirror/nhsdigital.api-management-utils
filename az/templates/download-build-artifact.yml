@@ -1,6 +1,4 @@
 parameters:
-  - name: serviceName
-    type: string
   - name: artifactBuildId
     type: string
   - name: artifactBranch
@@ -36,4 +34,4 @@ steps:
         branchName: '$(Build.SourceBranch)'
       ${{ if ne(parameters.artifactBranch, '$(Build.SourceBranch)') }}:
         branchName: 'refs/$(GIT_BRANCH_TYPE)/${{ parameters.artifactBranch }}'
-      downloadPath: '$(Pipeline.Workspace)/${{ parameters.serviceName }}'
+      downloadPath: '$(Pipeline.Workspace)/$(SERVICE_NAME)'

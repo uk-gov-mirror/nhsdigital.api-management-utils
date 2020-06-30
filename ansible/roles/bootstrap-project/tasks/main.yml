@@ -58,7 +58,6 @@
     - "{{ repo_location }}/Makefile"
     - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
-    - "{{ repo_location }}/sandbox/package.json"
     - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"

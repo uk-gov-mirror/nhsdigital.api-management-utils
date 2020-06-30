@@ -1,6 +1,4 @@
 parameters:
-  - name: serviceName
-    type: string
   - name: apigeeOTPKey
     type: string
 
@@ -12,4 +10,4 @@ steps:
     # Save code to variable
     export MFA_CODE=`oathtool --totp -b '${{ parameters.apigeeOTPKey }}'`
     echo "##vso[task.setvariable variable=secret.MFACode;issecret=true]$MFA_CODE"
-  displayName: 'Deploy ${{ parameters.serviceName }} > Get MFA Code'
+  displayName: 'Deploy $(SERVICE_NAME) > Get MFA Code'

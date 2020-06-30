@@ -5,8 +5,6 @@ steps:
       versionSpec: 3.8
 
   - template: ../components/setup-utils.yml
-    parameters:
-      serviceName: $(SERVICE_NAME)
 
   - bash: |
       set -euo pipefail
