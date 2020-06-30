@@ -1,8 +1,11 @@
 # - name: install azure cli
-#   shell: echo -ne '\n' | curl -L https://aka.ms/InstallAzureCli | bash
+#   shell: brew update && brew install azure-cli
 
 - name: add azure devops extension
-  shell: az extension add --name azure-devops
+  command: az extension add --name azure-devops
+
+# - name: update azure devops extension
+#   shell: az extension update --name azure-devops
 
 - name: set organization and project defaults
   shell: az devops configure --defaults organization="https://dev.azure.com/{{ ORG }}" project="{{ PROJECT }}"
@@ -10,12 +13,37 @@
 - name: login to azure
   shell: az login
 
+- name: create pipelines folder
+  shell: az pipelines folder create --path "/{{ PREFIX }}"
+
 - name: create build pipeline
-  shell: |
-    az pipelines create --name "{{ PREFIX }}-Build" --repository {{ REPO }} --repository-type github --service-connection {{ SERVICE_CONNECTION }} --branch master --yaml-path azure/azure-build-pipeline.yml
+  shell: >
+    az pipelines create 
+    --name "{{ PREFIX }}-Build" 
+    --repository {{ REPO }} 
+    --repository-type github 
+    --folder-path "/{{ PREFIX }}" 
+    --service-connection {{ SERVICE_CONNECTION }} 
+    --branch master --yaml-path azure/azure-build-pipeline.yml
 
 - name: create pull request pipeline
-  shell: az pipelines create --name "{{ PREFIX }}-Pull-Request" --repository {{ REPO }} --repository-type github --service-connection {{ SERVICE_CONNECTION }} --branch master --yaml-path azure/azure-pr-pipeline.yml
+  shell: >
+    az pipelines create 
+    --name "{{ PREFIX }}-Pull-Request" 
+    --repository {{ REPO }} 
+    --repository-type github 
+    --folder-path "/{{ PREFIX }}" 
+    --service-connection {{ SERVICE_CONNECTION }} 
+    --branch master 
+    --yaml-path azure/azure-pr-pipeline.yml
 
 - name: create release pipeline
-  shell: az pipelines create --name "{{ PREFIX }}-Release" --repository {{ REPO }} --repository-type github --service-connection {{ SERVICE_CONNECTION }} --branch master --yaml-path azure/azure-release-pipeline.yml
+  shell: >
+    az pipelines create 
+    --name "{{ PREFIX }}-Release" 
+    --repository {{ REPO }} 
+    --repository-type github 
+    --folder-path "/{{ PREFIX }}" 
+    --service-connection {{ SERVICE_CONNECTION }} 
+    --branch master 
+    --yaml-path azure/azure-release-pipeline.yml
