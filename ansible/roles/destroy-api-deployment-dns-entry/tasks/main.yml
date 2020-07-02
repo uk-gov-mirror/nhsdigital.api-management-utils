@@ -1,4 +1,7 @@
 
+- name: print workspace
+  debug: msg="workspace - {{ workspace }}"
+
 - name: create temporary directory
   tempfile:
     state: directory
