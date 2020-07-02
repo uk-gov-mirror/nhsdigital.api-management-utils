@@ -38,7 +38,7 @@ steps:
   - bash: |
       set -e
       
-      dist_dir="$(realpath $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
+      dist_dir="$(realpath $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
       proxy_vars_file=""
       
       if [ -f  ${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml ]; then
@@ -58,7 +58,7 @@ steps:
       chmod 400 ~/.aws/config
       
       # ensure deployment pre-reqs
-      source $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       
       account=ptl SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
       make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs
@@ -86,8 +86,8 @@ steps:
       export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
       export SOURCE_COMMIT_ID=$BUILD_SOURCEVERSION
       
-      if [ -f  $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
-        source $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      if [ -f  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       fi
 
       make --no-print-directory -C utils/ansible template-proxies

@@ -1,8 +1,13 @@
 steps:
   # stops automatic download of artifact
-  # - download: none
+  - download: none
 
   - task: DownloadPipelineArtifact@2
     inputs:
-      source: 'current'
+      source: 'specific'
+      project: '$(resources.pipeline.$(SERVICE_NAME).projectID)'
+      definition: '$(resources.pipeline.$(SERVICE_NAME).pipelineID)'
+      preferTriggeringPipeline: true
+      buildVersionToDownload: 'latestFromBranch'
+      branchName: '$(Build.SourceBranch)'
       path: $(Pipeline.Workspace)/$(SERVICE_NAME)
