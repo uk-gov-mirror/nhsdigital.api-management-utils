@@ -1,3 +1,7 @@
+parameters:
+  - name: pipelineAlias
+    type: string
+
 steps:
   # stops automatic download of artifact
   - download: none
@@ -5,8 +9,8 @@ steps:
   - task: DownloadPipelineArtifact@2
     inputs:
       source: 'specific'
-      project: '$(resources.pipeline.$(SERVICE_NAME).projectID)'
-      definition: '$(resources.pipeline.$(SERVICE_NAME).pipelineID)'
+      project: '$(resources.pipeline.${{ parameters.pipelineAlias }}.projectID)'
+      definition: '$(resources.pipeline.${{ parameters.pipelineAlias }}.pipelineID)'
       preferTriggeringPipeline: true
       buildVersionToDownload: 'latestFromBranch'
       branchName: '$(Build.SourceBranch)'
