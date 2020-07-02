@@ -5,3 +5,4 @@ steps:
   - task: DownloadPipelineArtifact@2
     inputs:
       source: 'current'
+      path: $(Pipeline.Workspace)/$(SERVICE_NAME)
