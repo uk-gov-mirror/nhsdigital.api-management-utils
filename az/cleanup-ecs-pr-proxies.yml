@@ -2,6 +2,13 @@ name: "$(SourceBranchName)+$(BuildID)"
 
 trigger: none
 
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily PR cleanup
+    branches:
+      include:
+        - master
+    always: true
 
 jobs:
   - job: build
