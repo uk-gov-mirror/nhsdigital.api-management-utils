@@ -6,6 +6,8 @@ steps:
 
   - template: ../components/setup-utils.yml
 
+  - template: ../components/set-artifact-name.yml
+
   - template: ../components/setup-terraform.yml
     parameters:
       useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
@@ -96,7 +98,7 @@ steps:
       set -euo pipefail
       
       export SERVICE_NAME="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
-      export PROXIES_DIR="$(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export PROXIES_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies/$(PROXY_NAME)"
       export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
       export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
       export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
