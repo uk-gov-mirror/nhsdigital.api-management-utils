@@ -1,0 +1,18 @@
+steps:
+  - template: ../components/download-build-artifact.yml
+  
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.8'
+    inputs:
+      versionSpec: 3.8
+
+  - template: ../components/setup-utils.yml
+
+  - template: ../components/get-mfa-code.yml
+    parameters:
+      apigeeOTPKey: $(APIGEE_OTP_KEY)
+
+  - template: ../components/get-access-token.yml
+    parameters:
+      apigeeUsername: $(APIGEE_USERNAME)
+      apigeePassword: $(APIGEE_PASSWORD)
