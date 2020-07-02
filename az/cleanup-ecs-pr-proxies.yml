@@ -23,7 +23,7 @@ jobs:
           chmod 400 ~/.aws/config
         displayName: "Get AWS config"
 
-      - template: az/build-prereqs.yml
+      - template: build-prereqs.yml
         parameters:
           utils_dir: './'
 
