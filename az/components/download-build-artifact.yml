@@ -1,6 +1,6 @@
 steps:
   # stops automatic download of artifact
-  - download: none
+  # - download: none
 
   - task: DownloadPipelineArtifact@2
     inputs:
