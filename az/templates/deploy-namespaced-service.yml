@@ -6,8 +6,6 @@ steps:
 
   - template: ../components/setup-utils.yml
 
-  - template: ../components/set-artifact-name.yml
-
   - template: ../components/setup-terraform.yml
     parameters:
       useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
