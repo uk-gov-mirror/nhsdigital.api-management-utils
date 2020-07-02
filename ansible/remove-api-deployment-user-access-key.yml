@@ -6,9 +6,16 @@
   vars:
     service_id:  "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
-    APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    account:  "{{ lookup('env','account') }}"
+    aws_profile: "apm_{{ account }}"
 
   pre_tasks:
+
+    - name: check account
+      fail:
+        msg: "account not set"
+      when: not account
+
     - name: check service_id
       fail:
         msg: "service_id not set"

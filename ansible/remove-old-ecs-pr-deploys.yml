@@ -1,0 +1,13 @@
+- name: remove old ecs pr deployments
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    account:  "ptl"
+    aws_profile: "apm_{{ account }}"
+    APIGEE_ENVIRONMENT: "internal-dev"
+
+  roles:
+    - setup-facts
+    - remove-old-ecs-pr-deploys

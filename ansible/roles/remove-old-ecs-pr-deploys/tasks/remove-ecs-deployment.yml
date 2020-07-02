@@ -1,0 +1,54 @@
+
+- name: extract vars
+  set_fact:
+    service_id: "{{  ns_service_tuple.1 }}"
+    namespaced_name: "{{ ns_service_tuple.0 }}"
+    pr_number: "{{ ns_service_tuple.0 |  regex_replace('^' + ns_service_tuple.1 + '-', '')  }}"
+
+- name: get service created at
+  shell: >
+    set -o pipefail;
+    {{ aws_cmd }} ecs describe-services --cluster apis-internal-dev
+    --services {{ namespaced_name }} --query services[0].createdAt | xargs -i date --utc -d @{} '+%FT%TZ'
+  args:
+    executable: /bin/bash
+  register: get_service_created_at
+  changed_when: no
+
+- name: parse_created_at
+  set_fact:
+    should_remove: >-
+      {{
+        (
+          (
+            (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
+            (get_service_created_at.stdout | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+          ).total_seconds() / 3600
+        ) >= (retain_hours | int)
+      }}
+    age_hours: >-
+      {{
+        (
+          (
+            (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
+            (get_service_created_at.stdout | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+          ).total_seconds() / 3600
+        )
+      }}
+
+# left these in to print some useful info about each service
+- debug: msg="processing service - {{ service_id }} - pr - {{ pr_number }}"
+- debug: msg="created at, {{ get_service_created_at.stdout }}"
+- debug: msg="current_date, {{ ansible_date_time.iso8601 }}"
+- debug: msg="age_hours, {{ age_hours }}"
+- debug: msg="should remove,  {{ should_remove }}"
+
+- name: remove ecs dns entry
+  include_role:
+    name: destroy-api-deployment-dns-entry
+  when: should_remove
+
+- name: remove ecs service
+  include_role:
+    name: destroy-ecs-proxies
+  when: should_remove

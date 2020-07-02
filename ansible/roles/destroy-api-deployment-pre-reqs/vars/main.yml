@@ -1,5 +1,4 @@
 ---
-workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}"
+workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{  service_id | lower  }}"
 do_not_terraform: "{{ lookup('env','do_not_terraform') }}"
 apigee_environment: "{{ APIGEE_ENVIRONMENT | lower }}"
-service_name: "{{ service_id | lower }}"
