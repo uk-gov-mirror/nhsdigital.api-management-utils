@@ -1,0 +1,24 @@
+- name: bootstrap project
+  hosts: 127.0.0.1
+  connection: local
+
+  environment:
+    AWS_DEFAULT_REGION: eu-west-2
+
+  vars:
+    DEST: "{{ lookup('env', 'DEST') | realpath }}"
+    CONFIG: "{{ lookup('env', 'CONFIG') | realpath }}"
+
+  pre_tasks:
+    - name: check DEST is set
+      fail:
+        msg: 'DEST is not set'
+      when: not DEST
+
+    - name: check CONFIG is set
+      fail:
+        msg: 'CONFIG is not set'
+      when: not CONFIG
+
+  roles:
+    - bootstrap-project
