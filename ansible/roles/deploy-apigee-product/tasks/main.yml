@@ -25,9 +25,9 @@
     body_format: json
     body:
       name: "{{ SERVICE_NAME }}"
-      displayName: "{{ PRODUCT_DISPLAY_NAME }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)" 
-      description: "{{ PRODUCT_DESCRIPTION }}" 
-      approvalType: "{{ approval_type }}" 
+      displayName: "{{ PRODUCT_DISPLAY_NAME }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
+      description: "{{ PRODUCT_DESCRIPTION }}"
+      approvalType: "{{ approval_type }}"
       proxies: "{{ proxies }}"
       attributes:
         - name: access
