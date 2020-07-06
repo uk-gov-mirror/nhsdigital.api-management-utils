@@ -45,7 +45,7 @@
 
 - name: set proxy_deployed_revision
   set_fact:
-    proxy_deployed_revision: "{{ proxy_ping_response.json.revision }}"
+    proxy_deployed_revision: "{{ (proxy_ping_response.content | from_json).revision }}"
   when: NO_PING != "true"
 
 - name: check correct revision was deployed
