@@ -24,8 +24,7 @@
     --repository-type github 
     --folder-path "/{{ PREFIX }}" 
     --service-connection {{ SERVICE_CONNECTION }} 
-    --branch master 
-    --yaml-path azure/azure-build-pipeline.yml
+    --branch master --yaml-path azure/azure-build-pipeline.yml
 
 - name: create pull request pipeline
   shell: >
