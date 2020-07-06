@@ -5,161 +5,12 @@ steps:
   
   - template: ../components/download-aws-config.yml
 
-  # - bash: |
-  #     set -euo pipefail
-      
-  #     echo "!!! If you get an error here, it is because '$(SERVICE_NAME)' is not the source alias name of the artifact"
-  #     export SERVICE_ARTIFACT_NAME=`ls $(Pipeline.Workspace)/$(SERVICE_NAME)`
-  #     export SANDBOX=0
-      
-  #     if [ "$(NAMESPACE)" == "from_branchname" ]; then
-  #       # Change reference to get from right area
-  #       export NAMESPACE=$(BRANCH_NAME)
-  #     else
-  #       export NAMESPACE="$(NAMESPACE)"
-  #     fi
-      
-  #     if [ $(FORCE_SANDBOX) == "true" ]; then
-  #       export NAMESPACE="$NAMESPACE-sandbox"
-  #       export SANDBOX=1
-  #     fi
-      
-  #     if [[ $(APIGEE_ENVIRONMENT) == *"sandbox"* ]]; then
-  #       export SANDBOX=1
-  #     fi
-
-  #     echo "Deploying $SERVICE_ARTIFACT_NAME to $(SERVICE_BASE_PATH) on $(ENV_URL) in namespace $NAMESPACE"
-
-  #     echo "##vso[task.setvariable variable=SANDBOX]$SANDBOX"
-  #     echo "##vso[task.setvariable variable=_NAMESPACE]$NAMESPACE"
-  #     echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
-  #   displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
-
-  # - bash: |
-  #     set -e
-      
-  #     dist_dir="$(realpath $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
-  #     proxy_vars_file=""
-      
-  #     if [ -f  ${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml ]; then
-  #         proxy_vars_file="${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml"
-  #     else
-  #         if [ -f  ${dist_dir}/ecs-deploy-all.yml ]; then
-  #           proxy_vars_file="${dist_dir}/ecs-deploy-all.yml"
-  #         fi
-  #     fi
-      
-      
-  #     if [ ! -z "${proxy_vars_file}" ]; then
-      
-  #     # get primary aws config
-  #     mkdir -p ~/.aws
-  #     mv $(Agent.TempDirectory)/ptl_aws_config ~/.aws/config
-  #     chmod 400 ~/.aws/config
-      
-  #     # ensure deployment pre-reqs
-  #     source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
-      
-  #     account=ptl SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
-  #     make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs
-      
-  #     # become deployment user
-  #     aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-$(APIGEE_ENVIRONMENT)-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-  #     mv -f ~/.aws/config.tmp ~/.aws/config
-  #     chmod 400 ~/.aws/config
-      
-  #     # deploy ecs proxies
-  #     account=ptl PROXY_VARS_FILE="${proxy_vars_file}" \
-  #     SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
-  #     make --no-print-directory  -C utils/ansible deploy-ecs-proxies
-      
-  #     fi
-  #   displayName: 'Deploy $(SERVICE_NAME) > Deploy ECS proxies'
-
-  # - bash: |
-  #     set -euo pipefail
-      
-  #     export SERVICE_NAME="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
-  #     export PROXIES_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies"
-  #     export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
-  #     export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
-  #     export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
-  #     export SOURCE_COMMIT_ID=$BUILD_SOURCEVERSION
-      
-  #     if [ -f  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
-  #       source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
-  #     fi
-
-  #     make --no-print-directory -C utils/ansible template-proxies
-  #   displayName: 'Deploy $(SERVICE_NAME) > Template Proxies'
-
-  # - bash: |
-  #     set -euo pipefail
-
-  #     if [ "$(SANDBOX)" == 1 ]; then
-  #       export PROXY_TYPE="sandbox"
-  #     else
-  #       export PROXY_TYPE="live"
-  #     fi
-
-  #     export PROXY_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies/$PROXY_TYPE"
-  #     export SERVICE_NAME="$(SERVICE_NAME)-$(APIGEE_ENVIRONMENT)-$(_NAMESPACE)"
-  #     export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
-  #     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-      
-  #     cd utils
-  #     poetry run ansible-playbook ansible/deploy-apigee-proxy.yml
-  #   displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy'
-
-  # - bash: |
-  #     set -euo pipefail
-
-  #     if [ -d  $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
-  #     # Set up a logging directory and logfile
-  #     mkdir logs
-  #     touch logs/terraform-crash.log
-
-  #     # Move to terraform context of this service
-  #     cd $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
-
-  #     cat > ./tmp.tfvars.tmp << '_EOF'
-  #     apigee_token = "${API_ACCESS_TOKEN}"
-  #     apigee_environment = "$(APIGEE_ENVIRONMENT)"
-  #     apigee_organization = "$(APIGEE_ORGANIZATION)"
-  #     namespace = "-$(_NAMESPACE)"
-  #     force_sandbox = "$(FORCE_SANDBOX)"
-  #     covid-19-testing-channel-availability-host = "$(COVID_19_TCA_HOST)"
-  #     dps-submission-api-host = "$(DPS_SUBMISSION_API_HOST)"
-  #     _EOF
-
-  #     export API_ACCESS_TOKEN="$(secret.AccessToken)"
-
-  #     envsubst < ./tmp.tfvars.tmp > ./tmp.tfvars
-
-  #     terraform init -no-color -backend-config="storage_account_name=hawdonnhsddevopssacc" -backend-config="container_name=$(APIGEE_ORGANIZATION)" -backend-config="key=$(APIGEE_ENVIRONMENT)-$(SERVICE_NAME)-$(_NAMESPACE).tfstate" -backend-config="sas_token=$(SAS_TOKEN)"
-
-  #     export TERRAFORM_SERVICE_NAME="$(SERVICE_NAME)"
-
-  #     if [ "$(SERVICE_NAME)" == "personal-demographics" ]; then
-  #       export TERRAFORM_SERVICE_NAME="personal-demographics-service"
-  #     fi
-
-  #     # Uncomment this if you remove something from terraform management and need
-  #     # to blast the state to stop terraform attempting to destroy it
-  #     terraform state rm "module.$TERRAFORM_SERVICE_NAME"
-
-  #     terraform plan -input=false -no-color -var-file=./tmp.tfvars -out tfplan.out
-
-  #     TF_LOG_PATH=$(System.DefaultWorkingDirectory)/logs/terraform-crash.log terraform apply -no-color -auto-approve tfplan.out
-  #     rm tfplan.out
-  #     fi
-  #   displayName: 'Deploy $(SERVICE_NAME) > Deploy Product'
-
   - bash: |
       set -euo pipefail
       
       echo "!!! If you get an error here, it is because '$(SERVICE_NAME)' is not the source alias name of the artifact"
       export SERVICE_ARTIFACT_NAME=`ls $(Pipeline.Workspace)/$(SERVICE_NAME)`
+      export SANDBOX=0
       
       if [ "$(NAMESPACE)" == "from_branchname" ]; then
         # Change reference to get from right area
@@ -170,40 +21,107 @@ steps:
       
       if [ $(FORCE_SANDBOX) == "true" ]; then
         export NAMESPACE="$NAMESPACE-sandbox"
+        export SANDBOX=1
       fi
       
+      if [[ $(APIGEE_ENVIRONMENT) == *"sandbox"* ]]; then
+        export SANDBOX=1
+      fi
+
       echo "Deploying $SERVICE_ARTIFACT_NAME to $(SERVICE_BASE_PATH) on $(ENV_URL) in namespace $NAMESPACE"
-      
+
+      echo "##vso[task.setvariable variable=SANDBOX]$SANDBOX"
       echo "##vso[task.setvariable variable=_NAMESPACE]$NAMESPACE"
       echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
+
+  - bash: |
+      set -e
+      
+      dist_dir="$(realpath $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
+      proxy_vars_file=""
+      
+      if [ -f  ${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml ]; then
+          proxy_vars_file="${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml"
+      else
+          if [ -f  ${dist_dir}/ecs-deploy-all.yml ]; then
+            proxy_vars_file="${dist_dir}/ecs-deploy-all.yml"
+          fi
+      fi
+      
+      
+      if [ ! -z "${proxy_vars_file}" ]; then
+      
+      # get primary aws config
+      mkdir -p ~/.aws
+      mv $(Agent.TempDirectory)/ptl_aws_config ~/.aws/config
+      chmod 400 ~/.aws/config
+      
+      # ensure deployment pre-reqs
+      source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      
+      account=ptl SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
+      make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs
+      
+      # become deployment user
+      aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-$(APIGEE_ENVIRONMENT)-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+      mv -f ~/.aws/config.tmp ~/.aws/config
+      chmod 400 ~/.aws/config
+      
+      # deploy ecs proxies
+      account=ptl PROXY_VARS_FILE="${proxy_vars_file}" \
+      SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
+      make --no-print-directory  -C utils/ansible deploy-ecs-proxies
+      
+      fi
+    displayName: 'Deploy $(SERVICE_NAME) > Deploy ECS proxies'
+
   - bash: |
       set -euo pipefail
       
+      export SERVICE_NAME="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
       export PROXIES_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies"
       export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
       export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
+      export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      export SOURCE_COMMIT_ID=$BUILD_SOURCEVERSION
       
+      if [ -f  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      fi
+
       make --no-print-directory -C utils/ansible template-proxies
     displayName: 'Deploy $(SERVICE_NAME) > Template Proxies'
+
   - bash: |
       set -euo pipefail
-      export SERVICE_DIR=`realpath "$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)"`
-      export PROXY_DIR="$SERVICE_DIR/proxies/$(PROXY_NAME)"
+
+      if [ "$(SANDBOX)" == 1 ]; then
+        export PROXY_TYPE="sandbox"
+      else
+        export PROXY_TYPE="live"
+      fi
+
+      export PROXY_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies/$PROXY_TYPE"
       export SERVICE_NAME="$(SERVICE_NAME)-$(APIGEE_ENVIRONMENT)-$(_NAMESPACE)"
-      export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
+      export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)-$(_NAMESPACE)"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+      
       cd utils
       poetry run ansible-playbook ansible/deploy-apigee-proxy.yml
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy'
+
   - bash: |
       set -euo pipefail
+
       if [ -d  $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
       # Set up a logging directory and logfile
       mkdir logs
       touch logs/terraform-crash.log
+
       # Move to terraform context of this service
       cd $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
+
       cat > ./tmp.tfvars.tmp << '_EOF'
       apigee_token = "${API_ACCESS_TOKEN}"
       apigee_environment = "$(APIGEE_ENVIRONMENT)"
@@ -213,17 +131,25 @@ steps:
       covid-19-testing-channel-availability-host = "$(COVID_19_TCA_HOST)"
       dps-submission-api-host = "$(DPS_SUBMISSION_API_HOST)"
       _EOF
+
       export API_ACCESS_TOKEN="$(secret.AccessToken)"
+
       envsubst < ./tmp.tfvars.tmp > ./tmp.tfvars
+
       terraform init -no-color -backend-config="storage_account_name=hawdonnhsddevopssacc" -backend-config="container_name=$(APIGEE_ORGANIZATION)" -backend-config="key=$(APIGEE_ENVIRONMENT)-$(SERVICE_NAME)-$(_NAMESPACE).tfstate" -backend-config="sas_token=$(SAS_TOKEN)"
+
       export TERRAFORM_SERVICE_NAME="$(SERVICE_NAME)"
-      if [ "$(SERVICE_NAME)" == "generated-template" ]; then
-        export TERRAFORM_SERVICE_NAME="generated-template-service"
+
+      if [ "$(SERVICE_NAME)" == "personal-demographics" ]; then
+        export TERRAFORM_SERVICE_NAME="personal-demographics-service"
       fi
+
       # Uncomment this if you remove something from terraform management and need
       # to blast the state to stop terraform attempting to destroy it
       terraform state rm "module.$TERRAFORM_SERVICE_NAME"
+
       terraform plan -input=false -no-color -var-file=./tmp.tfvars -out tfplan.out
+
       TF_LOG_PATH=$(System.DefaultWorkingDirectory)/logs/terraform-crash.log terraform apply -no-color -auto-approve tfplan.out
       rm tfplan.out
       fi
