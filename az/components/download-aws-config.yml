@@ -1,5 +1,0 @@
-steps:
-- task: DownloadSecureFile@1
-  displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
-  inputs:
-    secureFile: 'ptl_aws_config'

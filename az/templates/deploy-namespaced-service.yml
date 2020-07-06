@@ -3,7 +3,10 @@ steps:
     parameters:
       useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
   
-  # - template: ../components/download-aws-config.yml
+  - task: DownloadSecureFile@1
+    displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
+    inputs:
+      secureFile: 'ptl_aws_config'
 
   - bash: |
       set -euo pipefail
