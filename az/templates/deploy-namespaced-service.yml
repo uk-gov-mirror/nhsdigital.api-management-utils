@@ -9,10 +9,6 @@ steps:
       secureFile: 'ptl_aws_config'
 
   - bash: |
-      set -euo pipefail
-      
-      echo "!!! If you get an error here, it is because '$(SERVICE_NAME)' is not the source alias name of the artifact"
-      export SERVICE_ARTIFACT_NAME=`ls $(Pipeline.Workspace)/$(SERVICE_NAME)`
       export SANDBOX=0
       
       if [ "$(NAMESPACE)" == "from_branchname" ]; then
@@ -31,11 +27,10 @@ steps:
         export SANDBOX=1
       fi
 
-      echo "Deploying $SERVICE_ARTIFACT_NAME to $(SERVICE_BASE_PATH) on $(ENV_URL) in namespace $NAMESPACE"
+      echo "Deploying $(SERVICE_ARTIFACT_NAME) to $(SERVICE_BASE_PATH) on $(ENV_URL) in namespace $NAMESPACE"
 
       echo "##vso[task.setvariable variable=SANDBOX]$SANDBOX"
       echo "##vso[task.setvariable variable=_NAMESPACE]$NAMESPACE"
-      echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
 
   - bash: |
