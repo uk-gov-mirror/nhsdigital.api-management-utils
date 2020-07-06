@@ -3,7 +3,7 @@ steps:
     parameters:
       useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
   
-  - template: ../components/download-aws-config.yml
+  # - template: ../components/download-aws-config.yml
 
   - bash: |
       set -euo pipefail
