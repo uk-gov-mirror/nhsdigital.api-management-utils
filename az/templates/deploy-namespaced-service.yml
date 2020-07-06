@@ -112,13 +112,13 @@ steps:
   - bash: |
       set -euo pipefail
 
-      if [ -d  $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
+      if [ -d  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
       # Set up a logging directory and logfile
       mkdir logs
       touch logs/terraform-crash.log
 
       # Move to terraform context of this service
-      cd $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
+      cd $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
 
       cat > ./tmp.tfvars.tmp << '_EOF'
       apigee_token = "${API_ACCESS_TOKEN}"
