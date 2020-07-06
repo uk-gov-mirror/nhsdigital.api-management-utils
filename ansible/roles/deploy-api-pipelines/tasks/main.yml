@@ -34,8 +34,9 @@
     --repository-type github 
     --folder-path "/{{ PREFIX }}" 
     --service-connection {{ SERVICE_CONNECTION }} 
-    --branch master 
+    --branch master
     --yaml-path azure/azure-pr-pipeline.yml
+    --skip-first-run true
 
 - name: create release pipeline
   shell: >
@@ -47,3 +48,4 @@
     --service-connection {{ SERVICE_CONNECTION }} 
     --branch master 
     --yaml-path azure/azure-release-pipeline.yml
+    --skip-first-run true
