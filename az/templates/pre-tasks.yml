@@ -6,6 +6,12 @@ steps:
 
   - template: ../components/setup-utils.yml
 
+  - bash: |
+      set -euo pipefail
+      export SERVICE_ARTIFACT_NAME=`ls $(Pipeline.Workspace)/$(SERVICE_NAME)`
+      echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
+    displayName: 'Set SERVICE_ARTIFACT_NAME'
+
   - template: ../components/get-mfa-code.yml
     parameters:
       apigeeOTPKey: $(APIGEE_OTP_KEY)
