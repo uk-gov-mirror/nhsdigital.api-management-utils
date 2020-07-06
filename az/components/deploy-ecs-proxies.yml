@@ -2,7 +2,7 @@ steps:
   - bash: |
       set -e
       
-      dist_dir="$(realpath $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
+      dist_dir="$(realpath $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
       proxy_vars_file=""
       
       if [ -f  ${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml ]; then
@@ -22,7 +22,7 @@ steps:
       chmod 400 ~/.aws/config
       
       # ensure deployment pre-reqs
-      source $(System.DefaultWorkingDirectory)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       
       account=ptl SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
       make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs

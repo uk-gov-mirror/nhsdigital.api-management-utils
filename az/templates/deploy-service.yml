@@ -2,6 +2,11 @@ steps:
   - template: ../components/setup-terraform.yml
     parameters:
       useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
+  
+  - task: DownloadSecureFile@1
+    displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
+    inputs:
+      secureFile: 'ptl_aws_config'
 
   - bash: |
       set -euo pipefail
@@ -12,36 +17,49 @@ steps:
       echo "Deploying $SERVICE_ARTIFACT_NAME to $(SERVICE_BASE_PATH) on $(ENV_URL)"
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
 
-  - template: ../components/download-aws-config.yml
-
   - template: ../components/deploy-ecs-proxies.yml
-
-  - template: ../components/template-proxies.yml
 
   - bash: |
       set -euo pipefail
+      
+      export SERVICE_NAME="$(SERVICE_NAME)"
+      export PROXIES_DIR="$$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
+      export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
+      export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      export SOURCE_COMMIT_ID=$BUILD_SOURCEVERSION
+      
+      if [ -f  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      fi
+      
+      
+      make --no-print-directory -C utils/ansible template-proxies
+    displayName: 'Deploy $(SERVICE_NAME) > Template Proxies'
 
-      export SERVICE_DIR=`realpath "$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)"`
-      export PROXY_DIR="$SERVICE_DIR/proxies/$(PROXY_NAME)"
+  - bash: |
+      set -euo pipefail
+      
+      export PROXY_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies/$(PROXY_NAME)"
       export SERVICE_NAME="$(SERVICE_NAME)-$(APIGEE_ENVIRONMENT)"
       export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-
+      
       cd utils
       poetry run ansible-playbook ansible/deploy-apigee-proxy.yml
-    displayName: 'Deploy $(SERVICE_NAME) > Deploy'
+    displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy'
   
   - bash: |
       set -euo pipefail
-
+      
       if [ -d  $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
-
+      
       cd $(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
-
+      
       terraform init -no-color -backend-config="storage_account_name=hawdonnhsddevopssacc" -backend-config="container_name=$(APIGEE_ORGANIZATION)" -backend-config="key=$(APIGEE_ENVIRONMENT)-$(SERVICE_NAME).tfstate" -backend-config="sas_token=$(SAS_TOKEN)"
-
+      
       export API_ACCESS_TOKEN="$(secret.AccessToken)"
-
+      
       cat > ./tmp.tfvars.tmp <<'_EOF'
       apigee_token = "${API_ACCESS_TOKEN}"
       apigee_environment = "$(APIGEE_ENVIRONMENT)"
@@ -50,21 +68,18 @@ steps:
       covid-19-testing-channel-availability-host = "$(COVID_19_TCA_HOST)"
       dps-submission-api-host = "$(DPS_SUBMISSION_API_HOST)"
       _EOF
-
+      
       envsubst < ./tmp.tfvars.tmp > ./tmp.tfvars
-
+      
       export TERRAFORM_SERVICE_NAME="$(SERVICE_NAME)"
-
-      if [ "$(SERVICE_NAME)" == "personal-demographics" ]; then
-        export TERRAFORM_SERVICE_NAME="personal-demographics-service"
-      fi
-
+      
       # Uncomment this if you remove something from terraform management and need
       # to blast the state to stop terraform attempting to destroy it
       # terraform state rm "module.$TERRAFORM_SERVICE_NAME"
-
+      
       terraform plan -input=false -no-color  -var-file=./tmp.tfvars -out tfplan.out
       terraform apply -no-color -auto-approve tfplan.out
-
+      
       fi
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Product'
+

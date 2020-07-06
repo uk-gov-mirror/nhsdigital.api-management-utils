@@ -143,10 +143,6 @@ steps:
 
       export TERRAFORM_SERVICE_NAME="$(SERVICE_NAME)"
 
-      if [ "$(SERVICE_NAME)" == "personal-demographics" ]; then
-        export TERRAFORM_SERVICE_NAME="personal-demographics-service"
-      fi
-
       # Uncomment this if you remove something from terraform management and need
       # to blast the state to stop terraform attempting to destroy it
       terraform state rm "module.$TERRAFORM_SERVICE_NAME"
