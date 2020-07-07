@@ -1,8 +1,4 @@
 steps:
-  - template: ../components/setup-terraform.yml
-    parameters:
-      useCustomTerraform: $(USE_CUSTOM_TERRAFORM)
-  
   - task: DownloadSecureFile@1
     displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
     inputs:
@@ -45,4 +41,4 @@ steps:
       cd utils
       poetry run ansible-playbook ansible/deploy-apigee-proxy.yml
       poetry run ansible-playbook ansible/deploy-apigee-product.yml
-    displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy'
+    displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy and Product'
