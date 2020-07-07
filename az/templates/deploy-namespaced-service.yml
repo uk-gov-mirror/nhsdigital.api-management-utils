@@ -29,46 +29,7 @@ steps:
       echo "##vso[task.setvariable variable=_NAMESPACE]$NAMESPACE"
     displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
 
-  - bash: |
-      set -e
-      
-      dist_dir="$(realpath $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME))"
-      proxy_vars_file=""
-      
-      if [ -f  ${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml ]; then
-          proxy_vars_file="${dist_dir}/ecs-deploy-$(APIGEE_ENVIRONMENT).yml"
-      else
-          if [ -f  ${dist_dir}/ecs-deploy-all.yml ]; then
-            proxy_vars_file="${dist_dir}/ecs-deploy-all.yml"
-          fi
-      fi
-      
-      
-      if [ ! -z "${proxy_vars_file}" ]; then
-      
-      # get primary aws config
-      mkdir -p ~/.aws
-      mv $(Agent.TempDirectory)/ptl_aws_config ~/.aws/config
-      chmod 400 ~/.aws/config
-      
-      # ensure deployment pre-reqs
-      source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
-      
-      account=ptl SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
-      make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs
-      
-      # become deployment user
-      aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-$(APIGEE_ENVIRONMENT)-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-      mv -f ~/.aws/config.tmp ~/.aws/config
-      chmod 400 ~/.aws/config
-      
-      # deploy ecs proxies
-      account=ptl PROXY_VARS_FILE="${proxy_vars_file}" \
-      SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
-      make --no-print-directory  -C utils/ansible deploy-ecs-proxies
-      
-      fi
-    displayName: 'Deploy $(SERVICE_NAME) > Deploy ECS proxies'
+  - template: ../components/deploy-ecs-proxies.yml
 
   - bash: |
       set -euo pipefail
