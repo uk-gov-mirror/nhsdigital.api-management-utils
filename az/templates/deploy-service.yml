@@ -47,7 +47,7 @@ steps:
   - bash: |
       set -euo pipefail
       
-      if [ -d  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
+      if [ -d $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform ]; then
       
       cd $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/terraform
       
