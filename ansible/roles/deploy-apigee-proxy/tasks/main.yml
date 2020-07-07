@@ -10,7 +10,7 @@
 # NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
 - name: upload proxy bundle
   shell:
-    cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}"
+    cmd: "curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}' -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data' {{ apis_api_uri }}\\?action\\=import\\&name\\={{ SERVICE_NAME }}"
     warn: false
   register: "proxy_upload_response"
 
@@ -20,7 +20,7 @@
 
 - name: update proxy deployment
   uri:
-    url: "{{ env_apis_api_uri }}/{{ SERVICE_NAME }}-{{ APIGEE_ENVIRONMENT }}/revisions/{{ revision }}/deployments"
+    url: "{{ env_apis_api_uri }}/{{ SERVICE_NAME }}/revisions/{{ revision }}/deployments"
     method: "POST"
     body:
       override: true
