@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 poetry=source $$HOME/.poetry/env;poetry
+
 ########################################################################################################################
 ##
 ## Makefile for managing ansible commands
@@ -18,6 +19,9 @@ guard-%:
 ansible-lint:
 	@# Only swallow checking errors (rc=2), not other problems (rc=1)
 	poetry run ansible-lint -c ansible-lint.yml -p ansible/*.yml || test $$? -eq 2
+
+lint:
+	$(poetry) run flake8 **/*.py
 
 install:
 	$(poetry) install
