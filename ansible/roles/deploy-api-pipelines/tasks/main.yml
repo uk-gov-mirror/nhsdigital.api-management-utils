@@ -1,11 +1,5 @@
-# - name: install azure cli
-#   shell: brew update && brew install azure-cli
-
 - name: add azure devops extension
   command: az extension add --name azure-devops
-
-# - name: update azure devops extension
-#   shell: az extension update --name azure-devops
 
 - name: set organization and project defaults
   shell: az devops configure --defaults organization="https://dev.azure.com/{{ ORG }}" project="{{ PROJECT }}"
