@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "ecs-execution-role" {
 
     resources = [
       "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/platform-common/splunk/*",
-      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/api-deployment/${var.service_name}/*"
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/api-deployment/${var.service_id}/*"
     ]
   }
 
@@ -51,8 +51,8 @@ data "aws_iam_policy_document" "ecs-execution-role" {
     ]
 
     resources = [
-      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_name}",
-      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_name}_*",
+      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_id}",
+      "arn:aws:ecr:${local.region}:${local.account_id}:repository/${var.service_id}_*",
       "arn:aws:s3:::${local.aws_ecr_bucket}/*",
     ]
 
@@ -62,11 +62,11 @@ data "aws_iam_policy_document" "ecs-execution-role" {
 
 
 resource "aws_iam_role" "ecs-execution-role" {
-  name               = "apis-ecs-x-role-${local.env_service_name}"
+  name               = "ecs-x-${local.env_service_id}"
   assume_role_policy = data.aws_iam_policy_document.ecs-tasks-assume-role.json
 
   tags = {
-    Name   = "apis-ecs-x-role-${local.env_service_name}"
+    Name   = "ecs-x-${local.env_service_id}"
     source = "terraform"
   }
 }
@@ -85,11 +85,11 @@ resource "aws_iam_role_policy_attachment" "attach_AmazonECSTaskExecutionRolePoli
 
 
 resource "aws_iam_user" "deploy-user" {
-  name = "deploy-${local.env_service_name}"
+  name = "deploy-${local.env_service_id}"
 }
 
 resource "aws_iam_policy" "deploy-user" {
-  name   = "deploy-${local.env_service_name}"
+  name   = "deploy-${local.env_service_id}"
   policy = data.aws_iam_policy_document.deploy-user.json
 }
 
@@ -183,7 +183,7 @@ data "aws_iam_policy_document" "deploy-user" {
     condition {
       test = "StringEquals"
       values = [
-      var.service_name]
+      var.service_id]
       variable = "aws:RequestTag/api-service"
     }
 
@@ -208,7 +208,7 @@ data "aws_iam_policy_document" "deploy-user" {
         "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener/app/apis-public-${var.apigee_environment}/*",
         "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener-rule/app/apis-public-${var.apigee_environment}/*",
       ],
-      [for ns in local.env_service_namespaces : "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:targetgroup/${ns}/*"],
+      [for ns in local.short_env_service_namespaces : "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:targetgroup/${ns}/*"],
       [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"]
     )
   }

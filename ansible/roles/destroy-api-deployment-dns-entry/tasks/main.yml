@@ -1,4 +1,7 @@
 
+- name: print workspace
+  debug: msg="workspace - {{ workspace }}"
+
 - name: create temporary directory
   tempfile:
     state: directory
@@ -34,9 +37,14 @@
       with_filetree: "{{ '../templates' }}"
       when: item.state == 'file'
 
+    - name: terraform init
+      shell: "make -C {{ out_dir }}/terraform clean init" # noqa 305
+      when: not do_not_terraform
+
     - name: terraform destroy
       shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
       register: tfapply
+      when: not do_not_terraform
 
   rescue:
     - name: output stdout

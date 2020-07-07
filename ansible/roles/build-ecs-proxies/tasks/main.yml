@@ -7,6 +7,8 @@
   command: "{{ aws_cmd }} ecr describe-repositories --query 'repositories[].repositoryName'"
   register: current_repos
   changed_when: no
+  retries: 5
+  delay: 10
 
 - name: set variables
   set_fact:
@@ -20,10 +22,10 @@
 
 - name: set variables
   set_fact:
-    new_repos: "{{ images | difference(current_repos) }}"
+    new_repos: "{{ repo_names | difference(current_repos) }}"
 
 - name: create new repos
-  command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_name }}"
+  command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_id }}"
   with_items: "{{ new_repos }}"
   when: new_repos
 
@@ -37,4 +39,4 @@
 
 - name: build and push ecr images
   include: build-container.yml
-  with_items: "{{ images }}"
+  with_items: "{{ containers }}"

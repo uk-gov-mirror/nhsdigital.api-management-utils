@@ -17,7 +17,7 @@ provider "aws" {
 
 data "terraform_remote_state" "pre-reqs" {
   backend   = "s3"
-  workspace = "api-deployment:${var.account}:${var.apigee_environment}:${var.service_name}"
+  workspace = "api-deployment:${var.account}:${var.apigee_environment}:${var.service_id}"
 
   config = {
     profile = var.profile

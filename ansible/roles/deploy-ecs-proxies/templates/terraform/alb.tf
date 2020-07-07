@@ -1,7 +1,7 @@
 
 
 resource "aws_alb_target_group" "service" {
-  name        = local.env_namespaced_name
+  name        = local.short_env_namespaced_name
   port        = local.exposed_service.port
   protocol    = local.exposed_service.lb_protocol
   vpc_id      = data.terraform_remote_state.pre-reqs.outputs.vpc_id
@@ -27,7 +27,7 @@ resource "aws_lb_listener_rule" "service" {
   condition {
     host_header {
       values = [
-        "${local.namespaced_name}.*"
+        "${var.namespaced_name}.*"
       ]
     }
   }

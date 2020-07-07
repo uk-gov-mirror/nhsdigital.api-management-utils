@@ -17,5 +17,3 @@ provider "aws" {
   version = "~> 2.33"
   profile = var.profile
 }
-
-

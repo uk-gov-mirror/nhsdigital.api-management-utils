@@ -1,10 +1,10 @@
 - name: create api deployment dns entry
   hosts: 127.0.0.1
   connection: local
-  gather_facts: yes
+  gather_facts: no
 
   vars:
-    service_basename: "{{ lookup('env','service_basename') }}"
+    service_id: "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     pr_number: "{{ lookup('env','pr_number') }}"
     account:  "{{ lookup('env','account') }}"
@@ -19,10 +19,10 @@
         msg: "account not set"
       when: not account
 
-    - name: check service_basename
+    - name: check service_id
       fail:
-        msg: "service_basename not set"
-      when: not service_basename
+        msg: "service_id not set"
+      when: not service_id
 
     - name: check APIGEE_ENVIRONMENT
       fail:

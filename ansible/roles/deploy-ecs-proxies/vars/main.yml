@@ -1,9 +1,11 @@
 ---
+
 build_label: "{{ lookup('env', 'build_label') }}"
-images: "{{ docker_service | json_query('[].name') | unique | sort }}"
 service_base_path: "{{ SERVICE_BASE_PATH | regex_replace('^\\/|\\/$', '') }}"
-sub_workspace: "{{ ':pr-' + pr_number if pr_number else '' }}"
-workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
+sub_workspace: "{{ ':' + pr_number if pr_number else '' }}"
+namespace: "{{ '-' + pr_number if pr_number else '' }}"
+namespaced_name: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}"
+workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{ service_id }}{{ sub_workspace }}"
 service_cpu: "{{ docker_service_cpu | default(256) }}"
 service_memory: "{{ docker_service_memory | default(512) }}"
 do_not_terraform: "{{ lookup('env','do_not_terraform') }}"
