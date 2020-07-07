@@ -39,7 +39,7 @@ REPO_NAMES = {
     "personal-demographics-service-api": "personal-demographics",
     "identity-service-api": "identity-service",
     "hello-world-api": "hello-world",
-    "electronic-prescription-service-api": "electronic-prescriptions"
+    "electronic-prescription-service-api": "electronic-prescriptions",
 }
 
 
@@ -87,7 +87,7 @@ def clean_proxies(
     sandboxes_only: bool = False,
     min_age: Optional[int] = None,
     undeploy_only: bool = False,
-    respect_prs: bool = False
+    respect_prs: bool = False,
 ):
     open_prs = set()
     if respect_prs:
@@ -114,11 +114,7 @@ def clean_proxies(
         ]
 
     if respect_prs:
-        pr_proxies = [
-            proxy
-            for proxy in pr_proxies
-            if proxy not in open_prs
-        ]
+        pr_proxies = [proxy for proxy in pr_proxies if proxy not in open_prs]
 
     for proxy in pr_proxies:
         proxy_info = client.get_proxy(proxy)
@@ -160,13 +156,22 @@ def clean_env(
     dry_run: bool = False,
     min_age: Optional[int] = None,
     undeploy_only: bool = False,
-    respect_prs: bool = False
+    respect_prs: bool = False,
 ):
     if should_clean_specs:
         clean_specs(client, env, dry_run)
 
     if should_clean_proxies:
-        clean_proxies(client, github_client, env, dry_run, sandboxes_only, min_age, undeploy_only, respect_prs)
+        clean_proxies(
+            client,
+            github_client,
+            env,
+            dry_run,
+            sandboxes_only,
+            min_age,
+            undeploy_only,
+            respect_prs,
+        )
 
     if should_clean_products:
         clean_products(client, env, dry_run)
@@ -187,5 +192,5 @@ if __name__ == "__main__":
         dry_run=args["--dry-run"],
         min_age=args["--min-age"],
         undeploy_only=args["--undeploy-only"],
-        respect_prs=args["--respect-prs"]
+        respect_prs=args["--respect-prs"],
     )

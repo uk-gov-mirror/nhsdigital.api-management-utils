@@ -67,7 +67,11 @@ def to_friendly_name(spec_name: str, env: str, friendly_name: str = None):
 
 
 def upload_specs(
-    envs: List[str], spec_path: str, client: ApigeeClient, friendly_name: str = None, is_pr: bool = False
+    envs: List[str],
+    spec_path: str,
+    client: ApigeeClient,
+    friendly_name: str = None,
+    is_pr: bool = False,
 ):
     if "*" in spec_path:
         spec_files = glob(spec_path, recursive=True)
@@ -150,11 +154,15 @@ def upload_specs(
 if __name__ == "__main__":
     args = docopt(__doc__)
     client = ApigeeClient(args["<apigee_org>"], access_token=args["--access-token"])
-    env_names = ENV_NAMES["pull-request"] if args["--pull-request"] else ENV_NAMES[args["<apigee_org>"]]
+    env_names = (
+        ENV_NAMES["pull-request"]
+        if args["--pull-request"]
+        else ENV_NAMES[args["<apigee_org>"]]
+    )
     upload_specs(
         env_names,
         args["--spec-file"],
         client,
         friendly_name=args["--friendly-name"],
-        is_pr=args["--pull-request"]
+        is_pr=args["--pull-request"],
     )
