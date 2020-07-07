@@ -6,15 +6,15 @@ data "aws_region" "current" {}
 locals {
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
-  env_service_name = "${var.apigee_environment}-${var.service_name}"
-  namespaced_name = "${var.service_name}${var.namespace == "" ? "" : "-"}${var.namespace}"
-  env_namespaced_name = "${var.apigee_environment}-${local.namespaced_name}"
+  env_service_id = "${var.apigee_environment}-${var.service_id}"
+  env_namespaced_name = "${var.apigee_environment}-${var.namespaced_name}"
+  short_env_namespaced_name = "${var.apigee_shortenv}-${var.namespaced_name}"
 
   common_tags = {
     source = "terraform"
-    api-service = var.service_name
+    api-service = var.service_id
     api-environment = var.apigee_environment
-    api-namespaced-name = local.namespaced_name
+    api-namespaced-name = var.namespaced_name
     api-is-namespaced = var.namespace == "" ? false : true
   }
 
@@ -48,7 +48,7 @@ locals {
         (
           (container_defaults | combine(container))
           | combine(
-            {'image': '${local.account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + container.name + ':' + build_label }
+            {'image': '${local.account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + service_id + '_' + container.name + ':' + build_label }
           )
         ) | to_json
     }},

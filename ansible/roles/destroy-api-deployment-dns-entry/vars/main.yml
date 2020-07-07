@@ -1,5 +1,4 @@
 ---
-service_base_path: "{{ SERVICE_BASE_PATH | regex_replace('^\\/|\\/$', '') }}"
-sub_workspace: "{{ ':pr-' + pr_number if pr_number else '' }}"
-workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{service_name}}{{ sub_workspace }}"
-namespaced_name: "{{service_name}}{{ '-pr-' + pr_number if pr_number else '' }}"
+sub_workspace: "{{ ':' + pr_number if pr_number else '' }}"
+workspace: "api-deployment:{{ account }}:{{ apigee_environment }}:{{ service_id }}{{ sub_workspace }}"
+do_not_terraform: "{{ lookup('env','do_not_terraform') }}"

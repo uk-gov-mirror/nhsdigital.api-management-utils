@@ -19,9 +19,8 @@ variable "state_bucket" {
   description = "terraform state bucket"
 }
 
-variable "service_name" {
+variable "namespaced_name" {
   type        = string
-  description = "The name of the apigee environment to deploy to"
 }
 
 variable "apigee_environment" {

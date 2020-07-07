@@ -1,0 +1,94 @@
+- name: create temporary build directory
+  tempfile:
+    state: directory
+  register: build_temp_dir
+
+- name: set build_dir
+  set_fact:
+    build_dir: "{{ build_temp_dir.path }}"
+
+- name: download swagger-codegen
+  get_url:
+    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.20/swagger-codegen-cli-3.0.20.jar"
+    dest: "{{ build_dir }}/swagger-codegen-cli.jar"
+
+- name: load project config oas
+  include_vars:
+    file: "{{ CONFIG }}"
+    name: config_oas
+
+- name: extract x-nhsd-api-platform data
+  set_fact:
+    config: "{{ config_oas['x-nhsd-api-platform'] }}"
+
+- name: show config values
+  debug:
+    var: config
+
+- name: set repo_location
+  set_fact:
+    repo_location: "{{ DEST }}/{{ config.meta.canonical_name }}"
+
+- name: clone template repository
+  git:
+    repo: "https://github.com/NHSDigital/api-management-service-template.git"
+    dest: "{{ repo_location }}"
+    version: "APM-1119-Update-template-api"
+    depth: 1
+
+- name: delete git history
+  file:
+    path: "{{ repo_location }}/.git"
+    state: absent
+
+- name: init git repository
+  shell:
+    cmd: "git init"
+    chdir: "{{ repo_location }}"
+
+- name: template files
+  template: 
+    src: "{{ item }}"
+    dest: "{{ item }}"
+  with_items:
+    - "{{ repo_location }}/README.md"
+    - "{{ repo_location }}/package.json"
+    - "{{ repo_location }}/pyproject.toml"
+    - "{{ repo_location }}/terraform/main.tf"
+    - "{{ repo_location }}/Makefile"
+    - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
+    - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
+    - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
+
+- name: rename live proxy file
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_name }}.xml"
+
+- name: rename sandbox proxy file
+  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config.meta.short_name }}.xml"
+
+- name: rename live target file
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config.meta.short_name }}-target.xml"
+  
+- name: ensure specification folder exists
+  file:
+    path: "{{ repo_location }}/specification"
+    state: directory
+
+- name: copy config oas to repo
+  copy:
+    src: "{{ CONFIG }}"
+    dest: "{{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml"
+
+- name: generate sandbox server
+  shell:
+    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
+
+- name: set sandbox server default port to 9000
+  replace:
+    path: "{{ repo_location }}/sandbox/index.js"
+    regexp: "8080"
+    replace: "9000"

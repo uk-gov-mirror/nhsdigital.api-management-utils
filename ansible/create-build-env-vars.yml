@@ -1,0 +1,52 @@
+- name: create build env vars
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  vars:
+    service_name: "{{ lookup('env','service_name') | lower }}"
+    service_id: "{{ lookup('env','service_id') | lower }}"
+    pr_number: "{{ lookup('env','pr_number') }}"
+    build_label: "{{ lookup('env','build_label') }}"
+    out_dir: "{{ lookup('env','out_dir') | expandvars | expanduser | realpath }}"
+
+  pre_tasks:
+
+    - name: check service names
+      fail:
+        msg: "service_name or service_id should be set"
+      when: not service_name and not service_id
+
+    - name: check build_label
+      fail:
+        msg: "build_label should be set"
+      when: not build_label
+
+    - name: check out_dir
+      fail:
+        msg: "out_dir should be set"
+      when: not out_dir
+
+    - name: create shortname from service_name
+      set_fact:
+        service_id: "{{ service_name }}"
+      when: not service_id and (service_name | length) <= 22
+
+    - name: create shortname
+      set_fact:
+        service_id: "{{ ((service_name | regex_findall('(?:^|-)([a-z])') | join('')) + '-' + (service_name | hash('md5')))[:22] }}"
+      when: not service_id
+
+    - name: check service_id length
+      fail:
+        msg: "service_id should be <= 22 chars"
+      when: (service_id | length) > 22
+
+    - name: create build env vars
+      copy:
+        dest: "{{ out_dir }}/.build_env_vars"
+        content: |
+          export service_id="{{ service_id }}"
+          export build_label="{{ build_label }}"
+          export pr_number="{{ pr_number }}"
+          export commit_hash="{{ lookup('env','commit_hash') }}"

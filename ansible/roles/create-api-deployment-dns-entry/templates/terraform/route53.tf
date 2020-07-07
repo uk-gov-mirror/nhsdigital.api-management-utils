@@ -1,5 +1,5 @@
 resource "aws_route53_record" "service" {
-  name    = "${local.namespaced_name}.${var.apigee_environment}.${local.apis_subdomain}"
+  name    = "${var.namespaced_name}.${var.apigee_environment}.${local.apis_subdomain}"
   zone_id = data.terraform_remote_state.account.outputs.dns.public.zone_id
 
   type = "A"

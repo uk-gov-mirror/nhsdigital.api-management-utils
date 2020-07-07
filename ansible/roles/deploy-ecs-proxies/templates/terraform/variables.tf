@@ -19,18 +19,24 @@ variable "state_bucket" {
   description = "terraform state bucket"
 }
 
-variable "service_name" {
+variable "service_id" {
   type        = string
-  description = "The name of the apigee environment to deploy to"
 }
 
 variable "apigee_environment" {
   type = string
 }
 
+variable "apigee_shortenv" {
+  type = string
+}
+
 variable "namespace" {
   type        = string
-  description = "String appended to the end of proxy and product names to allow namespaced deploys, for PRs and such"
+}
+
+variable "namespaced_name" {
+  type        = string
 }
 
 variable "build_label" {
