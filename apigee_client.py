@@ -13,7 +13,7 @@ class ApigeeClient:
         username: str = None,
         password: str = None,
         access_token: str = None,
-        session: requests.Session = requests.Session()
+        session: requests.Session = requests.Session(),
     ):
         self.apigee_org = apigee_org
 

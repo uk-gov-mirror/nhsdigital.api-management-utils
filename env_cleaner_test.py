@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 
 
 def get_open_prs_response(env):
-    return {f'personal-demographics-{env}-test'}
+    return {f"personal-demographics-{env}-test"}
 
 
 def list_specs_response():
@@ -30,15 +30,15 @@ def list_env_proxy_deployments_response(_):
         "aPIProxy": [  # Again, not a typo
             {
                 "name": "personal-demographics-internal-dev",
-                "revision": [{"name": "1", "state": "deployed"}]
+                "revision": [{"name": "1", "state": "deployed"}],
             },
             {
                 "name": "personal-demographics-internal-dev-test",
-                "revision": [{"name": "1", "state": "deployed"}]
+                "revision": [{"name": "1", "state": "deployed"}],
             },
             {
                 "name": "personal-demographics-internal-dev-test-sandbox",
-                "revision": [{"name": "1", "state": "deployed"}]
+                "revision": [{"name": "1", "state": "deployed"}],
             },
         ]
     }
@@ -145,7 +145,9 @@ def test_clean_everything(client, noop_github_client):
 
 
 def test_proxy_dry_run(client, noop_github_client):
-    env_cleaner.clean_env(client, noop_github_client, "test_env", should_clean_proxies=True, dry_run=True)
+    env_cleaner.clean_env(
+        client, noop_github_client, "test_env", should_clean_proxies=True, dry_run=True
+    )
 
     client.list_proxies.assert_called()
     client.get_proxy.assert_has_calls(
@@ -161,14 +163,16 @@ def test_proxy_dry_run(client, noop_github_client):
 
 def test_proxy_sandboxes_only(client, noop_github_client):
     env_cleaner.clean_env(
-        client, noop_github_client, "test_env", should_clean_proxies=True, sandboxes_only=True
+        client,
+        noop_github_client,
+        "test_env",
+        should_clean_proxies=True,
+        sandboxes_only=True,
     )
 
     client.list_proxies.assert_called()
     client.get_proxy.assert_has_calls(
-        [
-            call("personal-demographics-internal-dev-test-sandbox"),
-        ]
+        [call("personal-demographics-internal-dev-test-sandbox"),]
     )
     client.undeploy_proxy_revision.assert_has_calls(
         [call("test_env", "personal-demographics-internal-dev-test-sandbox", "1"),]
@@ -180,7 +184,11 @@ def test_proxy_sandboxes_only(client, noop_github_client):
 
 def test_proxy_undeploy_only(client, noop_github_client):
     env_cleaner.clean_env(
-        client, noop_github_client, "test_env", should_clean_proxies=True, undeploy_only=True
+        client,
+        noop_github_client,
+        "test_env",
+        should_clean_proxies=True,
+        undeploy_only=True,
     )
 
     client.list_proxies.assert_called()
@@ -202,7 +210,12 @@ def test_proxy_undeploy_only(client, noop_github_client):
 
 def test_proxy_undeploy_only_open_prs(client, github_client):
     env_cleaner.clean_env(
-        client, github_client, "test_env", should_clean_proxies=True, undeploy_only=True, respect_prs=True
+        client,
+        github_client,
+        "test_env",
+        should_clean_proxies=True,
+        undeploy_only=True,
+        respect_prs=True,
     )
 
     client.list_proxies.assert_called()

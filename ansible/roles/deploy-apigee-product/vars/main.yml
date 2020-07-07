@@ -20,6 +20,7 @@ env_names:
   internal-dev: 'Internal Development'
   internal-qa: 'Internal QA'
   internal-qa-sandbox: 'Internal QA Sandbox'
+  dev: 'Development'
   ref: 'Reference'
   int: 'Integration'
   sandbox: 'Sandbox'
