@@ -1,0 +1,44 @@
+steps:
+  - task: DownloadSecureFile@1
+    displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
+    inputs:
+      secureFile: '$(AWS_ENV)_aws_config'
+
+  - bash: |
+      echo "Deploying $(SERVICE_ARTIFACT_NAME) to $(SERVICE_BASE_PATH) on $(ENV_URL)"
+    displayName: 'Deploy $(SERVICE_NAME) > Deploy Info'
+
+  - template: ../components/deploy-ecs-proxies.yml
+
+  - bash: |
+      set -euo pipefail
+      
+      export SERVICE_NAME="$(SERVICE_NAME)"
+      export PROXIES_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
+      export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
+      export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      export SOURCE_COMMIT_ID=$BUILD_SOURCEVERSION
+      
+      if [ -f  $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      fi
+      
+      
+      make --no-print-directory -C utils/ansible template-proxies
+    displayName: 'Deploy $(SERVICE_NAME) > Template Proxies'
+
+  - bash: |
+      set -euo pipefail
+      
+      export PROXY_DIR="$(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/proxies/$(PROXY_NAME)"
+      export SERVICE_NAME="$(SERVICE_NAME)-$(APIGEE_ENVIRONMENT)"
+      export SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
+      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+      export PRODUCT_DISPLAY_NAME="$(PRODUCT_DISPLAY_NAME)"
+      export PRODUCT_DESCRIPTION="$(PRODUCT_DESCRIPTION)"
+      
+      cd utils
+      poetry run ansible-playbook ansible/deploy-apigee-proxy.yml
+      poetry run ansible-playbook ansible/deploy-apigee-product.yml
+    displayName: 'Deploy $(SERVICE_NAME) > Deploy Proxy and Product'

@@ -1,0 +1,42 @@
+- name: deploy api pipelines
+  hosts: 127.0.0.1
+  connection: local
+
+  environment:
+    AWS_DEFAULT_REGION: eu-west-2
+
+  vars:
+    PREFIX: "{{ lookup('env', 'PREFIX') }}"
+    ORG: "{{ lookup('env', 'ORG') }}"
+    PROJECT: "{{ lookup('env', 'PROJECT') }}"
+    REPO: "{{ lookup('env', 'REPO') }}"
+    SERVICE_CONNECTION: "{{ lookup('env', 'SERVICE_CONNECTION') }}"
+
+  pre_tasks:
+    - name: check PREFIX is set
+      fail:
+        msg: 'PREFIX is not set'
+      when: not PREFIX
+
+    - name: check ORG is set
+      fail:
+        msg: 'ORG is not set'
+      when: not ORG
+
+    - name: check PROJECT is set
+      fail:
+        msg: 'PROJECT is not set'
+      when: not PROJECT
+
+    - name: check REPO is set
+      fail:
+        msg: 'REPO is not set'
+      when: not REPO
+    
+    - name: check SERVICE_CONNECTION is set
+      fail:
+        msg: 'SERVICE_CONNECTION is not set'
+      when: not SERVICE_CONNECTION
+
+  roles:
+    - deploy-api-pipelines

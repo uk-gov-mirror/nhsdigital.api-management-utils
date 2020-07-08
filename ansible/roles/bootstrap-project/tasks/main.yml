@@ -33,7 +33,6 @@
   git:
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
-    version: "APM-1119-Update-template-api"
     depth: 1
 
 - name: delete git history
@@ -63,6 +62,9 @@
     - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
+    - "{{ repo_location }}/azure/azure-pr-pipeline.yml"
+    - "{{ repo_location }}/azure/azure-build-pipeline.yml"
+    - "{{ repo_location }}/azure/azure-release-pipeline.yml"
 
 - name: rename live proxy file
   command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_name }}.xml"
