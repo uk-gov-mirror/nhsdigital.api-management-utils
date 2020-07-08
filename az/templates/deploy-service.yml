@@ -2,7 +2,7 @@ steps:
   - task: DownloadSecureFile@1
     displayName: 'Deploy $(SERVICE_NAME) > Download AWS config'
     inputs:
-      secureFile: '$(AWS_FILE)_aws_config'
+      secureFile: '$(AWS_ENV)_aws_config'
 
   - bash: |
       echo "Deploying $(SERVICE_ARTIFACT_NAME) to $(SERVICE_BASE_PATH) on $(ENV_URL)"

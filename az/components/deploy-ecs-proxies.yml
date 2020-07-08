@@ -18,22 +18,22 @@ steps:
       
       # get primary aws config
       mkdir -p ~/.aws
-      mv $(Agent.TempDirectory)/$(AWS_FILE)_aws_config ~/.aws/config
+      mv $(Agent.TempDirectory)/$(AWS_ENV)_aws_config ~/.aws/config
       chmod 400 ~/.aws/config
       
       # ensure deployment pre-reqs
       source $(Pipeline.Workspace)/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       
-      account=$(AWS_FILE) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
+      account=$(AWS_ENV) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
       make --no-print-directory  -C utils/ansible create-api-deployment-pre-reqs
       
       # become deployment user
-      aws --profile=apm_$(AWS_FILE) secretsmanager get-secret-value --secret-id $(AWS_FILE)/api-deploy-users/deploy-$(APIGEE_ENVIRONMENT)-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+      aws --profile=apm_$(AWS_ENV) secretsmanager get-secret-value --secret-id $(AWS_ENV)/api-deploy-users/deploy-$(APIGEE_ENVIRONMENT)-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
       mv -f ~/.aws/config.tmp ~/.aws/config
       chmod 400 ~/.aws/config
       
       # deploy ecs proxies
-      account=$(AWS_FILE) PROXY_VARS_FILE="${proxy_vars_file}" \
+      account=$(AWS_ENV) PROXY_VARS_FILE="${proxy_vars_file}" \
       SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) \
       make --no-print-directory  -C utils/ansible deploy-ecs-proxies
       
