@@ -1,0 +1,83 @@
+parameters:
+  - name: proxy_path
+    type: string
+  - name: product_display_name
+    type: string
+  - name: product_description
+    type: string
+  - name: service_name
+    type: string
+  - name: fully_qualified_service_name
+    type: string
+  - name: apigee_environment
+    type: string
+  - name: apigee_organization
+    type: string
+  - name: service_base_path
+    type: string
+  - name: pre_template
+    type: stepList
+    default: []
+  - name: post_template
+    type: stepList
+    default: []
+  - name: pre_deploy
+    type: stepList
+    default: []
+  - name: post_deploy
+    type: stepList
+    default: []
+
+steps:
+  - bash: |
+      echo "Deploying ${{ parameters.service_name }} artifact $(SERVICE_ARTIFACT_NAME) as ${{ parameters.fully_qualified_service_name }} to ${{ parameters.service_base_path }} on $(ENV_URL)"
+    displayName: 'Deploy Info'
+
+  - ${{ each pre_template_step in parameters.pre_template }}:
+    - ${{ pre_template_step}}
+
+  - bash: |
+      set -euo pipefail
+      
+      export SERVICE_NAME="${{ parameters.service_name }}"
+      export PROXIES_DIR="$(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
+      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      export SOURCE_COMMIT_ID=$(Build.SourceVersion)
+      
+      if [ -f  $(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      fi
+
+      cd utils/ansible
+      poetry run ansible-playbook template-proxies.yml
+    displayName: 'Template Proxies'
+
+  - ${{ each post_template_step in parameters.post_template }}:
+    - ${{ post_template_step}}
+
+  - ${{ each pre_deploy_step in parameters.pre_deploy }}:
+    - ${{ pre_deploy_step}}
+
+  - template: ../components/deploy-ecs-proxies.yml
+
+  - bash: |
+      set -euo pipefail
+
+      export PROXY_DIR="$(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies/${{ parameters.proxy_path }}"
+      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
+      export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
+      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+      export PRODUCT_DISPLAY_NAME="${{ parameters.product_display_name }}"
+      export PRODUCT_DESCRIPTION="${{ parameters.product_description }}"
+      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+
+      cd utils/ansible
+      poetry run ansible-playbook deploy-apigee-proxy.yml
+      poetry run ansible-playbook deploy-apigee-product.yml
+    displayName: 'Deploy Proxy and Product'
+
+  - ${{ each post_deploy_step in parameters.post_deploy }}:
+    - ${{ post_deploy_step}}

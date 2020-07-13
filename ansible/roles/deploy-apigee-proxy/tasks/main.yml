@@ -35,6 +35,8 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
+  retries: 3
+  delay: 30
 
 - name: ping deployed proxy
   uri:

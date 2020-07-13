@@ -1,0 +1,48 @@
+parameters:
+  - name: apigee_deployments
+    type: object
+  - name: proxy_path
+  - name: secret_ids
+    type: object
+  - name: config_ids
+    type: object
+  - name: pre_template
+    type: stepList
+  - name: post_template
+    type: stepList
+  - name: pre_deploy
+    type: stepList
+  - name: post_deploy
+    type: stepList
+  - name: deploy_review_sandbox
+    type: boolean
+  - name: deploy_template
+  - name: build_pipeline_alias
+
+
+stages:
+  - ${{ each apigee_deployment in parameters.apigee_deployments }}:
+    - template: ./${{ parameters.deploy_template }}
+      parameters:
+        ${{ insert }}: ${{ apigee_deployment }}
+        ${{ each param in parameters }}:
+          ${{ if notIn(param.key, 'deploy_template', 'apigee_deployments', 'deploy_review_sandbox', 'pipeline_base_name') }}:
+            ${{ param.key }}: ${{ param.value }}
+
+        # Compute the apigee organization & org level part of the AWS secret/config path
+        ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-qa', 'internal-qa-sandbox', 'ref') }}:
+          apigee_organization: nonprod
+          aws_org_account: ptl
+        ${{ if in(apigee_deployment.environment, 'dev', 'int', 'sandbox', 'prod') }}:
+          apigee_organization: prod
+          aws_org_account: prod
+
+        # Compute AWS environment level prefix for secrets/config
+        ${{ if notIn(apigee_deployment.environment, 'prod') }}:
+          aws_env_account: ptl
+        ${{ if in(apigee_deployment.environment, 'prod') }}:
+          aws_env_account: prod
+
+        # deploy_review_sandbox not for release pipeline, for now
+        ${{ if eq(parameters.deploy_template, 'pr.yml')}}:
+          deploy_review_sandbox: ${{ parameters.deploy_review_sandbox }}
