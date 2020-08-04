@@ -1,0 +1,47 @@
+parameters:
+  - name: service_name
+    displayName: Canonical service name, e.g. identity-service
+    type: string
+  - name: secret_ids
+    displayName: AWS Secrets Manager Secret IDs
+    type: object
+  - name: config_ids
+    displayName: AWS SSM Config IDs
+    type: object
+
+steps:
+  - bash: |
+      set -euo pipefail
+      echo "!!! If you get an error here, it is because '${{ parameters.service_name }}' is not the source alias name of the artifact"
+      ls -R $(Pipeline.Workspace)
+      export SERVICE_ARTIFACT_NAME=`ls $(Pipeline.Workspace)/${{ parameters.service_name }}`
+      echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
+      echo "Set Artifact Name of: $SERVICE_ARTIFACT_NAME"
+    displayName: 'Set SERVICE_ARTIFACT_NAME'
+
+  - bash: |
+      if [ -n "$(System.PullRequest.SourceBranch)" ]; then
+        export SOURCE_BRANCH="$(System.PullRequest.SourceBranch)"
+      else
+        export SOURCE_BRANCH="$(Build.SourceBranchName)"
+      fi
+      echo "##vso[task.setvariable variable=BRANCH_NAME]`echo $SOURCE_BRANCH | sed -r 's/[/|\\@":<>?*]+/-/g'`"
+    displayName: Set and replace invalid characters in branch name
+
+  - bash: 'echo "##vso[build.updatebuildnumber]${{ parameters.service_name }}-$(BRANCH_NAME)+$(Build.BuildID)"'
+    condition: eq(variables['Build.SourceBranchName'], 'merge')
+    displayName: Update build ID if this is a pull request
+
+  - template: ../components/get-aws-secrets-and-ssm-params.yml
+    parameters:
+      secret_ids: ${{ parameters.secret_ids }}
+      config_ids: ${{ parameters.config_ids }}
+
+  - template: ../components/get-mfa-code.yml
+    parameters:
+      apigee_otp_key: $(APIGEE_OTP_KEY)
+
+  - template: ../components/get-access-token.yml
+    parameters:
+      apigee_username: $(APIGEE_USERNAME)
+      apigee_password: $(APIGEE_PASSWORD)

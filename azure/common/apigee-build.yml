@@ -1,0 +1,57 @@
+parameters:
+  - name: service_name
+    type: string
+
+jobs:
+  - job: build
+    displayName: Build & Test
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - checkout: self
+
+      - template: ../templates/setup-build-name.yml
+        parameters:
+          service_name: "${{ parameters.service_name }}"
+
+      - task: UsePythonVersion@0
+        displayName: "Use Python 3.8"
+        inputs:
+          versionSpec: "3.8"
+
+      - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
+        displayName: Install apt dependencies
+
+      - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
+        displayName: Add apt-key
+
+      - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+        displayName: Setup node deb sources
+
+      - bash: "sudo apt-get install -y nodejs"
+        displayName: Install node
+
+      - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
+        displayName: Install python dependencies
+
+      - bash: "make install"
+        displayName: Install project dependencies
+
+      - bash: "make check-licenses"
+        displayName: Check licenses
+
+      - bash: "make lint"
+        displayName: Lint
+
+      - bash: "make test"
+        displayName: Run unit tests
+
+      - bash: "make publish"
+        displayName: Compile spec
+
+      - bash: "make release"
+        displayName: Build release package
+
+      - publish: dist/
+        artifact: '$(Build.BuildNumber)'

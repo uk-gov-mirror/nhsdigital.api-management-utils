@@ -19,7 +19,6 @@
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
 
   tasks:
-
     - name: stat proxies dir
       stat:
         path: "{{ PROXIES_DIR }}"
@@ -38,7 +37,6 @@
 
     - name: template proxies
       block:
-
         - name: move proxies to temp location
           shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
 

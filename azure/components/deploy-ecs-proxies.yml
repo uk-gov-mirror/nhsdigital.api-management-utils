@@ -38,4 +38,4 @@ steps:
       make --no-print-directory  -C utils/ansible deploy-ecs-proxies
       
       fi
-    displayName: 'Deploy $(SERVICE_NAME) > Deploy ECS proxies'
+    displayName: 'Deploy ECS proxies'

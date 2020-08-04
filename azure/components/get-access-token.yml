@@ -1,7 +1,7 @@
 parameters:
-  - name: apigeeUsername
+  - name: apigee_username
     type: string
-  - name: apigeePassword
+  - name: apigee_password
     type: string
     
 steps:
@@ -10,8 +10,8 @@ steps:
         -H "Content-Type: application/x-www-form-urlencoded" \
         -H "Accept: application/json;charset=utf-8" \
         -H "Authorization: Basic ZWRnZWNsaTplZGdlY2xpc2VjcmV0" \
-        -d "username=${{ parameters.apigeeUsername }}&password=${{ parameters.apigeePassword }}&mfa_token=$(secret.MFACode)&grant_type=password" | jq .access_token > .token
+        -d "username=${{ parameters.apigee_username }}&password=${{ parameters.apigee_password }}&mfa_token=$(secret.MFACode)&grant_type=password" | jq .access_token > .token
       
       # Set token into variable
       echo "##vso[task.setvariable variable=secret.AccessToken;issecret=true]`cat .token`"
-    displayName: 'Deploy $(SERVICE_NAME) > Get Access Token'
+    displayName: 'Get Apigee Access Token'

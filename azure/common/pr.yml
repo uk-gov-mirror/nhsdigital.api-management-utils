@@ -1,0 +1,49 @@
+parameters:
+  - name: environment
+    type: string
+    values:
+      - internal-dev
+  - name: apigee_organization
+  - name: aws_org_account
+  - name: aws_env_account
+  - name: stage_name
+  - name: service_name
+  - name: service_base_path
+  - name: product_display_name
+  - name: product_description
+  - name: proxy_path
+  - name: secret_ids
+    type: object
+  - name: config_ids
+    type: object
+  - name: pre_template
+    type: stepList
+  - name: post_template
+    type: stepList
+  - name: pre_deploy
+    type: stepList
+  - name: post_deploy
+    type: stepList
+  - name: deploy_review_sandbox
+    type: boolean
+  - name: depends_on
+    type: object
+  - name: build_pipeline_alias
+
+stages:
+  - template: ./deploy-stage.yml
+    parameters:
+      fully_qualified_service_name: ${{ parameters.service_name }}-$(Build.SourceBranchName)
+      service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)
+      ${{ each param in parameters }}:
+        ${{ if notIn(param.key, 'deploy_review_sandbox', 'service_base_path') }}:
+          ${{ param.key }}: ${{ param.value }}
+  - ${{ if parameters.deploy_review_sandbox }}:
+    - template: ./deploy-stage.yml
+      parameters:
+        fully_qualified_service_name: ${{ parameters.service_name }}-$(Build.SourceBranchName)-sandbox
+        service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)-sandbox
+        stage_name: ${{ parameters.stage_name }}_sandbox
+        ${{ each param in parameters }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'service_base_path') }}:
+            ${{ param.key }}: ${{ param.value }}
