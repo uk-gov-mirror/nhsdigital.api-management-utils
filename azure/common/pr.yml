@@ -36,7 +36,7 @@ stages:
       fully_qualified_service_name: ${{ parameters.service_name }}-$(Build.SourceBranchName)
       service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)
       ${{ each param in parameters }}:
-        ${{ if notIn(param.key, 'deploy_review_sandbox', 'service_base_path') }}:
+        ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
           ${{ param.key }}: ${{ param.value }}
   - ${{ if parameters.deploy_review_sandbox }}:
     - template: ./deploy-stage.yml
@@ -45,5 +45,5 @@ stages:
         service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)-sandbox
         stage_name: ${{ parameters.stage_name }}_sandbox
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'service_base_path') }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
             ${{ param.key }}: ${{ param.value }}
