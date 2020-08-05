@@ -16,6 +16,7 @@ parameters:
   - name: aws_env_account
   - name: aws_org_account
   - name: service_name
+  - name: short_service_name
   - name: fully_qualified_service_name
   - name: service_base_path
   - name: secret_ids
@@ -35,7 +36,6 @@ parameters:
     type: stepList
   - name: build_pipeline_alias
 
-
 stages:
   - stage: ${{ parameters.stage_name }}
     dependsOn: ${{ parameters.depends_on }}
@@ -47,6 +47,7 @@ stages:
             deploy:
               steps:
                 - download: none
+                  
                 - task: DownloadPipelineArtifact@2
                   inputs:
                     source: "specific"
@@ -55,11 +56,29 @@ stages:
                     preferTriggeringPipeline: true
                     runVersion: "latestFromBranch"
                     runBranch: $(Build.SourceBranch)
-                    patterns: |
-                      **
-                      **/*
-                    path: "$(Pipeline.Workspace)/${{ parameters.service_name }}"
-                - template: "../components/install-prerequisites.yml"
+                    path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
+
+                - task: DownloadSecureFile@1
+                  name: aws_config
+                  inputs:
+                    secureFile: ptl_aws_config
+
+                - bash: |
+                    set -euo pipefail
+                    mkdir -p ~/.aws
+                    mv $(aws_config.secureFilePath) ~/.aws/config
+                    chmod 400 ~/.aws/config
+                    ls -al ~/.aws/config
+                  displayName: "Get AWS config"
+
+                - task: UsePythonVersion@0
+                  displayName: 'Use Python 3.8'
+                  inputs:
+                    versionSpec: 3.8
+
+                - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
+                  displayName: Install python dependencies
+
                 - template: "../components/set-facts.yml"
                   parameters:
                     service_name: ${{ parameters.service_name }}
@@ -76,9 +95,11 @@ stages:
                       - /ptl/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+
                 - template: "../templates/deploy-service.yml"
                   parameters:
                     service_name: ${{ parameters.service_name }}
+                    short_service_name: ${{ parameters.short_service_name }}
                     fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                     service_base_path: ${{ parameters.service_base_path }}
                     apigee_environment: ${{ parameters.environment }}

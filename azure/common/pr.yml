@@ -8,6 +8,7 @@ parameters:
   - name: aws_env_account
   - name: stage_name
   - name: service_name
+  - name: short_service_name
   - name: service_base_path
   - name: product_display_name
   - name: product_description
@@ -34,16 +35,16 @@ parameters:
 stages:
   - template: ./deploy-stage.yml
     parameters:
-      fully_qualified_service_name: ${{ parameters.service_name }}-$(Build.SourceBranchName)
-      service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)
+      fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
+      service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
       ${{ each param in parameters }}:
         ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
           ${{ param.key }}: ${{ param.value }}
   - ${{ if parameters.deploy_review_sandbox }}:
     - template: ./deploy-stage.yml
       parameters:
-        fully_qualified_service_name: ${{ parameters.service_name }}-$(Build.SourceBranchName)-sandbox
-        service_base_path: ${{ parameters.service_base_path }}-$(Build.SourceBranchName)-sandbox
+        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
+        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
         stage_name: ${{ parameters.stage_name }}_sandbox
         ${{ each param in parameters }}:
           ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:

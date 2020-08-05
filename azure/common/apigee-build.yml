@@ -1,6 +1,15 @@
 parameters:
   - name: service_name
     type: string
+  - name: short_service_name
+    type: string
+
+resources:
+  repositories:
+    - repository: utils
+      name: NHSDigital/api-management-utils
+      endpoint: NHSDigital
+      type: github
 
 jobs:
   - job: build
@@ -9,7 +18,15 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+        # This is here as azure insists on running this before other steps in the job
+        # even though it is only needed if ecs-proxies-containers.yml is present
+      - task: DownloadSecureFile@1
+        name: aws_config
+        inputs:
+          secureFile: ptl_aws_config
+
       - checkout: self
+        path: "s/${{ parameters.service_name }}"
 
       - template: ../templates/setup-build-name.yml
         parameters:
@@ -36,22 +53,92 @@ jobs:
         displayName: Install python dependencies
 
       - bash: "make install"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
 
       - bash: "make check-licenses"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Check licenses
 
       - bash: "make lint"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Lint
 
       - bash: "make test"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Run unit tests
 
       - bash: "make publish"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Compile spec
 
       - bash: "make release"
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: Build release package
 
-      - publish: dist/
-        artifact: '$(Build.BuildNumber)'
+      - bash: |
+          if [[ -f ecs-proxies-containers.yml ]]; then
+            echo "##vso[task.setvariable variable=build_containers]true"
+          else
+            echo "##vso[task.setvariable variable=build_containers]false"
+          fi
+        workingDirectory: ${{ parameters.service_name }}
+        displayName: "Check for ECS proxy definitions"
+
+      - checkout: utils
+        path: "s/${{ parameters.service_name }}/utils"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: "make install"
+        workingDirectory: "${{ parameters.service_name }}/utils"
+        displayName: "Install utils pre-requisites"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          export out_dir="$(realpath ${{ parameters.service_name }}/dist)"
+          export commit_hash="$(git -C ${{ parameters.service_name }} rev-parse --short HEAD)"
+          # sha prefix is required docker gets upset if names contain -0 iirc
+          export build_label="$(Build.BuildId)-sha${commit_hash}"
+          export pr_number="$(System.PullRequest.PullRequestNumber)"
+          export service_name="${{ parameters.service_name }}"
+          export service_id="${{ parameters.short_service_name }}"
+              make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
+        displayName: output build env vars for artifact
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          mkdir -p ~/.aws
+          mv $(aws_config.secureFilePath) ~/.aws/config
+          chmod 400 ~/.aws/config
+        displayName: "Get AWS config"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          source "${{ parameters.service_name }}/dist/.build_env_vars"
+          account=ptl make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-ecr-build-user
+        displayName: "Ensure build user"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          source "${{ parameters.service_name }}/dist/.build_env_vars"
+          cd ${{ parameters.service_name }}/utils
+          poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${{ parameters.short_service_name }}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+          mv -f ~/.aws/config.tmp ~/.aws/config
+          chmod 400 ~/.aws/config
+        displayName: "Become build user"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          source "${{ parameters.service_name }}/dist/.build_env_vars"
+          CONTAINER_VARS_FILE="$(realpath ${{ parameters.service_name }}/ecs-proxies-containers.yml)" \
+          make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible build-ecs-proxies
+        displayName: "Build and push ECS proxies"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
+        displayName: "Copy ecs-proxies-deploy configs into build artifact"
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - publish: ${{ parameters.service_name}}/dist
+        artifact: "$(Build.BuildNumber)"
