@@ -1,0 +1,39 @@
+- name: "deploy apigee proxy"
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+    APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
+    APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
+
+  pre_tasks:
+    - name: check SERVICE_NAME
+      fail:
+        msg: "SERVICE_NAME not set"
+      when: not SERVICE_NAME
+
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+    - name: check APIGEE_ORGANIZATION
+      fail:
+        msg: "APIGEE_ORGANIZATION not set"
+      when: not APIGEE_ORGANIZATION
+
+    - name: check APIGEE_ACCESS_TOKEN
+      fail:
+        msg: "APIGEE_ACCESS_TOKEN not set"
+      when: not APIGEE_ACCESS_TOKEN
+
+    - name: check SPEC_FILE
+      fail:
+        msg: "SPEC_FILE not set"
+      when: not SPEC_FILE
+  roles:
+    - deploy-apigee-spec
