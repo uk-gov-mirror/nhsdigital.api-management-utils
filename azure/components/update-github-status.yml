@@ -11,7 +11,7 @@ parameters:
     displayName: Description
     type: string
   - name: is_pull_request
-    display_name: Pull Request
+    displayName: Pull Request
     type: boolean
     default: false
   # Been through a lot of pain to try to get these next two to work. Unfortunately due to how templates
