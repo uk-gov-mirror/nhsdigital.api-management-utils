@@ -28,7 +28,7 @@ parameters:
 steps:
   - bash: |
       if [ ${{ parameters.is_pull_request }} ]; then
-        export COMMIT_HASH="$(system.pullRequest.sourceCommitId)"
+        export COMMIT_HASH="$(System.PullRequest.SourceCommitId)"
       else
         export COMMIT_HASH="$(Build.SourceVersion)"
       fi
