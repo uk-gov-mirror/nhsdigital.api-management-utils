@@ -72,7 +72,7 @@ extends:
         ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
           ${{ param.key }}: ${{ param.value }}
 
-    ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Requests') }}:
+    ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request'))}}:
       deploy_template: pr.yml
     ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
       deploy_template: release.yml
@@ -100,7 +100,7 @@ extends:
 
     # otherwise pick a different default based on the whether it's the PR or release pipeline
     ${{ if eq(0, length(parameters.apigee_deployments)) }}:
-      ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Requests') }}:
+      ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request') }}:
         apigee_deployments:
           - stage_name: internal_dev
             environment: internal-dev
