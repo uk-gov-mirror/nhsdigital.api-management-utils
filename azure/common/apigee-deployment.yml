@@ -74,10 +74,8 @@ extends:
 
     ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Requests') }}:
       deploy_template: pr.yml
-      build_pipeline_alias: ${{ replace(variables['Build.DefinitionName'], '-Pull-Requests', '-Build') }}
     ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
       deploy_template: release.yml
-      build_pipeline_alias: ${{ replace(variables['Build.DefinitionName'], '-Release', '-Build') }}
 
     # If apigee_deployments was specified, forward it regardless of which deploy template
     ${{ if gt(length(parameters.apigee_deployments), 0) }}:

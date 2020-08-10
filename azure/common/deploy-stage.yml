@@ -34,7 +34,6 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
-  - name: build_pipeline_alias
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -51,8 +50,8 @@ stages:
                 - task: DownloadPipelineArtifact@2
                   inputs:
                     source: "specific"
-                    project: $(resources.pipeline.${{ parameters.build_pipeline_alias }}.projectID)
-                    pipeline: $(resources.pipeline.${{ parameters.build_pipeline_alias }}.pipelineID)
+                    project: $(resources.pipeline.build_pipeline.projectID)
+                    pipeline: $(resources.pipeline.build_pipeline.pipelineID)
                     preferTriggeringPipeline: true
                     runVersion: "latestFromBranch"
                     runBranch: $(Build.SourceBranch)
