@@ -6,6 +6,9 @@ parameters:
   - name: service_name
     displayName: Service Name
     type: string
+  - name: short_service_name
+    displayName: Shortened version of the service name, usually initials
+    type: string
   - name: service_base_path
     displayName: Service Base Path
     type: string
@@ -24,7 +27,7 @@ parameters:
     type: boolean
     default: false
   - name: fully_qualified_service_name
-    displayName: Supply a custom named for your release (only valid for release pipeline)
+    displayName: Supply a custom name for your release (only valid for release pipeline)
     type: string
     default: ''
   - name: secret_ids
@@ -55,6 +58,7 @@ parameters:
     type: object
     default:
       - service_name
+      - short_service_name
       - service_base_path
       - product_display_name
       - product_description

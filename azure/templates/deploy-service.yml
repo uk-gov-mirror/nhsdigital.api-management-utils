@@ -1,20 +1,13 @@
 parameters:
   - name: proxy_path
-    type: string
   - name: product_display_name
-    type: string
   - name: product_description
-    type: string
   - name: service_name
-    type: string
+  - name: short_service_name
   - name: fully_qualified_service_name
-    type: string
   - name: apigee_environment
-    type: string
   - name: apigee_organization
-    type: string
   - name: service_base_path
-    type: string
   - name: pre_template
     type: stepList
     default: []
@@ -30,6 +23,26 @@ parameters:
 
 steps:
   - bash: |
+      ls -R
+      if [[ -f ecs-proxies-deploy.yml ]]; then
+        echo "##vso[task.setvariable variable=build_containers]true"
+      else
+        echo "##vso[task.setvariable variable=build_containers]false"
+      fi
+    workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)
+    displayName: "Check for ECS proxy definitions"
+
+  - bash: |
+      git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+    displayName: Clone utils
+
+  - bash: "make install"
+    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: "Install utils pre-requisites"
+    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+  - bash: |
       echo "Deploying ${{ parameters.service_name }} artifact $(SERVICE_ARTIFACT_NAME) as ${{ parameters.fully_qualified_service_name }} to ${{ parameters.service_base_path }} on $(ENV_URL)"
     displayName: 'Deploy Info'
 
@@ -38,20 +51,20 @@ steps:
 
   - bash: |
       set -euo pipefail
-      
+
       export SERVICE_NAME="${{ parameters.service_name }}"
-      export PROXIES_DIR="$(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export PROXIES_DIR="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
-      
-      if [ -f  $(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
-        source $(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+
+      if [ -f  $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
+        source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       fi
 
-      cd utils/ansible
-      poetry run ansible-playbook template-proxies.yml
+      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+      poetry run ansible-playbook ansible/template-proxies.yml
     displayName: 'Template Proxies'
 
   - ${{ each post_template_step in parameters.post_template }}:
@@ -60,12 +73,45 @@ steps:
   - ${{ each pre_deploy_step in parameters.pre_deploy }}:
     - ${{ pre_deploy_step}}
 
-  - template: ../components/deploy-ecs-proxies.yml
+  - bash: |
+      set -e
+
+      dist_dir="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)"
+      proxy_vars_file=""
+
+      if [ -f  ${dist_dir}/ecs-deploy-${{ parameters.apigee_environment }}.yml ]; then
+        proxy_vars_file="${dist_dir}/ecs-deploy-${{ parameters.apigee_environment }}.yml"
+      else
+        if [ -f  ${dist_dir}/ecs-deploy-all.yml ]; then
+          proxy_vars_file="${dist_dir}/ecs-deploy-all.yml"
+        fi
+      fi
+
+
+      if [ ! -z "${proxy_vars_file}" ]; then
+        # ensure deployment pre-reqs
+        source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+
+        account=ptl SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+        make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible create-api-deployment-pre-reqs
+
+        # become deployment user
+        aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${{ parameters.apigee_environment }}-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
+        mv -f ~/.aws/config.tmp ~/.aws/config
+        chmod 400 ~/.aws/config
+
+        # deploy ecs proxies
+        # I'm not sure that SANDBOX actually does anything...
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} SANDBOX=false \
+        make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible deploy-ecs-proxies
+      fi
+    displayName: Deploy ECS proxies
+    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
   - bash: |
       set -euo pipefail
 
-      export PROXY_DIR="$(Pipeline.Workspace)/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies/${{ parameters.proxy_path }}"
+      export PROXY_DIR="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies/${{ parameters.proxy_path }}"
       export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
@@ -74,7 +120,7 @@ steps:
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
 
-      cd utils/ansible
+      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
       poetry run ansible-playbook deploy-apigee-proxy.yml
       poetry run ansible-playbook deploy-apigee-product.yml
     displayName: 'Deploy Proxy and Product'

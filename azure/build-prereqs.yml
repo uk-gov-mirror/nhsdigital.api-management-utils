@@ -1,11 +1,9 @@
-
 parameters:
   - name: 'utils_dir'
     type: string
     default: 'utils'
 
 steps:
-
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.8'
@@ -21,6 +19,3 @@ steps:
       cd ${{ parameters.utils_dir }}
       make install
     displayName: "Install Utils dependencies"
-
-
-
