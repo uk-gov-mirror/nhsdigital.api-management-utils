@@ -144,5 +144,8 @@ jobs:
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
+      - ${{ each pre_package_step in parameters.pre_package_steps }}:
+        - ${{ pre_package_step}}
+
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
