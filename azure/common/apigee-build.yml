@@ -82,6 +82,9 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Compile spec
 
+      - ${{ each pre_package_step in parameters.pre_package_steps }}:
+        - ${{ pre_package_step}}
+
       - bash: "make release"
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Build release package
@@ -149,9 +152,6 @@ jobs:
           cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
-
-      - ${{ each pre_package_step in parameters.pre_package_steps }}:
-        - ${{ pre_package_step}}
 
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
