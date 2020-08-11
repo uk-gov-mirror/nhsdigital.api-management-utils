@@ -27,13 +27,13 @@ parameters:
 steps:
   - bash: |
       if [ "$(Build.SourceBranchName)" = "merge" ]; then
-        export COMMIT_HASH="`poetry run python $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/scripts/pr_commit_id.py "$(Build.Repository.Name)" "${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}"`"
+        export COMMIT_HASH='`poetry run python $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/scripts/pr_commit_id.py "$(Build.Repository.Name)" "${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}"`'
+        echo $COMMIT_HASH
       else
         export COMMIT_HASH="$(Build.SourceVersion)"
       fi
       curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$COMMIT_HASH" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName)", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
     displayName: "Notify GitHub pipeline status: ${{ parameters.state }}"
-    workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
     condition: |
       or(
         and(
