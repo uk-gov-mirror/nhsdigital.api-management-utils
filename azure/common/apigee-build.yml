@@ -26,7 +26,7 @@ jobs:
       vmImage: 'ubuntu-latest'
     variables:
       - ${{ each var in parameters.variables }}:
-          ${{ var }}: ${{ variables[var] }}
+          ${{ var.key }}: ${{ var.value }}
     steps:
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
