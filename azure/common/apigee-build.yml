@@ -3,6 +3,10 @@ parameters:
     type: string
   - name: short_service_name
     type: string
+  - name: pre_package_steps
+    displayName: Steps to run prior to creating artifact
+    type: stepList
+    default: []
 
 resources:
   repositories:
