@@ -25,12 +25,11 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
     variables:
-      ${{ each variable in parameters.variables }}:
-        ${{ variable.key }} ${{ variable.value }}
+      - ${{ each variable in parameters.variables }}:
+        - ${{ variable.key }} ${{ variable.value }}
     steps:
-      - bash: |
-          ${{ each variable in variables }}:
-            echo ${{ variable.key }} ${{ varaible.value}}
+      - ${{ each variable in parameters.variables }}:
+          - bash: echo ${{ variable.key }} ${{ variable.value }}
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
       - task: DownloadSecureFile@1
