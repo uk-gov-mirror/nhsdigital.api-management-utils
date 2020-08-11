@@ -3,6 +3,9 @@ parameters:
     type: string
   - name: short_service_name
     type: string
+  - name: variables
+    type: object
+    default: []
   - name: pre_package_steps
     displayName: Steps to run prior to creating artifact
     type: stepList
@@ -21,6 +24,9 @@ jobs:
     timeoutInMinutes: 10
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      ${{ each variable in variables }}:
+        ${{ variable.key }} ${{ varaible.value}}
     steps:
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
