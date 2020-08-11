@@ -30,7 +30,6 @@ parameters:
     type: boolean
   - name: depends_on
     type: object
-  - name: build_pipeline_alias
 
 stages:
   - template: ./deploy-stage.yml

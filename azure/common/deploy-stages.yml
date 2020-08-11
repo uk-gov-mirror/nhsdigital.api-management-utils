@@ -17,7 +17,6 @@ parameters:
   - name: deploy_review_sandbox
     type: boolean
   - name: deploy_template
-  - name: build_pipeline_alias
 
 
 stages:
