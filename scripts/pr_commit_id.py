@@ -17,6 +17,7 @@ from docopt import docopt
 
 
 def main(args):
+    print(f"https://api.github.com/repos/{args['REPO_NAME']}/pulls/{args['PULL_NUMBER']}/commits")
     response = requests.get(f"https://api.github.com/repos/{args['REPO_NAME']}/pulls/{args['PULL_NUMBER']}/commits").json()
     latest_commit = response[len(response) - 1]
     commit_hash = latest_commit["commit"]["tree"]["sha"]
