@@ -27,6 +27,7 @@ parameters:
 steps:
   - bash: |
       if [ "$(Build.SourceBranchName)" = "merge" ]; then
+        echo "$(Build.Repository.Name)" "${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}"
         export COMMIT_HASH=`poetry run python $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/scripts/pr_commit_id.py "$(Build.Repository.Name)" "${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}"`
       else
         export COMMIT_HASH="$(Build.SourceVersion)"
