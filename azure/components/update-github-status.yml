@@ -26,7 +26,7 @@ parameters:
 
 steps:
   - bash: |
-      if [ -n "$(System.PullRequest.SourceBranch)" ]; then
+      if [ "$(Build.SourceBranchName)" = "merge" ]; then
         export COMMIT_HASH=`poetry run python ./scripts/pr_commit_id.py "$(Build.Repository.Name)" "$(System.PullRequest.PullRequestNumber)"`
       else
         export COMMIT_HASH="$(Build.SourceVersion)"
