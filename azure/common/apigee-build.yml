@@ -25,11 +25,9 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
     variables:
-      - ${{ each variable in parameters.variables }}:
-        - ${{ variable.key }} ${{ variable.value }}
+      - ${{ each var in parameters.variables }}:
+          ${{ var }}: ${{ variables[var] }}
     steps:
-      - ${{ each variable in parameters.variables }}:
-          - bash: echo ${{ variable.key }} ${{ variable.value }}
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
       - task: DownloadSecureFile@1
@@ -39,6 +37,9 @@ jobs:
 
       - checkout: self
         path: "s/${{ parameters.service_name }}"
+
+      - ${{ each variable in parameters.variables }}:
+          - bash: echo ${{ variable.key }} ${{ variable.value }}
 
       - template: ../templates/setup-build-name.yml
         parameters:
