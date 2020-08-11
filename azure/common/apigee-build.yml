@@ -72,7 +72,6 @@ jobs:
       
       - ${{ each post_dependancy_step in parameters.post_dependancy_steps }}:
         - ${{ post_dependancy_step }}
-        workingDirectory: "${{ parameters.service_name }}"
 
       - bash: "make check-licenses"
         workingDirectory: "${{ parameters.service_name }}"
