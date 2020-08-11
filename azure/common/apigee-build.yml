@@ -6,6 +6,10 @@ parameters:
   - name: variables
     type: object
     default: []
+  - name: post_dependancy_steps
+    displayName: Steps to run prior to creating artifact
+    type: stepList
+    default: []
   - name: pre_package_steps
     displayName: Steps to run prior to creating artifact
     type: stepList
@@ -38,9 +42,6 @@ jobs:
       - checkout: self
         path: "s/${{ parameters.service_name }}"
 
-      - ${{ each variable in parameters.variables }}:
-          - bash: echo ${{ variable.key }} ${{ variable.value }}
-
       - template: ../templates/setup-build-name.yml
         parameters:
           service_name: "${{ parameters.service_name }}"
@@ -68,6 +69,9 @@ jobs:
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
+      
+      - ${{ each post_dependancy_step in parameters.post_dependancy_steps }}:
+        - ${{ post_dependancy_step }}
 
       - bash: "make check-licenses"
         workingDirectory: "${{ parameters.service_name }}"
