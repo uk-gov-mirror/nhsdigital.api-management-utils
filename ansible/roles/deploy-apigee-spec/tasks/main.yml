@@ -25,9 +25,17 @@
     return_content: yes
   register: specs
 
+- name: set folder_id
+  set_fact:
+    folder_id: "{{ specs.json.id }}"
+
 - name: set spec_names
   set_fact:
     spec_names: "{{ specs.json.contents | map(attribute='name') | list }}"
+
+- name: debug
+  debug:
+    msg: "{{ spec_names }}"
 
 - name: set spec_content
   set_fact:
@@ -36,11 +44,14 @@
 - name: if not exists, create spec
   uri:
     url: "{{ specs_resource_uri }}"
-    body: "{{ spec_content }}"
+    method: POST
+    body: '{"folder": "{{ folder_id }}", "name": "{{ SERVICE_NAME }}", "kind": "Doc"}'
+    body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
     return_content: yes
-  when: "{{ SERVICE_NAME not in spec_names }}"
+  when: SERVICE_NAME not in spec_names
 
 - name: create/update spec file
   debug:
