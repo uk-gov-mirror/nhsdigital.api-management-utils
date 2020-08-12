@@ -1,0 +1,162 @@
+parameters:
+  - name: apigee_deployments
+    displayName: List of apigee deployments
+    type: object
+    default: []
+  - name: service_name
+    displayName: Service Name
+    type: string
+  - name: short_service_name
+    displayName: Shortened version of the service name, usually initials
+    type: string
+  - name: service_base_path
+    displayName: Service Base Path
+    type: string
+  - name: product_display_name
+    displayName: Service Display Name
+    type: string
+  - name: product_description
+    displayName: Description
+    type: string
+  - name: proxy_path
+    displayName: Path to proxy directory from /proxies at the project root
+    type: string
+    default: live
+  - name: deploy_review_sandbox
+    displayName: Deploy review sandbox?
+    type: boolean
+    default: false
+  - name: fully_qualified_service_name
+    displayName: Supply a custom name for your release (only valid for release pipeline)
+    type: string
+    default: ''
+  - name: secret_ids
+    displayName: List of additional AWS Secrets Manager Secret IDs
+    type: object
+    default: []
+  - name: config_ids
+    displayName: List of additional AWS SSM Config IDs
+    type: object
+    default: []
+  - name: pre_template
+    displayName: Steps to run prior to templating
+    type: stepList
+    default: []
+  - name: post_template
+    displayName: Steps to run after templating
+    type: stepList
+    default: []
+  - name: pre_deploy
+    displayName: Steps to run prior to templating
+    type: stepList
+    default: []
+  - name: post_deploy
+    displayName: Steps to run after templating
+    type: stepList
+    default: []
+  - name: _scoped_pipeline_vars
+    type: object
+    default:
+      - service_name
+      - short_service_name
+      - service_base_path
+      - product_display_name
+      - product_description
+      - fully_qualified_service_name
+        
+extends:
+  template: ./deploy-stages.yml
+  parameters:
+    ${{ each param in parameters }}:
+      ${{ if notIn(param.key, 'apigee_deployments', '_scoped_pipeline_vars') }}:
+        ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
+          ${{ param.key }}: ${{ param.value }}
+
+    ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request') }}:
+      deploy_template: pr.yml
+    ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
+      deploy_template: release.yml
+
+    # If apigee_deployments was specified, forward it regardless of which deploy template
+    ${{ if gt(length(parameters.apigee_deployments), 0) }}:
+      apigee_deployments:
+        - ${{ each apigee_deployment in parameters.apigee_deployments }}:
+          - environment: ${{ apigee_deployment.environment }}
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ if apigee_deployment[var] }}:
+                ${{ var }}: ${{ apigee_deployment[var] }}
+              ${{ if not(apigee_deployment[var]) }}:
+                ${{ var }}: ${{ parameters[var] }}
+            stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
+            ${{ if not(apigee_deployment.depends_on) }}:
+              ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
+                depends_on: []
+              ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
+            ${{ if apigee_deployment.depends_on }}:
+              depends_on: ${{ apigee_deployment.depends_on }}
+
+    # otherwise pick a different default based on the whether it's the PR or release pipeline
+    ${{ if eq(0, length(parameters.apigee_deployments)) }}:
+      ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request') }}:
+        apigee_deployments:
+          - stage_name: internal_dev
+            environment: internal-dev
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+
+      ${{ if endswith(variables['Build.DefinitionName'], '-Release') }}:
+        apigee_deployments:
+          - stage_name: internal_dev
+            environment: internal-dev
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: internal_qa
+            environment: internal-qa
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: internal_qa_sandbox
+            environment: internal-qa-sandbox
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: deploy_ref
+            environment: ref
+            depends_on:
+              - internal_qa
+              - internal_qa_sandbox
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: dev
+            environment: dev
+            depends_on:
+              - internal_qa
+              - internal_qa_sandbox
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: deploy_int
+            environment: int
+            depends_on:
+              - internal_qa
+              - internal_qa_sandbox
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: sandbox
+            environment: sandbox
+            depends_on:
+              - internal_qa
+              - internal_qa_sandbox
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: prod
+            environment: prod
+            depends_on:
+              - internal_qa
+              - internal_qa_sandbox
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}

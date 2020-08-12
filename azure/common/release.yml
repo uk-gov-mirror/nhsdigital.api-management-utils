@@ -1,0 +1,46 @@
+parameters:
+  - name: environment
+    values:      
+      - internal-dev
+      - internal-qa
+      - internal-qa-sandbox
+      - ref
+      - dev
+      - int
+      - sandbox
+      - prod
+  - name: apigee_organization
+  - name: aws_org_account
+  - name: aws_env_account
+  - name: stage_name
+  - name: service_name
+  - name: fully_qualified_service_name
+  - name: service_base_path
+  - name: product_display_name
+  - name: product_description
+  - name: proxy_path
+  - name: secret_ids
+    type: object
+  - name: config_ids
+    type: object
+  - name: pre_template
+    type: stepList
+  - name: post_template
+    type: stepList
+  - name: pre_deploy
+    type: stepList
+  - name: post_deploy
+    type: stepList
+  - name: depends_on
+    type: object
+
+stages:
+  - template: ./deploy-stage.yml
+    parameters:
+      ${{ if eq('', parameters.fully_qualified_service_name) }}:
+        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.environment }}
+      ${{ if ne('', parameters.fully_qualified_service_name) }}:
+        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+      ${{ each param in parameters }}:
+        ${{ if notIn(param.key, 'fully_qualified_service_name') }}:
+          ${{ param.key }}: ${{ param.value }}
