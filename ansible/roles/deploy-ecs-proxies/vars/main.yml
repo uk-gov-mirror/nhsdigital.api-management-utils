@@ -19,7 +19,4 @@ container_defaults:
   secrets: []
   expose: true
   essential: true
-  health_check:
-    matcher: "200"
-    path: "/"
   lb_protocol: "HTTP"
