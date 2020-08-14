@@ -30,6 +30,8 @@ parameters:
     type: boolean
   - name: depends_on
     type: object
+  - name: jinja_templates
+    type: object
 
 stages:
   - template: ./deploy-stage.yml

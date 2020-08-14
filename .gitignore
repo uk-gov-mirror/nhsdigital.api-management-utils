@@ -131,6 +131,7 @@ dmypy.json
 
 # Emacs
 .#*
+.dir-locals.el
 
 # Local access tokens
 .access_token
@@ -140,3 +141,5 @@ dmypy.json
 
 # direnv
 .envrc
+.direnv
+env
