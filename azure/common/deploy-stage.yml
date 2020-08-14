@@ -34,6 +34,9 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: notify
+    type: boolean
+    default: false
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -56,6 +59,11 @@ stages:
                     runVersion: "latestFromBranch"
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
+
+                - bash: |
+                    echo $(Build.SourceVersion)
+                    echo $(Build.SourceVersionMessage)
+                    echo $(resources.pipeline.build_pipeline.sourceCommit)
 
                 - task: DownloadSecureFile@1
                   name: aws_config
@@ -97,6 +105,7 @@ stages:
 
                 - template: "../templates/deploy-service.yml"
                   parameters:
+                    notify: ${{ parameters.notify }}
                     service_name: ${{ parameters.service_name }}
                     short_service_name: ${{ parameters.short_service_name }}
                     fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
