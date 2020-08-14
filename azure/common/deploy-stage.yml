@@ -1,4 +1,6 @@
 parameters:
+  - name: jinja_templates
+    type: object
   - name: depends_on
     type: object
   - name: stage_name
@@ -101,6 +103,7 @@ stages:
                     short_service_name: ${{ parameters.short_service_name }}
                     fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                     service_base_path: ${{ parameters.service_base_path }}
+                    jinja_templates: ${{ parameters.jinja_templates }}
                     apigee_environment: ${{ parameters.environment }}
                     apigee_organization: ${{ parameters.apigee_organization }}
                     product_display_name: ${{ parameters.product_display_name }}
