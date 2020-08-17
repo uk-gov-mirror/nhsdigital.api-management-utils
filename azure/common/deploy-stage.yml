@@ -34,9 +34,6 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
-  - name: deploy_review_spec
-    type: boolean
-    default: false
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -98,7 +95,7 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
 
-                - ${{ if eq(parameters.deploy_review_spec, false) }}:
+                - ${{ if not(endswith(parameters.stage_name, 'portal')) }}:
                   - template: "../templates/deploy-service.yml"
                     parameters:
                       service_name: ${{ parameters.service_name }}
@@ -115,7 +112,7 @@ stages:
                       pre_deploy: ${{ parameters.pre_deploy }}
                       post_deploy: ${{ parameters.post_deploy }}
 
-                - ${{ if eq(parameters.deploy_review_spec, true) }}:
+                - ${{ if endswith(parameters.stage_name, 'portal')) }}:
                   - template: "../templates/deploy-spec.yml"
                     parameters:
                       service_name: ${{ parameters.service_name }}
