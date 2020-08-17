@@ -111,6 +111,13 @@ extends:
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_review_spec }}:
+            - stage_name: internal_portal
+              environment: internal-portal
+              depends_on:
+                - internal-dev
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
 
       ${{ if endswith(variables['Build.DefinitionName'], '-Release') }}:
         apigee_deployments:
