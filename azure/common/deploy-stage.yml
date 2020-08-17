@@ -97,7 +97,7 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
 
-                - ${{ if not(endswith(parameters.stage_name, 'portal')) }}:
+                - ${{ if not(endswith(parameters.environment, 'portal')) }}:
                   - template: "../templates/deploy-service.yml"
                     parameters:
                       service_name: ${{ parameters.service_name }}
@@ -114,7 +114,7 @@ stages:
                       pre_deploy: ${{ parameters.pre_deploy }}
                       post_deploy: ${{ parameters.post_deploy }}
 
-                - ${{ if endswith(parameters.stage_name, 'portal') }}:
+                - ${{ if endswith(parameters.environment, 'portal') }}:
                   - template: "../templates/deploy-spec.yml"
                     parameters:
                       service_name: ${{ parameters.service_name }}
