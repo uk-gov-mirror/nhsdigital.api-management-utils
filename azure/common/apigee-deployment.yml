@@ -115,7 +115,7 @@ extends:
             - stage_name: internal_portal
               environment: internal-portal
               depends_on:
-                - internal-dev
+                - internal_dev
               ${{ each var in parameters._scoped_pipeline_vars }}:
                 ${{ var }}: ${{ parameters[var] }}
 
