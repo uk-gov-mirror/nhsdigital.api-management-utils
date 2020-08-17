@@ -68,6 +68,7 @@ parameters:
       - product_description
       - fully_qualified_service_name
       - jinja_templates
+      - proxy_path
 
 extends:
   template: ./deploy-stages.yml
