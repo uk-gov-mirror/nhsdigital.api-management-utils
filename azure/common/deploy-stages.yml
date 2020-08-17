@@ -16,6 +16,8 @@ parameters:
     type: stepList
   - name: deploy_review_sandbox
     type: boolean
+  - name: deploy_review_spec
+    type: boolean
   - name: deploy_template
 
 
