@@ -112,7 +112,7 @@ stages:
                       pre_deploy: ${{ parameters.pre_deploy }}
                       post_deploy: ${{ parameters.post_deploy }}
 
-                - ${{ if endswith(parameters.stage_name, 'portal')) }}:
+                - ${{ if endswith(parameters.stage_name, 'portal') }}:
                   - template: "../templates/deploy-spec.yml"
                     parameters:
                       service_name: ${{ parameters.service_name }}
