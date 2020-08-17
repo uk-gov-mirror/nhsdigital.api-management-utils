@@ -3,6 +3,7 @@ parameters:
     type: string
     values:
       - internal-dev
+      - internal-portal
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
@@ -61,5 +62,3 @@ stages:
         ${{ each param in parameters }}:
           ${{ if notIn(param.key, 'deploy_review_sandbox', 'deploy_review_spec', 'stage_name', 'fully_qualified_service_name', 'service_base_path', 'depends_on') }}:
             ${{ param.key }}: ${{ param.value }}
-
-
