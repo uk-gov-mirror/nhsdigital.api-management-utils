@@ -26,6 +26,10 @@ parameters:
     displayName: Deploy review sandbox?
     type: boolean
     default: false
+  - name: deploy_review_spec
+    displayName: Deploy review spec?
+    type: boolean
+    default: false
   - name: fully_qualified_service_name
     displayName: Supply a custom name for your release (only valid for release pipeline)
     type: string

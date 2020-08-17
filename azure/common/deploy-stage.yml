@@ -34,6 +34,9 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: deploy_review_spec
+    type: boolean
+    default: false
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -95,18 +98,26 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
 
-                - template: "../templates/deploy-service.yml"
-                  parameters:
-                    service_name: ${{ parameters.service_name }}
-                    short_service_name: ${{ parameters.short_service_name }}
-                    fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                    service_base_path: ${{ parameters.service_base_path }}
-                    apigee_environment: ${{ parameters.environment }}
-                    apigee_organization: ${{ parameters.apigee_organization }}
-                    product_display_name: ${{ parameters.product_display_name }}
-                    product_description: ${{ parameters.product_description }}
-                    proxy_path: ${{ parameters.proxy_path }}
-                    pre_template: ${{ parameters.pre_template }}
-                    post_template: ${{ parameters.post_template }}
-                    pre_deploy: ${{ parameters.pre_deploy }}
-                    post_deploy: ${{ parameters.post_deploy }}
+                - ${{ if eq(parameters.deploy_review_spec, false) }}:
+                  - template: "../templates/deploy-service.yml"
+                    parameters:
+                      service_name: ${{ parameters.service_name }}
+                      short_service_name: ${{ parameters.short_service_name }}
+                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                      service_base_path: ${{ parameters.service_base_path }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      product_display_name: ${{ parameters.product_display_name }}
+                      product_description: ${{ parameters.product_description }}
+                      proxy_path: ${{ parameters.proxy_path }}
+                      pre_template: ${{ parameters.pre_template }}
+                      post_template: ${{ parameters.post_template }}
+                      pre_deploy: ${{ parameters.pre_deploy }}
+                      post_deploy: ${{ parameters.post_deploy }}
+
+                - ${{ if eq(parameters.deploy_review_spec, true) }}:
+                  - template: "../templates/deploy-spec.yml"
+                    parameters:
+                      service_name: ${{ parameters.service_name }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
