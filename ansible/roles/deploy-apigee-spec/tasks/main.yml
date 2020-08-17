@@ -1,5 +1,4 @@
 # TODO
-# * check if a spec already exists
 # * create/update the spec
 # * check if spec is on portal
 # * if it isn't, put it on
@@ -33,10 +32,6 @@
   set_fact:
     spec_names: "{{ specs.json.contents | map(attribute='name') | list }}"
 
-- name: debug
-  debug:
-    msg: "{{ spec_names }}"
-
 - name: set spec_content
   set_fact:
     spec_content: "{{ lookup('file', SPEC_FILE) }}"
@@ -51,15 +46,67 @@
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
     return_content: yes
+  register: spec
   when: SERVICE_NAME not in spec_names
 
-- name: create/update spec file
-  debug:
-    msg: "Not implemented"
+- name: if not exists, set spec_id
+  set_fact:
+    spec_id: "{{ spec.json.id }}"
+  when: SERVICE_NAME not in spec_names
 
-- name: check if spec is on the portal
+- name: if exists, set spec_id
+  set_fact:
+    spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
+  vars:
+    _query: "[? name=='{{ SERVICE_NAME }}'].id"
+  when: SERVICE_NAME in spec_names
+
+- name: create/update spec file
+  uri:
+    url: "{{ specs_resource_uri }}/{{ spec_id }}/content"
+    method: PUT
+    body: "{{ spec_content }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+
+- name: get apidocs
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidocs
+
+- name: set api_names
+  set_fact:
+    api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
+
+- name: spec_names
   debug:
-    msg: "Not implemented"
+    msg: "{{ api_names }}"
+
+- name: if spec not exist in portal, create portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: POST
+    body:
+      anonAllowed: True,
+      description: ""
+      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
+      requireCallbackUrl: True
+      specContent: "{{ spec_id }}"
+      specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
+      title: "{{ SERVICE_NAME }}" # Add to friendly name
+      visibility: True # parameterise
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME not in api_names
 
 - name: add spec to portal
   debug:
