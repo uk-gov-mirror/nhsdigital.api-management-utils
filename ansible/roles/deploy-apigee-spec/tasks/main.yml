@@ -1,7 +1,3 @@
-# TODO
-# * if it isn't, put it on
-# * if it is, update the portal
-
 - name: list portals
   uri:
     url: "{{ portals_list_uri }}"

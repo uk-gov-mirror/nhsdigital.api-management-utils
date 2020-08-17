@@ -55,8 +55,8 @@ stages:
   - ${{ if eq(parameters.stage_name, 'internal_portal') }}:
     - template: ./deploy-stage.yml
       parameters:
-        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-spec
-        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-spec
+        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
+        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         stage_name: ${{ parameters.stage_name }}
         ${{ each param in parameters }}:
           ${{ if notIn(param.key, 'deploy_review_sandbox', 'deploy_review_spec', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
