@@ -104,6 +104,9 @@ parameters:
           - sandbox
           - prod
 
+pool:
+  vmImage: 'strutt/test_pipeline:latest'
+      
 extends:
   template: ./deploy-stages.yml
   parameters:

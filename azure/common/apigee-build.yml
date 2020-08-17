@@ -10,12 +10,16 @@ parameters:
     type: stepList
     default: []
 
+
 jobs:
   - job: build
     displayName: Build & Test
-    timeoutInMinutes: 10
+    timeoutInMinutes: '10'
+    variables:
+      System.Debug: true
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-16.04'
+    container: 'strutt/test_pipeline:latest'
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
@@ -29,42 +33,47 @@ jobs:
 
       - checkout: self
         path: "s/${{ parameters.service_name }}"
+        target: host
 
       - template: ../templates/setup-build-name.yml
         parameters:
           service_name: "${{ parameters.service_name }}"
 
-      - task: UsePythonVersion@0
-        displayName: "Use Python 3.8"
-        inputs:
-          versionSpec: "3.8"
+      # - task: UsePythonVersion@0
+      #   displayName: "Use Python 3.8"
+      #   inputs:
+      #     versionSpec: "3.8"
 
-      - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
-        displayName: Install apt dependencies
+      # - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
+      #   displayName: Install apt dependencies
 
-      - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
-        displayName: Add apt-key
+      # - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
+      #   displayName: Add apt-key
 
-      - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
-        displayName: Setup node deb sources
+      # - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+      #   displayName: Setup node deb sources
 
-      - bash: "sudo apt-get install -y nodejs"
-        displayName: Install node
+      # - bash: "sudo apt-get install -y nodejs"
+      #   displayName: Install node
 
-      - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-        displayName: Install python dependencies
+      # - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
+      #   displayName: Install python dependencies
+
+      - bash: "if [[ -f poetry.lock ]]; then echo Deleting!; rm poetry.lock; fi"
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: Delete ${{ parameters.service_name }}/poetry.lock
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
 
-      - bash: "make check-licenses"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Check licenses
+      # - bash: "make check-licenses"
+      #   workingDirectory: "${{ parameters.service_name }}"
+      #   displayName: Check licenses
 
-      - bash: "make lint"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Lint
+      # - bash: "make lint"
+      #   workingDirectory: "${{ parameters.service_name }}"
+      #   displayName: Lint
 
       - ${{ each test_step in parameters.test_steps }}:
           - ${{ test_step }}
@@ -89,7 +98,15 @@ jobs:
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
-      - bash: "make install"
+      - bash: "if [[ -f poetry.lock ]]; then echo Deleting!; rm poetry.lock; fi"
+        workingDirectory: "${{ parameters.service_name }}/utils"
+        displayName: Delete ${{ parameters.service_name }}/utils/poetry.lock
+
+      - bash: "if [[ -f poetry.toml ]]; then echo Deleting!; rm poetry.toml; fi"
+        workingDirectory: "${{ parameters.service_name }}/utils"
+        displayName: Delete ${{ parameters.service_name }}/utils/poetry.toml
+
+      - bash: "potry config virtualenvs.create false && poetry config --list && poetry install"
         workingDirectory: "${{ parameters.service_name }}/utils"
         displayName: "Install utils pre-requisites"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
