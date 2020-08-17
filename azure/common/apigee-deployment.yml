@@ -113,7 +113,7 @@ extends:
               ${{ var }}: ${{ parameters[var] }}
           - ${{ if parameters.deploy_review_spec }}:
             - stage_name: internal_portal
-              environment: internal-portal
+              environment: internal-dev
               depends_on:
                 - internal_dev
               ${{ each var in parameters._scoped_pipeline_vars }}:
