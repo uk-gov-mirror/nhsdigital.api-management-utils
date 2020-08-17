@@ -1,0 +1,161 @@
+# TODO
+# * create/update the spec
+# * check if spec is on portal
+# * if it isn't, put it on
+# * if it is, update the portal
+
+- name: list portals
+  uri:
+    url: "{{ portals_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: portals
+
+- name: set portal_id
+  set_fact:
+    portal_id: "{{ portals.json.data[0].id }}"
+
+- name: list specs
+  uri:
+    url: "{{ specs_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: specs
+
+- name: set folder_id
+  set_fact:
+    folder_id: "{{ specs.json.id }}"
+
+- name: set spec_names
+  set_fact:
+    spec_names: "{{ specs.json.contents | map(attribute='name') | list }}"
+
+- name: set spec_content
+  set_fact:
+    spec_content: "{{ lookup('file', SPEC_FILE) }}"
+
+- name: if not exists, create spec
+  uri:
+    url: "{{ specs_resource_uri }}"
+    method: POST
+    body: '{"folder": "{{ folder_id }}", "name": "{{ SERVICE_NAME }}", "kind": "Doc"}'
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: spec
+  when: SERVICE_NAME not in spec_names
+
+- name: if not exists, set spec_id
+  set_fact:
+    spec_id: "{{ spec.json.id }}"
+  when: SERVICE_NAME not in spec_names
+
+- name: if exists, set spec_id
+  set_fact:
+    spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
+  vars:
+    _query: "[? name=='{{ SERVICE_NAME }}'].id"
+  when: SERVICE_NAME in spec_names
+
+- name: create/update spec file
+  uri:
+    url: "{{ specs_resource_uri }}/{{ spec_id }}/content"
+    method: PUT
+    body: "{{ spec_content }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+
+- name: get apidocs
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidocs
+
+- name: set api_names
+  set_fact:
+    api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
+
+- name: spec_names
+  debug:
+    msg: "{{ api_names }}"
+
+- name: if spec not exist in portal, create portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: POST
+    body:
+      anonAllowed: True,
+      description: ""
+      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
+      requireCallbackUrl: True
+      specContent: "{{ spec_id }}"
+      specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
+      title: "{{ SERVICE_NAME }}" # Add to friendly name
+      visibility: True # parameterise
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME not in api_names
+
+- name: add spec to portal
+  debug:
+    msg: "Not implemented"
+
+- name: update portal to show spec
+  debug:
+    msg: "Not implemented"
+
+# - name: see if spec already exists
+#   uri:
+#     url: "{{ apis_apiproducts_uri }}/{{ SERVICE_NAME }}"
+#     headers:
+#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+#     status_code: [200, 404] # 404 is a useful response, and we don't want to crash on it
+#     return_content: yes
+#   register: check_product_response
+
+# - name: decide whether to create or update
+#   set_fact:
+#     should_create: "{{ check_product_response.status == 404 }}"
+
+# - name: define method and uri
+#   set_fact:
+#     apiproduct_method: "{{ should_create | ternary('POST', 'PUT') }}"
+#     apiproduct_uri: "{{ should_create | ternary(apis_apiproducts_uri, apis_apiproducts_uri + '/' + SERVICE_NAME) }}"
+
+# - name: create or update product
+#   uri:
+#     url: "{{ apiproduct_uri }}"
+#     method: "{{ apiproduct_method }}"
+#     headers:
+#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+#     body_format: json
+#     body:
+#       name: "{{ SERVICE_NAME }}"
+#       displayName: "{{ PRODUCT_DISPLAY_NAME }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
+#       description: "{{ PRODUCT_DESCRIPTION }}"
+#       approvalType: "{{ approval_type }}"
+#       proxies: "{{ proxies }}"
+#       attributes:
+#         - name: access
+#           value: public
+#         - name: ratelimit
+#           value: 5ps
+#       quota: 300
+#       quotaInterval: 1
+#       quotaTimeUnit: minute
+#       environments:
+#         - "{{ APIGEE_ENVIRONMENT }}"
+#     status_code: [200, 201]
+
