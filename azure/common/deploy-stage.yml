@@ -6,11 +6,13 @@ parameters:
   - name: environment
     values:
       - internal-dev
+      - internal-portal
       - internal-qa
       - internal-qa-sandbox
       - ref
       - dev
       - int
+      - portal
       - sandbox
       - prod
   - name: aws_env_account
