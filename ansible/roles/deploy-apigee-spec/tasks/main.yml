@@ -1,6 +1,4 @@
 # TODO
-# * create/update the spec
-# * check if spec is on portal
 # * if it isn't, put it on
 # * if it is, update the portal
 
@@ -85,77 +83,81 @@
   set_fact:
     api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
 
-- name: spec_names
-  debug:
-    msg: "{{ api_names }}"
-
-- name: if spec not exist in portal, create portal api
+- name: if api not exist in portal, create portal api
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
     method: POST
     body:
-      anonAllowed: True,
+      anonAllowed: "True"
       description: ""
       edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
-      requireCallbackUrl: True
+      requireCallbackUrl: "True"
       specContent: "{{ spec_id }}"
       specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
       title: "{{ SERVICE_NAME }}" # Add to friendly name
-      visibility: True # parameterise
+      visibility: "True" # parameterise
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
   when: SERVICE_NAME not in api_names
 
-- name: add spec to portal
-  debug:
-    msg: "Not implemented"
+- name: if api exists in portal, set apidoc_id
+  set_fact:
+    apidoc_id: "{{ apidocs.json.data | json_query(_query) | first }}"
+  vars:
+    _query: "[? apiId=='{{ SERVICE_NAME }}'].id"
+  when: SERVICE_NAME in api_names
 
-- name: update portal to show spec
-  debug:
-    msg: "Not implemented"
+- name: if api exist in portal, update portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    method: PUT
+    body:
+      anonAllowed: "True"
+      description: ""
+      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
+      requireCallbackUrl: "True"
+      specContent: "{{ spec_id }}"
+      specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
+      title: "{{ SERVICE_NAME }}" # Add to friendly name
+      visibility: "True" # parameterise
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
 
-# - name: see if spec already exists
-#   uri:
-#     url: "{{ apis_apiproducts_uri }}/{{ SERVICE_NAME }}"
-#     headers:
-#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-#     status_code: [200, 404] # 404 is a useful response, and we don't want to crash on it
-#     return_content: yes
-#   register: check_product_response
+- name: if api exist in portal, get api_doc
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidoc
+  when: SERVICE_NAME in api_names
 
-# - name: decide whether to create or update
-#   set_fact:
-#     should_create: "{{ check_product_response.status == 404 }}"
+- name: if api exist in portal, update api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    method: PUT
+    body:
+      anonAllowed: "True"
+      description: "{{ apidoc.json.data.description }}"
+      specId: "{{ apidoc.json.data.specId }}"
+      visibility: "True"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
 
-# - name: define method and uri
-#   set_fact:
-#     apiproduct_method: "{{ should_create | ternary('POST', 'PUT') }}"
-#     apiproduct_uri: "{{ should_create | ternary(apis_apiproducts_uri, apis_apiproducts_uri + '/' + SERVICE_NAME) }}"
-
-# - name: create or update product
-#   uri:
-#     url: "{{ apiproduct_uri }}"
-#     method: "{{ apiproduct_method }}"
-#     headers:
-#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-#     body_format: json
-#     body:
-#       name: "{{ SERVICE_NAME }}"
-#       displayName: "{{ PRODUCT_DISPLAY_NAME }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
-#       description: "{{ PRODUCT_DESCRIPTION }}"
-#       approvalType: "{{ approval_type }}"
-#       proxies: "{{ proxies }}"
-#       attributes:
-#         - name: access
-#           value: public
-#         - name: ratelimit
-#           value: 5ps
-#       quota: 300
-#       quotaInterval: 1
-#       quotaTimeUnit: minute
-#       environments:
-#         - "{{ APIGEE_ENVIRONMENT }}"
-#     status_code: [200, 201]
-
+- name: if api exist in portal, update spec snapshot
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}/snapshot"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
