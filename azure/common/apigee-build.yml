@@ -105,7 +105,7 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}/utils"
         displayName: Delete ${{ parameters.service_name }}/utils/poetry.toml
 
-      - bash: "poetry config virtualenvs.create false && poetry config --list && poetry install"
+      - bash: "poetry config virtualenvs.create false && poetry config vitualenvs.cache-dir /root/.cache/pypoetry/virtualenvs && poetry config --list && poetry install"
         workingDirectory: "${{ parameters.service_name }}/utils"
         displayName: "Install utils pre-requisites"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
