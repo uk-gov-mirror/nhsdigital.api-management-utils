@@ -27,7 +27,7 @@ steps:
     declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
     export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
 
-    if [ -z "${{ parameters.friendly_api_name }}" ] then
+    if [ -z "${{ parameters.friendly_api_name }}" ]; then
       export API_NAME="${{ parameters.service_name }} ${FRIENDLY_ENV}"
     else
       export API_NAME="${{ parameters.friendly_api_name }} ${FRIENDLY_ENV}"
