@@ -19,7 +19,7 @@ locals {
   }
 
   logConfig = {
-  for container in local.docker_services:
+  for container in local.ecs_service:
   container.name => {
     logDriver = "splunk"
     options = {
@@ -42,8 +42,8 @@ locals {
 
   }
 
-  docker_services = [
-  {% for container in docker_service %}
+  ecs_service = [
+  {% for container in ecs_service %}
     {{
         (
           (container_defaults | combine(container))
@@ -55,6 +55,6 @@ locals {
   {% endfor %}
   ]
 
-  exposed_service = element(matchkeys(local.docker_services, local.docker_services.*.expose, list(true)), 0)
+  exposed_service = element(matchkeys(local.ecs_service, local.ecs_service.*.expose, list(true)), 0)
 
 }

@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "service" {
 
   container_definitions = jsonencode(
   [
-  for container in local.docker_services:
+  for container in local.ecs_service:
   {
     cpu              = container.cpu
     essential        = container.essential
@@ -23,7 +23,6 @@ resource "aws_ecs_task_definition" "service" {
     portMappings = [
       {
         containerPort = container.port
-        hostPort      = container.port
         protocol      = lower(container.protocol)
       }
     ]
@@ -64,7 +63,7 @@ resource "aws_ecs_service" "service" {
   load_balancer {
     target_group_arn = aws_alb_target_group.service.arn
     container_name   = local.exposed_service.name
-    container_port   = local.exposed_service.port
+    container_port   = 9000  # SG rules expect this to be on port 9000 as the SGs are clusterwise
   }
 
   depends_on = [
