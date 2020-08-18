@@ -25,7 +25,7 @@ steps:
     export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
     export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-    export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/*/${{ parameters.service_name }}.json"
+    export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
 
     poetry run ansible-playbook ansible/deploy-apigee-spec.yml
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
