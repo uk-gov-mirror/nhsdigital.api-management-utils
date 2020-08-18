@@ -14,9 +14,9 @@ _container_defaults = dict(
     essential=True,
     health_check=dict(
         matcher="200",
-        path="/",
-        lb_protocol="HTTP"
-    )
+        path="/"
+    ),
+    lb_protocol="HTTP"
 
 )
 
