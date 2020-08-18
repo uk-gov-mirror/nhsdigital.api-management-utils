@@ -28,7 +28,7 @@ steps:
     export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
 
     if [ -z "${{ parameters.friendly_api_name }}" ]; then
-      export API_NAME="${{ parameters.service_name }} ${FRIENDLY_ENV}"
+      export API_NAME="${{ parameters.fully_qualified_service_name }} ${FRIENDLY_ENV}"
     else
       export API_NAME="${{ parameters.friendly_api_name }} ${FRIENDLY_ENV}"
     fi
