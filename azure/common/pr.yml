@@ -28,8 +28,6 @@ parameters:
     type: stepList
   - name: deploy_review_sandbox
     type: boolean
-  - name: deploy_review_spec
-    type: boolean
   - name: depends_on
     type: object
 
@@ -59,5 +57,5 @@ stages:
         service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         stage_name: ${{ parameters.stage_name }}
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'deploy_review_spec', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
             ${{ param.key }}: ${{ param.value }}

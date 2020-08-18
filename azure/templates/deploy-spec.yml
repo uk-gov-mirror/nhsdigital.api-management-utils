@@ -4,7 +4,7 @@ parameters:
   - name: apigee_environment
   - name: apigee_organization
   # TODO Use this variable
-  - name: apigee_product_name
+  - name: fully_qualified_service_name
     type: string
 
 steps:
@@ -31,7 +31,7 @@ steps:
     export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
 
     # TODO Extend playbook to use apigee product and friendly name
-    export APIGEE_PRODUCT_NAME="${{ parameters.apigee_product_name }}"
+    export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
     
     poetry run ansible-playbook ansible/deploy-apigee-spec.yml
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
