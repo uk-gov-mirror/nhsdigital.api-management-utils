@@ -3,6 +3,9 @@ parameters:
     type: string
   - name: apigee_environment
   - name: apigee_organization
+  # TODO Use this variable
+  - name: apigee_product_name
+    type: string
 
 steps:
 - bash: 'sudo apt-get install npm curl jq -y'
@@ -27,6 +30,9 @@ steps:
     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
     export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
 
+    # TODO Extend playbook to use apigee product and friendly name
+    export APIGEE_PRODUCT_NAME="${{ parameters.apigee_product_name }}"
+    
     poetry run ansible-playbook ansible/deploy-apigee-spec.yml
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
   displayName: "Deploy Spec & Portal"

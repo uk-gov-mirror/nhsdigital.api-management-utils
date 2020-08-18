@@ -9,6 +9,7 @@
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
+    APIGEE_PRODUCT_NAME: "{{ lookup('env', 'APIGEE_PRODUCT_NAME') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
@@ -35,5 +36,10 @@
       fail:
         msg: "SPEC_FILE not set"
       when: not SPEC_FILE
+
+    - name: check APIGEE_PRODUCT_NAME
+      fail:
+        msg: "APIGEE_PRODUCT_NAME not set"
+      when: not APIGEE_PRODUCT_NAME
   roles:
     - deploy-apigee-spec

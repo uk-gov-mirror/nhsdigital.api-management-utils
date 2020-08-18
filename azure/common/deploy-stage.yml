@@ -118,3 +118,4 @@ stages:
                       service_name: ${{ parameters.service_name }}
                       apigee_environment: ${{ parameters.environment }}
                       apigee_organization: ${{ parameters.apigee_organization }}
+                      apigee_product_name: ${{ parameters.fully_qualified_service_name }}

@@ -86,7 +86,7 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
+      edgeAPIProductName: "{{ APIGEE_PRODUCT_NAME }}" # use spec name
       requireCallbackUrl: "True"
       specContent: "{{ spec_id }}"
       specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
@@ -112,7 +112,7 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
+      edgeAPIProductName: "{{ APIGEE_PRODUCT_NAME }}" # use spec name
       requireCallbackUrl: "True"
       specContent: "{{ spec_id }}"
       specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
