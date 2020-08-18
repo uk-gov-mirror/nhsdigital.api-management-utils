@@ -24,14 +24,13 @@ steps:
   # TODO: Get friendly name step
 
 - bash: |
-    export SERVICE_NAME="${{ parameters.service_name }}"
+    export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
     export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
     export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
     export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
 
     # TODO Extend playbook to use apigee product and friendly name
-    export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
     
     poetry run ansible-playbook ansible/deploy-apigee-spec.yml
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"

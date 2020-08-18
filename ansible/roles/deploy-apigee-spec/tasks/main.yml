@@ -86,10 +86,10 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ FULLY_QUALIFIED_SERVICE_NAME }}" # use spec name
+      edgeAPIProductName: "{{ SERVICE_NAME }}" # use spec name
       requireCallbackUrl: "True"
       specContent: "{{ spec_id }}"
-      specId: "{{ FULLY_QUALIFIED_SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
+      specId: "{{ SERVICE_NAME }}" # manipulate spec name to use e.g. spec-{env}
       title: "{{ SERVICE_NAME }}" # Add to friendly name
       visibility: "True" # parameterise
     body_format: json
@@ -112,11 +112,11 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ FULLY_QUALIFIED_SERVICE_NAME }}"
+      edgeAPIProductName: "{{ SERVICE_NAME }}"
       requireCallbackUrl: "True"
       specContent: "{{ spec_id }}"
-      specId: "{{ FULLY_QUALIFIED_SERVICE_NAME }}"
-      title: "{{ SERVICE_NAME }}" # Add to friendly name
+      specId: "{{ SERVICE_NAME }}"
+      title: "{{ SERVICE_NAME }}" # TODO: Add to friendly name if release
       visibility: "True" # parameterise
     body_format: json
     headers:
