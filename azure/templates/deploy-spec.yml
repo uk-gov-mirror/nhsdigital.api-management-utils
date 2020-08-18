@@ -3,9 +3,11 @@ parameters:
     type: string
   - name: apigee_environment
   - name: apigee_organization
-  # TODO Use this variable
   - name: fully_qualified_service_name
     type: string
+  - name: friendly_api_name
+    type: string
+    default: ''
 
 steps:
 - bash: 'sudo apt-get install npm curl jq -y'
@@ -21,7 +23,20 @@ steps:
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
   displayName: "Install utils pre-requisites"
 
-  # TODO: Get friendly name step
+- bash: |
+    declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
+    export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
+
+    if [ -z "${{ parameters.friendly_api_name }}" ] then
+      export API_NAME="${{ parameters.service_name }} ${FRIENDLY_ENV}"
+    else
+      export API_NAME="${{ parameters.friendly_api_name }} ${FRIENDLY_ENV}"
+    fi
+
+    echo "Setting friendly name of: $API_NAME"
+
+    echo "##vso[task.setvariable variable=FRIENDLY_NAME]$API_NAME"
+  displayName: "Set Portal API Friendly Name"
 
 - bash: |
     export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
@@ -29,8 +44,7 @@ steps:
     export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
     export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
-
-    # TODO Extend playbook to use apigee product and friendly name
+    export FRIENDLY_NAME="$(FRIENDLY_NAME)"
     
     poetry run ansible-playbook ansible/deploy-apigee-spec.yml
   workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
