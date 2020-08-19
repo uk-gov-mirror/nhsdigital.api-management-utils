@@ -118,7 +118,7 @@ extends:
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
           - ${{ if parameters.deploy_spec }}:
-            - stage_name: internal_portal
+            - stage_name: internal_dev_portal
               environment: internal-dev
               depends_on:
                 - internal_dev
@@ -132,23 +132,48 @@ extends:
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: internal_dev_portal
+              environment: internal-dev
+              depends_on:
+                - internal_dev
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
+
           - stage_name: internal_qa
             environment: internal-qa
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: internal_qa_portal
+              environment: internal-qa
+              depends_on:
+                - internal_qa
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
+
           - stage_name: internal_qa_sandbox
             environment: internal-qa-sandbox
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
-          - stage_name: deploy_ref
+              
+          - stage_name: ref
             environment: ref
             depends_on:
               - internal_qa
               - internal_qa_sandbox
             ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
+                ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: ref_portal
+              environment: ref
+              depends_on:
+                - ref
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
+
           - stage_name: dev
             environment: dev
             depends_on:
@@ -156,13 +181,29 @@ extends:
               - internal_qa_sandbox
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
-          - stage_name: deploy_int
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: dev_portal
+              environment: dev
+              depends_on:
+                - dev
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
+
+          - stage_name: int
             environment: int
             depends_on:
               - internal_qa
               - internal_qa_sandbox
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: int_portal
+              environment: int
+              depends_on:
+                - int
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
+
           - stage_name: sandbox
             environment: sandbox
             depends_on:
@@ -170,6 +211,7 @@ extends:
               - internal_qa_sandbox
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+
           - stage_name: prod
             environment: prod
             depends_on:
@@ -177,3 +219,10 @@ extends:
               - internal_qa_sandbox
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_spec }}:
+            - stage_name: prod_portal
+              environment: prod
+              depends_on:
+                - prod
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
