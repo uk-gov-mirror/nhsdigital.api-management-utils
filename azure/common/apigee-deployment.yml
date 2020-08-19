@@ -40,6 +40,10 @@ parameters:
     displayName: Supply a custom name for your release (only valid for release pipeline)
     type: string
     default: ''
+  - name: jinja_templates
+    type: object
+    displayName:  Key/values for custom jinja templating
+    default: []
   - name: secret_ids
     displayName: List of additional AWS Secrets Manager Secret IDs
     type: object
@@ -73,7 +77,9 @@ parameters:
       - product_display_name
       - product_description
       - fully_qualified_service_name
-        
+      - jinja_templates
+      - proxy_path
+
 extends:
   template: ./deploy-stages.yml
   parameters:
@@ -82,7 +88,7 @@ extends:
         ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
           ${{ param.key }}: ${{ param.value }}
 
-    ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request') }}:
+    ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Request') }}:
       deploy_template: pr.yml
     ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
       deploy_template: release.yml
@@ -110,7 +116,7 @@ extends:
 
     # otherwise pick a different default based on the whether it's the PR or release pipeline
     ${{ if eq(0, length(parameters.apigee_deployments)) }}:
-      ${{ if endswith(variables['Build.DefinitionName'], '-Pull-Request') }}:
+      ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Request') }}:
         apigee_deployments:
           - stage_name: internal_dev
             environment: internal-dev
@@ -118,7 +124,7 @@ extends:
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
 
-      ${{ if endswith(variables['Build.DefinitionName'], '-Release') }}:
+      ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
         apigee_deployments:
           - stage_name: internal_dev
             environment: internal-dev

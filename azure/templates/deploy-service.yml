@@ -1,4 +1,6 @@
 parameters:
+  - name: notify
+    type: boolean
   - name: proxy_path
   - name: product_display_name
   - name: product_description
@@ -8,23 +10,29 @@ parameters:
   - name: apigee_environment
   - name: apigee_organization
   - name: service_base_path
+  - name: jinja_templates
+    type: object
   - name: pre_template
     type: stepList
-    default: []
   - name: post_template
     type: stepList
-    default: []
   - name: pre_deploy
     type: stepList
-    default: []
   - name: post_deploy
     type: stepList
-    default: []
-  - name: friendly_api_name
-    type: string
-    default: ''
 
 steps:
+  - ${{ if parameters.notify }}:
+      - bash: |
+          export COMMIT_SHA=`echo $(Build.SourceVersionMessage) | cut -d' ' -f2`
+          echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
+        displayName: Set COMMIT_SHA
+
+      - template: '../components/update-github-status.yml'
+        parameters:
+          state: pending
+          description: "Deploy to ${{ parameters.apigee_environment }} started"
+
   - bash: |
       ls -R
       if [[ -f ecs-proxies-deploy.yml ]]; then
@@ -40,7 +48,19 @@ steps:
     displayName: 'Deploy Info'
 
   - ${{ each pre_template_step in parameters.pre_template }}:
-    - ${{ pre_template_step}}
+    - ${{ pre_template_step }}
+
+  - ${{ each jinja_template in parameters.jinja_templates }}:
+    - bash: |
+          set -euo pipefail
+
+          cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+          for template_file in $(egrep -lir --include=*.{xml,js} '{{  *${{ jinja_template.key }}  *}}' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
+            echo Matched ${{ jinja_template.key }} in $template_file
+            poetry run python scripts/template.py '{ "${{ jinja_template.key }}": "${{ jinja_template.value }}"}' --file=$template_file > /tmp/live.xml
+            mv /tmp/live.xml $template_file
+          done
+      displayName: Templating ${{ jinja_template.key }} to ${{ jinja_template.value }}
 
   - bash: |
       set -euo pipefail
@@ -58,7 +78,7 @@ steps:
 
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
       poetry run ansible-playbook ansible/template-proxies.yml
-    displayName: 'Template Proxies'
+    displayName: Default proxy templating
 
   - ${{ each post_template_step in parameters.post_template }}:
     - ${{ post_template_step}}
@@ -120,3 +140,16 @@ steps:
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}
+
+  - ${{ if parameters.notify }}:
+      - template: '../components/update-github-status.yml'
+        parameters:
+          state: success
+          on_success: true
+          description: "Deploy to ${{ parameters.apigee_environment }} started"
+
+      - template: '../components/update-github-status.yml'
+        parameters:
+          state: failure
+          on_failure: true
+          description: "Deploy to ${{ parameters.apigee_environment }} started"

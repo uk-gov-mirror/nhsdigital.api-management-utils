@@ -36,11 +36,14 @@ parameters:
     type: boolean
   - name: depends_on
     type: object
+  - name: jinja_templates
+    type: object
 
 stages:
   - ${{ if eq(parameters.stage_name, 'internal_dev') }}:
     - template: ./deploy-stage.yml
       parameters:
+        notify: true
         fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         ${{ each param in parameters }}:

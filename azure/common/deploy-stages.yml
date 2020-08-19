@@ -1,7 +1,6 @@
 parameters:
   - name: apigee_deployments
     type: object
-  - name: proxy_path
   - name: secret_ids
     type: object
   - name: config_ids
