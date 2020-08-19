@@ -142,7 +142,7 @@
       anonAllowed: "True"
       description: "{{ apidoc.json.data.description }}"
       specId: "{{ apidoc.json.data.specId }}"
-      visibility: "True"
+      visibility: {{ VISIBLE }}
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
