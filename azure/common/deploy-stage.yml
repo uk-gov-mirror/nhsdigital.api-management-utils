@@ -26,6 +26,8 @@ parameters:
   - name: proxy_path
   - name: product_display_name
   - name: product_description
+  - name: deploy_spec
+    type: boolean
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
@@ -98,30 +100,34 @@ stages:
                       - /ptl/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+                
+                - template: "../components/clone-utils.yml" 
+                  parameters:
+                    service_name: ${{ parameters.service_name }}
 
-                - ${{ if not(endswith(parameters.stage_name, 'portal')) }}:
-                  - template: "../templates/deploy-service.yml"
-                    parameters:
-                      service_name: ${{ parameters.service_name }}
-                      short_service_name: ${{ parameters.short_service_name }}
-                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                      service_base_path: ${{ parameters.service_base_path }}
-                      apigee_environment: ${{ parameters.environment }}
-                      apigee_organization: ${{ parameters.apigee_organization }}
-                      product_display_name: ${{ parameters.product_display_name }}
-                      product_description: ${{ parameters.product_description }}
-                      proxy_path: ${{ parameters.proxy_path }}
-                      pre_template: ${{ parameters.pre_template }}
-                      post_template: ${{ parameters.post_template }}
-                      pre_deploy: ${{ parameters.pre_deploy }}
-                      post_deploy: ${{ parameters.post_deploy }}
+                - template: "../templates/deploy-service.yml"
+                  parameters:
+                    service_name: ${{ parameters.service_name }}
+                    short_service_name: ${{ parameters.short_service_name }}
+                    fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                    service_base_path: ${{ parameters.service_base_path }}
+                    apigee_environment: ${{ parameters.environment }}
+                    apigee_organization: ${{ parameters.apigee_organization }}
+                    product_display_name: ${{ parameters.product_display_name }}
+                    product_description: ${{ parameters.product_description }}
+                    proxy_path: ${{ parameters.proxy_path }}
+                    pre_template: ${{ parameters.pre_template }}
+                    post_template: ${{ parameters.post_template }}
+                    pre_deploy: ${{ parameters.pre_deploy }}
+                    post_deploy: ${{ parameters.post_deploy }}
 
-                - ${{ if endswith(parameters.stage_name, 'portal') }}:
-                  - template: "../templates/deploy-spec.yml"
-                    parameters:
-                      service_name: ${{ parameters.service_name }}
-                      apigee_environment: ${{ parameters.environment }}
-                      apigee_organization: ${{ parameters.apigee_organization }}
-                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                      make_spec_visible: ${{ parameters.make_spec_visible }}
+                - ${{ if parameters.deploy_spec }}:
+                  - ${{ if notIn(apigee_deployment.environment,'internal-qa-sandbox', 'sandbox') }}:
+                    - template: "../templates/deploy-spec.yml"
+                      parameters:
+                        service_name: ${{ parameters.service_name }}
+                        apigee_environment: ${{ parameters.environment }}
+                        apigee_organization: ${{ parameters.apigee_organization }}
+                        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                        portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                        make_spec_visible: ${{ parameters.make_spec_visible }}

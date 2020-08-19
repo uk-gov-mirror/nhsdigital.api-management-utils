@@ -18,16 +18,6 @@ steps:
   displayName: 'Setup curl and jq'
 
 - bash: |
-    git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-    cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-    git checkout APM-1315-build-steps
-  displayName: Clone utils
-
-- bash: "make install"
-  workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-  displayName: "Install utils pre-requisites"
-
-- bash: |
     declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
     export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
 

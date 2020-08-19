@@ -20,6 +20,13 @@ parameters:
   - name: post_deploy
     type: stepList
     default: []
+  - name: friendly_api_name
+    type: string
+    default: ''
+  - name: portal_api_requires_callback_url
+    type: boolean
+  - name: make_spec_visible
+    type: boolean
 
 steps:
   - bash: |
@@ -31,15 +38,6 @@ steps:
       fi
     workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)
     displayName: "Check for ECS proxy definitions"
-
-  - bash: |
-      git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-    displayName: Clone utils
-
-  - bash: "make install"
-    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-    displayName: "Install utils pre-requisites"
 
   - bash: |
       echo "Deploying ${{ parameters.service_name }} artifact $(SERVICE_ARTIFACT_NAME) as ${{ parameters.fully_qualified_service_name }} to ${{ parameters.service_base_path }} on $(ENV_URL)"
@@ -126,3 +124,35 @@ steps:
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}
+
+  - bash: 'sudo apt-get install npm curl jq -y'
+    displayName: 'Setup curl and jq'
+
+  - bash: |
+      declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
+      export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
+
+      if [ -z "${{ parameters.friendly_api_name }}" ]; then
+        export API_NAME="${{ parameters.fully_qualified_service_name }} ${FRIENDLY_ENV}"
+      else
+        export API_NAME="${{ parameters.friendly_api_name }} ${FRIENDLY_ENV}"
+      fi
+
+      echo "Setting friendly name of: $API_NAME"
+
+      echo "##vso[task.setvariable variable=FRIENDLY_NAME]$API_NAME"
+    displayName: "Set Portal API Friendly Name"
+
+  - bash: |
+      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
+      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+      export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
+      export FRIENDLY_NAME="$(FRIENDLY_NAME)"
+      export VISIBLE="${{ parameters.make_spec_visible }}"
+      export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
+      
+      poetry run ansible-playbook ansible/deploy-apigee-spec.yml
+    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: "Deploy Spec & Portal"
