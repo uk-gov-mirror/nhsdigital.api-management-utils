@@ -87,11 +87,11 @@
       anonAllowed: "True"
       description: ""
       edgeAPIProductName: "{{ SERVICE_NAME }}"
-      requireCallbackUrl: {{ REQUIRE_CALLBACK_URL }}
+      requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
       specId: "{{ SERVICE_NAME }}"
       title: "{{ FRIENDLY_NAME }}"
-      visibility: {{ VISIBLE }}
+      visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
@@ -113,11 +113,11 @@
       anonAllowed: "True"
       description: ""
       edgeAPIProductName: "{{ SERVICE_NAME }}"
-      requireCallbackUrl: {{ REQUIRE_CALLBACK_URL }}
+      requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
       specId: "{{ SERVICE_NAME }}"
       title: "{{ FRIENDLY_NAME }}"
-      visibility: {{ VISIBLE }}
+      visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
@@ -142,7 +142,7 @@
       anonAllowed: "True"
       description: "{{ apidoc.json.data.description }}"
       specId: "{{ apidoc.json.data.specId }}"
-      visibility: {{ VISIBLE }}
+      visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
