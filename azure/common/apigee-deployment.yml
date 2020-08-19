@@ -26,8 +26,8 @@ parameters:
     displayName: Deploy review sandbox?
     type: boolean
     default: false
-  - name: deploy_review_spec
-    displayName: Deploy review spec?
+  - name: deploy_spec
+    displayName: Deploy spec?
     type: boolean
     default: false
   - name: portal_api_requires_callback_url
@@ -117,7 +117,7 @@ extends:
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
-          - ${{ if parameters.deploy_review_spec }}:
+          - ${{ if parameters.deploy_spec }}:
             - stage_name: internal_portal
               environment: internal-dev
               depends_on:
