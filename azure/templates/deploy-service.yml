@@ -120,6 +120,3 @@ steps:
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}
-
-  - bash: 'sudo apt-get install npm curl jq -y'
-    displayName: 'Setup curl and jq'
