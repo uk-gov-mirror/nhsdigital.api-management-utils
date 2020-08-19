@@ -1,6 +1,4 @@
 parameters:
-  - name: notify
-    type: boolean
   - name: proxy_path
   - name: product_display_name
   - name: product_description
@@ -22,17 +20,6 @@ parameters:
     type: stepList
 
 steps:
-  - ${{ if parameters.notify }}:
-      - bash: |
-          export COMMIT_SHA=`echo $(Build.SourceVersionMessage) | cut -d' ' -f2`
-          echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
-        displayName: Set COMMIT_SHA
-
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: pending
-          description: "Deploy to ${{ parameters.apigee_environment }} started"
-
   - bash: |
       ls -R
       if [[ -f ecs-proxies-deploy.yml ]]; then
@@ -140,16 +127,3 @@ steps:
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}
-
-  - ${{ if parameters.notify }}:
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: success
-          on_success: true
-          description: "Deploy to ${{ parameters.apigee_environment }} started"
-
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: failure
-          on_failure: true
-          description: "Deploy to ${{ parameters.apigee_environment }} started"
