@@ -122,12 +122,12 @@ stages:
                     post_deploy: ${{ parameters.post_deploy }}
 
                 - ${{ if parameters.deploy_spec }}:
-                    ${{ if notIn(parameters.environment,'internal-qa-sandbox', 'sandbox') }}:
-                      - template: "../templates/deploy-spec.yml"
-                        parameters:
-                          service_name: ${{ parameters.service_name }}
-                          apigee_environment: ${{ parameters.environment }}
-                          apigee_organization: ${{ parameters.apigee_organization }}
-                          fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                          portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                          make_spec_visible: ${{ parameters.make_spec_visible }}
+                  - ${{ if not(contains(parameters.stage_name, 'sandbox'')) }}:
+                    - template: "../templates/deploy-spec.yml"
+                      parameters:
+                        service_name: ${{ parameters.service_name }}
+                        apigee_environment: ${{ parameters.environment }}
+                        apigee_organization: ${{ parameters.apigee_organization }}
+                        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                        portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                        make_spec_visible: ${{ parameters.make_spec_visible }}
