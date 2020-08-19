@@ -28,6 +28,8 @@ parameters:
     type: stepList
   - name: deploy_review_sandbox
     type: boolean
+  - name: deploy_spec
+    type: boolean
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
@@ -42,7 +44,7 @@ stages:
         fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'deploy_spec', 'fully_qualified_service_name', 'service_base_path') }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
             ${{ param.key }}: ${{ param.value }}
     - ${{ if parameters.deploy_review_sandbox }}:
       - template: ./deploy-stage.yml
@@ -51,15 +53,5 @@ stages:
           service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
           stage_name: ${{ parameters.stage_name }}_sandbox
           ${{ each param in parameters }}:
-            ${{ if notIn(param.key, 'deploy_review_sandbox', 'deploy_spec', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
+            ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
               ${{ param.key }}: ${{ param.value }}
-      
-  - ${{ if eq(parameters.stage_name, 'internal_portal') }}:
-    - template: ./deploy-stage.yml
-      parameters:
-        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
-        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
-        stage_name: ${{ parameters.stage_name }}
-        ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
-            ${{ param.key }}: ${{ param.value }}
