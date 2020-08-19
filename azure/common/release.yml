@@ -32,6 +32,12 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: deploy_spec
+    type: boolean
+  - name: portal_api_requires_callback_url
+    type: boolean
+  - name: make_spec_visible
+    type: boolean
   - name: depends_on
     type: object
   - name: jinja_templates
