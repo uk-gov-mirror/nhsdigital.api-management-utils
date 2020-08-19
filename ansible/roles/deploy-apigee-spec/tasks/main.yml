@@ -139,10 +139,10 @@
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
     method: PUT
     body:
-      anonAllowed: "True"
+      anonAllowed: "{{ apidoc.json.data.anonAllowed }}"
       description: "{{ apidoc.json.data.description }}"
       specId: "{{ apidoc.json.data.specId }}"
-      visibility: "{{ VISIBLE }}"
+      visibility: "{{ apidoc.json.data.visibility }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
