@@ -10,6 +10,8 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
     FRIENDLY_NAME: "{{ lookup('env', 'FRIENDLY_NAME') }}"
+    VISIBLE: "{{ lookup('env', 'VISIBLE') }}"
+    REQUIRE_CALLBACK_URL: "{{ lookup('env', 'REQUIRE_CALLBACK_URL') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
@@ -41,5 +43,15 @@
       fail:
         msg: "FRIENDLY_NAME not set"
       when: not FRIENDLY_NAME
+    
+    - name: check VISIBLE
+      fail:
+        msg: "VISIBLE not set"
+      when: not VISIBLE
+
+    - name: check REQUIRE_CALLBACK_URL
+      fail:
+        msg: "REQUIRE_CALLBACK_URL not set"
+      when: not REQUIRE_CALLBACK_URL
   roles:
     - deploy-apigee-spec

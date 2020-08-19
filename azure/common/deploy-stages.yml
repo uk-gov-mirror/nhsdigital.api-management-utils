@@ -18,6 +18,10 @@ parameters:
     type: boolean
   - name: deploy_review_spec
     type: boolean
+  - name: portal_api_requires_callback_url
+    type: boolean
+  - name: make_spec_visible
+    type: boolean
   - name: deploy_template
 
 

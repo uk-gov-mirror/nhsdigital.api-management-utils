@@ -26,6 +26,10 @@ parameters:
   - name: proxy_path
   - name: product_display_name
   - name: product_description
+  - name: portal_api_requires_callback_url
+    type: boolean
+  - name: make_spec_visible
+    type: boolean
   - name: pre_template
     type: stepList
   - name: post_template
@@ -119,3 +123,5 @@ stages:
                       apigee_environment: ${{ parameters.environment }}
                       apigee_organization: ${{ parameters.apigee_organization }}
                       fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                      make_spec_visible: ${{ parameters.make_spec_visible }}
