@@ -1,4 +1,6 @@
 parameters:
+  - name: spec_file
+    type: string
   - name: service_name
     type: string
   - name: apigee_environment
@@ -37,7 +39,7 @@ steps:
     export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
     export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
     export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-    export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.service_name }}.json"
+    export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.spec_file }}"
     export FRIENDLY_NAME="$(FRIENDLY_NAME)"
     export VISIBLE="${{ parameters.make_spec_visible }}"
     export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
