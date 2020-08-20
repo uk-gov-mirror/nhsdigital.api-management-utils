@@ -79,7 +79,7 @@ stages:
                   - template: '../components/update-github-status.yml'
                     parameters:
                       state: pending
-                      description: "Deploy to ${{ parameters.apigee_environment }} started"
+                      description: "Deploy to ${{ parameters.environment }} started"
 
                 - bash: |
                     echo $(Build.SourceVersion)
@@ -162,10 +162,10 @@ stages:
                     parameters:
                       state: success
                       on_success: true
-                      description: "Deploy to ${{ parameters.apigee_environment }} succeeded"
+                      description: "Deploy to ${{ parameters.environment }} succeeded"
 
                   - template: '../components/update-github-status.yml'
                     parameters:
                       state: failure
                       on_failure: true
-                      description: "Deploy to ${{ parameters.apigee_environment }} failed"
+                      description: "Deploy to ${{ parameters.environment }} failed"
