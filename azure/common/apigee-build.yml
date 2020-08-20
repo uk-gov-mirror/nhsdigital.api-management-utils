@@ -8,10 +8,7 @@ parameters:
     default: []
   - name: test_steps
     type: stepList
-    default:
-      - bash: "make test"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Run unit tests
+    default: []
 
 resources:
   repositories:
