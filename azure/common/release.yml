@@ -42,6 +42,9 @@ parameters:
     type: object
   - name: jinja_templates
     type: object
+  - name: friendly_api_name
+    type: string
+    default: ''
 
 stages:
   - template: ./deploy-stage.yml

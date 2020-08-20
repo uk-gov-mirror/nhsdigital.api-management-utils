@@ -34,6 +34,8 @@ parameters:
     type: boolean
   - name: make_spec_visible
     type: boolean
+  - name: friendly_api_name
+    type: string
   - name: pre_template
     type: stepList
   - name: post_template
@@ -153,6 +155,7 @@ stages:
                         fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                         portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
                         make_spec_visible: ${{ parameters.make_spec_visible }}
+                        friendly_api_name: ${{ parameters.friendly_api_name }}
                 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'
