@@ -6,22 +6,12 @@ parameters:
   - name: variables
     type: object
     default: []
-  - name: pre_dependancy_steps
-    displayName: Steps to run prior to installing dependancies
+  - name: test_steps
     type: stepList
-    default: []
-  - name: post_dependancy_steps
-    displayName: Steps to run after to installing dependancies
-    type: stepList
-    default: []
-  - name: pre_package_steps
-    displayName: Steps to run prior to creating artifact
-    type: stepList
-    default: []
-  - name: post_package_steps
-    displayName: Steps to run after to creating artifact
-    type: stepList
-    default: []
+    default:
+      - bash: "make test"
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: Run unit tests
 
 resources:
   repositories:
@@ -54,9 +44,6 @@ jobs:
         parameters:
           service_name: "${{ parameters.service_name }}"
       
-      - ${{ each pre_dependancy_step in parameters.pre_dependancy_steps }}:
-        - ${{ pre_dependancy_step }}
-
       - task: UsePythonVersion@0
         displayName: "Use Python 3.8"
         inputs:
@@ -80,9 +67,6 @@ jobs:
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
-      
-      - ${{ each post_dependancy_step in parameters.post_dependancy_steps }}:
-        - ${{ post_dependancy_step }}
 
       - bash: "make check-licenses"
         workingDirectory: "${{ parameters.service_name }}"
@@ -92,16 +76,12 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Lint
 
-      - bash: "make test"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Run unit tests
+      - ${{ each test_step in parameters.test_steps }}:
+          - ${{ test_step }}
 
       - bash: "make publish"
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Compile spec
-
-      - ${{ each pre_package_step in parameters.pre_package_steps }}:
-        - ${{ pre_package_step }}
 
       - bash: "make release"
         workingDirectory: "${{ parameters.service_name }}"
@@ -171,8 +151,5 @@ jobs:
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
       
-      - ${{ each post_package_step in parameters.post_package_steps }}:
-        - ${{ post_package_step }}
-
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
