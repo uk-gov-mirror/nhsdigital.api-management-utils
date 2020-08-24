@@ -72,6 +72,9 @@ stages:
                 post_deploy: ${{ step_list.value }}
                 ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps', 'post_deploy') }}:
                   ${{ param.key }}: ${{ param.value }}
+          ${{ if notIn(param.key, 'pr_proxy_deploy_steps') }}:
+            ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+              ${{ param.key }}: ${{ param.value }}
     - ${{ if parameters.deploy_review_sandbox }}:
       - template: ./deploy-stage.yml
         parameters:
@@ -97,3 +100,6 @@ stages:
                 post_deploy: ${{ step_list.value }}
                 ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps', 'post_deploy') }}:
                   ${{ param.key }}: ${{ param.value }}
+          ${{ if notIn(param.key, 'pr_sandbox_deploy_steps') }}:
+            ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+              ${{ param.key }}: ${{ param.value }}
