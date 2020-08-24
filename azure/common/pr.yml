@@ -56,7 +56,7 @@ stages:
         ${{ if parameters.pr_proxy_deploy_steps }}:
           ${{ if parameters.pr_proxy_deploy_steps['pre_template'] }}:
             pre_template: ${{ parameters.pr_proxy_deploy_steps['pre_template'] }}
-          ${{ if not(parameters.pr_proxy_deploy_steps['pre_template'] }}:
+          ${{ if not(parameters.pr_proxy_deploy_steps['pre_template']) }}:
             pre_template: ${{ parameters.pre_template }}
 
           ${{ if parameters.pr_proxy_deploy_steps['post_template'] }}:
@@ -90,7 +90,7 @@ stages:
 
             ${{ if parameters.pr_sandbox_deploy_steps['post_template'] }}:
               post_template: ${{ parameters.pr_sandbox_deploy_steps['post_template'] }}
-            ${{ if not(parameters.pr_sandbox_deploy_steps['post_template'] }}:
+            ${{ if not(parameters.pr_sandbox_deploy_steps['post_template']) }}:
               post_template: ${{ parameters.post_template }}
 
             ${{ if parameters.pr_sandbox_deploy_steps['pre_deploy'] }}:
