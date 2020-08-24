@@ -40,6 +40,10 @@ parameters:
     displayName: Supply a custom name for your release (only valid for release pipeline)
     type: string
     default: ''
+  - name: no_ping
+    displayName: Toggle ping endpoint avaliablility
+    type: boolean
+    default: false
   - name: jinja_templates
     type: object
     displayName:  Key/values for custom jinja templating

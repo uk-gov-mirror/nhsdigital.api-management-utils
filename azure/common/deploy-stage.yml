@@ -36,6 +36,8 @@ parameters:
     type: boolean
   - name: friendly_api_name
     type: string
+  - name: no_ping
+    type: boolean
   - name: pre_template
     type: stepList
   - name: post_template
@@ -150,6 +152,7 @@ stages:
                     post_template: ${{ parameters.post_template }}
                     pre_deploy: ${{ parameters.pre_deploy }}
                     post_deploy: ${{ parameters.post_deploy }}
+                    no_ping: ${{ parameters.no_ping }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: "../templates/deploy-spec.yml"
