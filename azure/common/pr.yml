@@ -28,8 +28,8 @@ parameters:
     type: stepList
   - name: deploy_review_sandbox
     type: boolean
-  - name: deploy_spec
-    type: boolean
+  - name: spec_file
+    type: string
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
@@ -38,6 +38,9 @@ parameters:
     type: object
   - name: jinja_templates
     type: object
+  - name: friendly_api_name
+    type: string
+    default: ''
 
 stages:
   - ${{ if eq(parameters.stage_name, 'internal_dev') }}:

@@ -28,8 +28,8 @@ parameters:
   - name: proxy_path
   - name: product_display_name
   - name: product_description
-  - name: deploy_spec
-    type: boolean
+  - name: spec_file
+    type: string
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
@@ -70,17 +70,6 @@ stages:
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
                 
-                - ${{ if parameters.notify }}:
-                  - bash: |
-                      export COMMIT_SHA=`echo $(Build.SourceVersionMessage) | cut -d' ' -f2`
-                      echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
-                    displayName: Set COMMIT_SHA
-
-                  - template: '../components/update-github-status.yml'
-                    parameters:
-                      state: pending
-                      description: "Deploy to ${{ parameters.apigee_environment }} started"
-
                 - bash: |
                     echo $(Build.SourceVersion)
                     echo $(Build.SourceVersionMessage)
@@ -123,6 +112,18 @@ stages:
                       - /ptl/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+
+                - ${{ if parameters.notify }}:
+                  - bash: |
+                      export COMMIT_SHA=`echo $(Build.SourceVersionMessage) | cut -d' ' -f2`
+                      echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
+                    displayName: Set COMMIT_SHA
+
+                  - template: '../components/update-github-status.yml'
+                    parameters:
+                      state: pending
+                      description: "Deploy to ${{ parameters.environment }} started"
+
                 
                 - template: "../components/expose-pipeline-values.yml"
                   parameters:
@@ -151,27 +152,27 @@ stages:
                     pre_deploy: ${{ parameters.pre_deploy }}
                     post_deploy: ${{ parameters.post_deploy }}
 
-                - ${{ if parameters.deploy_spec }}:
-                  - ${{ if not(contains(parameters.stage_name, 'sandbox')) }}:
-                    - template: "../templates/deploy-spec.yml"
-                      parameters:
-                        service_name: ${{ parameters.service_name }}
-                        apigee_environment: ${{ parameters.environment }}
-                        apigee_organization: ${{ parameters.apigee_organization }}
-                        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                        portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                        make_spec_visible: ${{ parameters.make_spec_visible }}
-                        friendly_api_name: ${{ parameters.friendly_api_name }}
+                - ${{ if ne(parameters.spec_file, '') }}:
+                  - template: "../templates/deploy-spec.yml"
+                    parameters:
+                      spec_file: ${{ parameters.spec_file }}
+                      service_name: ${{ parameters.service_name }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                      make_spec_visible: ${{ parameters.make_spec_visible }}
+                      friendly_api_name: ${{ parameters.friendly_api_name }}
                 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'
                     parameters:
                       state: success
                       on_success: true
-                      description: "Deploy to ${{ parameters.apigee_environment }} succeeded"
+                      description: "Deploy to ${{ parameters.environment }} succeeded"
 
                   - template: '../components/update-github-status.yml'
                     parameters:
                       state: failure
                       on_failure: true
-                      description: "Deploy to ${{ parameters.apigee_environment }} failed"
+                      description: "Deploy to ${{ parameters.environment }} failed"

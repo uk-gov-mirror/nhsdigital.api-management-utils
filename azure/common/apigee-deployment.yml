@@ -26,15 +26,15 @@ parameters:
     displayName: Deploy review sandbox?
     type: boolean
     default: false
-  - name: deploy_spec
-    displayName: Deploy spec?
-    type: boolean
-    default: false
+  - name: spec_file
+    displayName: Path to OAS spec file for this service
+    type: string
+    default: ''
   - name: portal_api_requires_callback_url
     displayName: Does the portal api require a callback url? (only valid for deploy spec)
     default: true
   - name: make_spec_visible
-    displayName: Make spec visible? (only valid for deploy spec)
+    displayName: Make spec visible? (only valid if spec_file is specified)
     default: true
   - name: fully_qualified_service_name
     displayName: Supply a custom name for your release (only valid for release pipeline)
