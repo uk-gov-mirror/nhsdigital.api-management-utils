@@ -8,5 +8,6 @@ steps:
     - bash: |
         set -euo pipefail
         export VARIABLE_NAME="`echo ${{ param.key }} | tr a-z A-Z`"
+        echo "Saved to variable ${VARIABLE_NAME}"
         echo "##vso[task.setvariable variable=${VARIABLE_NAME}]${{ param.value }}"
       displayName: Expose ${{ param.key }} as variable
