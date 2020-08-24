@@ -124,7 +124,6 @@ stages:
                       state: pending
                       description: "Deploy to ${{ parameters.environment }} started"
 
-                
                 - template: "../components/expose-pipeline-values.yml"
                   parameters:
                     expose:

@@ -26,6 +26,10 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: pr_proxy_deploy_steps
+    type: object
+  - name: pr_sandbox_deploy_steps
+    type: object
   - name: deploy_review_sandbox
     type: boolean
   - name: spec_file
@@ -50,8 +54,24 @@ stages:
         fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
-            ${{ param.key }}: ${{ param.value }}
+          ${{ if in(param.key, 'pr_proxy_deploy_steps') }}:
+            ${{ each step_list in paramters.pr_proxy_deploy_steps }}:
+              ${{ if eq(step_list.key, 'pre_template') }}:
+                pre_template: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'post_template') }}:
+                post_template: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'pre_deploy') }}:
+                pre_deploy: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'post_deploy') }}:
+                post_deploy: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
     - ${{ if parameters.deploy_review_sandbox }}:
       - template: ./deploy-stage.yml
         parameters:
@@ -59,5 +79,21 @@ stages:
           service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
           stage_name: ${{ parameters.stage_name }}_sandbox
           ${{ each param in parameters }}:
-            ${{ if notIn(param.key, 'deploy_review_sandbox', 'stage_name', 'fully_qualified_service_name', 'service_base_path') }}:
-              ${{ param.key }}: ${{ param.value }}
+          ${{ if in(param.key, 'pr_sandbox_deploy_steps') }}:
+            ${{ each step_list in paramters.pr_sandbox_deploy_steps }}:
+              ${{ if eq(step_list.key, 'pre_template') }}:
+                pre_template: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'post_template') }}:
+                post_template: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'pre_deploy') }}:
+                pre_deploy: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}
+              ${{ if eq(step_list.key, 'post_deploy') }}:
+                post_deploy: ${{ step_list.value }}
+                ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_proxy_deploy_steps', 'pr_sandbox_deploy_steps') }}:
+                  ${{ param.key }}: ${{ param.value }}

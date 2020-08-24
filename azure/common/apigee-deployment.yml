@@ -68,6 +68,14 @@ parameters:
     displayName: Steps to run after templating
     type: stepList
     default: []
+  - name: pr_proxy_deploy_steps
+    displayName: Steps to for only the proxy deploy on a PR
+    type: object
+    default: []
+  - name: pr_sandbox_deploy_steps
+    displayName: Steps to for only the sandbox deploy on a PR
+    type: object
+    default: []
   - name: _scoped_pipeline_vars
     type: object
     default:

@@ -13,6 +13,10 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: pr_proxy_deploy_steps
+    type: object
+  - name: pr_sandbox_deploy_steps
+    type: object
   - name: deploy_review_sandbox
     type: boolean
   - name: spec_file
