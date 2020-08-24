@@ -68,14 +68,6 @@ parameters:
     displayName: Steps to run after templating
     type: stepList
     default: []
-  - name: pr_proxy_deploy_steps
-    displayName: Steps to for only the proxy deploy on a PR
-    type: object
-    default: []
-  - name: pr_sandbox_deploy_steps
-    displayName: Steps to for only the sandbox deploy on a PR
-    type: object
-    default: []
   - name: _scoped_pipeline_vars
     type: object
     default:
@@ -131,6 +123,12 @@ extends:
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
+          - ${{ if parameters.deploy_review_sandbox }}:
+            - stage_name: internal_dev_sandbox
+              environment: internal-dev
+              depends_on: []
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                ${{ var }}: ${{ parameters[var] }}
 
       ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
         apigee_deployments:
