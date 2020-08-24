@@ -1,0 +1,10 @@
+parameters:
+  - name: expose
+    type: object
+    default: []
+
+steps:
+  - ${{ each param in parameters.expose }}:
+    - bash: |
+        echo "##vso[task.setvariable variable=${{ param.key }}]${{ param.value }}"
+      displayName: Expose ${{ param.key }} as variable

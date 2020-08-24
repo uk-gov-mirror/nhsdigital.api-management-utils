@@ -124,6 +124,12 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
                 
+                - template: "../components/expose-pipeline-values.yml"
+                  parameters:
+                    expose:
+                      apigee_environment: ${{ parameters.environment }}
+                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                
                 - template: "../components/clone-utils.yml" 
                   parameters:
                     service_name: ${{ parameters.service_name }}
