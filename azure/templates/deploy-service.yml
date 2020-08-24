@@ -126,7 +126,7 @@ steps:
 
         # deploy ecs proxies
         # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} SANDBOX=false \
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible deploy-ecs-proxies
       fi
     displayName: Deploy ECS proxies

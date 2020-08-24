@@ -127,17 +127,21 @@ extends:
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
-          - ${{ if parameters.deploy_review_sandbox }}:
-            - stage_name: internal_dev_sandbox
-              environment: internal-dev
-              depends_on: []
-              ${{ each var in parameters._scoped_pipeline_vars }}:
-                ${{ var }}: ${{ parameters[var] }}
+          - stage_name: internal_dev_sandbox
+            environment: internal-dev-sandbox
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
 
       ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
         apigee_deployments:
           - stage_name: internal_dev
             environment: internal-dev
+            depends_on: []
+            ${{ each var in parameters._scoped_pipeline_vars }}:
+              ${{ var }}: ${{ parameters[var] }}
+          - stage_name: internal_dev_sandbox
+            environment: internal-dev-sandbox
             depends_on: []
             ${{ each var in parameters._scoped_pipeline_vars }}:
               ${{ var }}: ${{ parameters[var] }}
