@@ -35,6 +35,7 @@ steps:
   - bash: |
       git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+      git checkout APM-1361-ping-endpoint
     displayName: Clone utils
 
   - bash: "make install"
@@ -43,8 +44,8 @@ steps:
 
   - bash: |
       brew install tfenv
-      tfenv install 0.13.0
-      tfenv use 0.13.0
+      tfenv install 0.12.29
+      tfenv use 0.12.29
     displayName: setup terraform
     condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
