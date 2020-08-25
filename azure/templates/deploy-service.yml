@@ -78,6 +78,8 @@ steps:
       export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
 
+      echo $DEPLOYED_VERSION
+
       if [ -f  $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
         source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
       fi

@@ -32,7 +32,7 @@
 
     - name: check values
       debug:
-        msg: "ServiceId: {{ service_id }}, APIM Basename: {{ APIM_BASENAME }}, PR num: {{  pr_number}}, APIM proxy hostname: {{ APIM_PROXY_HOSTNAME }}"
+        msg: "ServiceId: {{ service_id }}, APIM Basename: {{ APIM_BASENAME }}, PR num: {{  pr_number }}, APIM proxy hostname: {{ APIM_PROXY_HOSTNAME }}"
     
     - name: check proxy details
       debug:
