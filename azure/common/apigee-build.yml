@@ -3,6 +3,12 @@ parameters:
     type: string
   - name: short_service_name
     type: string
+  - name: variables
+    type: object
+    default: []
+  - name: test_steps
+    type: stepList
+    default: []
 
 resources:
   repositories:
@@ -17,6 +23,9 @@ jobs:
     timeoutInMinutes: 10
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      ${{ each var in parameters.variables }}:
+        ${{ var.key }}: ${{ var.value }}
     steps:
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
@@ -64,9 +73,8 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Lint
 
-      - bash: "make test"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Run unit tests
+      - ${{ each test_step in parameters.test_steps }}:
+          - ${{ test_step }}
 
       - bash: "make publish"
         workingDirectory: "${{ parameters.service_name }}"

@@ -143,3 +143,6 @@ dmypy.json
 .envrc
 .direnv
 env
+
+# vscode
+.vscode

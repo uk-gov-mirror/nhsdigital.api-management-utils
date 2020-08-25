@@ -1,0 +1,159 @@
+- name: list portals
+  uri:
+    url: "{{ portals_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: portals
+
+- name: set portal_id
+  set_fact:
+    portal_id: "{{ portals.json.data[0].id }}"
+
+- name: list specs
+  uri:
+    url: "{{ specs_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: specs
+
+- name: set folder_id
+  set_fact:
+    folder_id: "{{ specs.json.id }}"
+
+- name: set spec_names
+  set_fact:
+    spec_names: "{{ specs.json.contents | map(attribute='name') | list }}"
+
+- name: set spec_content
+  set_fact:
+    spec_content: "{{ lookup('file', SPEC_FILE) }}"
+
+- name: if not exists, create spec
+  uri:
+    url: "{{ specs_resource_uri }}"
+    method: POST
+    body: '{"folder": "{{ folder_id }}", "name": "{{ SERVICE_NAME }}", "kind": "Doc"}'
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: spec
+  when: SERVICE_NAME not in spec_names
+
+- name: if not exists, set spec_id
+  set_fact:
+    spec_id: "{{ spec.json.id }}"
+  when: SERVICE_NAME not in spec_names
+
+- name: if exists, set spec_id
+  set_fact:
+    spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
+  vars:
+    _query: "[? name=='{{ SERVICE_NAME }}'].id"
+  when: SERVICE_NAME in spec_names
+
+- name: create/update spec file
+  uri:
+    url: "{{ specs_resource_uri }}/{{ spec_id }}/content"
+    method: PUT
+    body: "{{ spec_content }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+
+- name: get apidocs
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidocs
+
+- name: set api_names
+  set_fact:
+    api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
+
+- name: if api not exist in portal, create portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: POST
+    body:
+      anonAllowed: "True"
+      description: ""
+      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
+      specContent: "{{ spec_id }}"
+      specId: "{{ SERVICE_NAME }}"
+      title: "{{ FRIENDLY_NAME }}"
+      visibility: "{{ VISIBLE }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME not in api_names
+
+- name: if api exists in portal, set apidoc_id
+  set_fact:
+    apidoc_id: "{{ apidocs.json.data | json_query(_query) | first }}"
+  vars:
+    _query: "[? apiId=='{{ SERVICE_NAME }}'].id"
+  when: SERVICE_NAME in api_names
+
+- name: if api exist in portal, update portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    method: PUT
+    body:
+      anonAllowed: "True"
+      description: ""
+      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
+      specContent: "{{ spec_id }}"
+      specId: "{{ SERVICE_NAME }}"
+      title: "{{ FRIENDLY_NAME }}"
+      visibility: "{{ VISIBLE }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
+
+- name: if api exist in portal, get api_doc
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidoc
+  when: SERVICE_NAME in api_names
+
+- name: if api exist in portal, update api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    method: PUT
+    body:
+      anonAllowed: "{{ apidoc.json.data.anonAllowed }}"
+      description: "{{ apidoc.json.data.description }}"
+      specId: "{{ apidoc.json.data.specId }}"
+      visibility: "{{ apidoc.json.data.visibility }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
+
+- name: if api exist in portal, update spec snapshot
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}/snapshot"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: SERVICE_NAME in api_names
