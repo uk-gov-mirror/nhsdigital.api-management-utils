@@ -43,8 +43,8 @@ steps:
 
   - bash: |
       brew install tfenv
-      tfenv install 0.12.29
-      tfenv use 0.12.29
+      tfenv install 0.13.0
+      tfenv use 0.13.0
     displayName: setup terraform
     condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
