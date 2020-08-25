@@ -40,7 +40,7 @@ jobs:
       - template: ../templates/setup-build-name.yml
         parameters:
           service_name: "${{ parameters.service_name }}"
-      
+
       - task: UsePythonVersion@0
         displayName: "Use Python 3.8"
         inputs:
@@ -147,6 +147,6 @@ jobs:
           cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
-      
+
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"

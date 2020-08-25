@@ -137,7 +137,7 @@ steps:
       export PRODUCT_DESCRIPTION="${{ parameters.product_description }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
-      export NO_PING="${{ parameters.ping }}"
+      export PING="${{ parameters.ping }}"
 
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
       poetry run ansible-playbook deploy-apigee-proxy.yml

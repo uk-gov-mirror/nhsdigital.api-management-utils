@@ -10,7 +10,7 @@
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     PROXY_DIR: "{{ lookup('env', 'PROXY_DIR') }}"
-    NO_PING: "{{ (lookup('env', 'NO_PING') | length > 0) | ternary(lookup('env', 'NO_PING'), 'true') }}"
+    PING: "{{ (lookup('env', 'PING') | length > 0) | ternary(lookup('env', 'PING'), 'true') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
@@ -43,9 +43,9 @@
         msg: "PROXY_DIR not set"
       when: not PROXY_DIR
 
-    - name: show NO_PING
+    - name: show PING
       debug:
-        var: NO_PING
+        var: PING
 
   roles:
     - deploy-apigee-proxy
