@@ -30,14 +30,6 @@
         msg: "{{ PROXIES_DIR }} does not exist"
       when: not st.stat.exists
 
-    - name: check values
-      debug:
-        msg: "ServiceId: {{ service_id }}, APIM Basename: {{ APIM_BASENAME }}, PR num: {{  pr_number }}, APIM proxy hostname: {{ APIM_PROXY_HOSTNAME }}"
-    
-    - name: check proxy details
-      debug:
-        msg: "Deployed Version: {{ DEPLOYED_VERSION }}, Release ID: {{ RELEASE_RELEASEID }}"
-
     - name: create temporary directory
       tempfile:
         state: directory
