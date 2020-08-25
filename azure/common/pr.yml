@@ -38,7 +38,7 @@ parameters:
     type: object
   - name: jinja_templates
     type: object
-  - name: no_ping
+  - name: ping
     type: boolean
   - name: friendly_api_name
     type: string
