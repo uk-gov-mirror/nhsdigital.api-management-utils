@@ -36,7 +36,7 @@ parameters:
     type: boolean
   - name: friendly_api_name
     type: string
-  - name: no_ping
+  - name: ping
     type: boolean
   - name: pre_template
     type: stepList
@@ -71,7 +71,7 @@ stages:
                     runVersion: "latestFromBranch"
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
-                
+             
                 - bash: |
                     echo $(Build.SourceVersion)
                     echo $(Build.SourceVersionMessage)
@@ -152,7 +152,7 @@ stages:
                     post_template: ${{ parameters.post_template }}
                     pre_deploy: ${{ parameters.pre_deploy }}
                     post_deploy: ${{ parameters.post_deploy }}
-                    no_ping: ${{ parameters.no_ping }}
+                    no_ping: ${{ parameters.ping }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: "../templates/deploy-spec.yml"

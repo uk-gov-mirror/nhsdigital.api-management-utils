@@ -21,7 +21,7 @@ parameters:
     type: boolean
   - name: make_spec_visible
     type: boolean
-  - name: no_ping
+  - name: ping
     type: boolean
   - name: deploy_template
 
