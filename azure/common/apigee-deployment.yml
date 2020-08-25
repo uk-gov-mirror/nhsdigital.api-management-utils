@@ -44,6 +44,10 @@ parameters:
     displayName: Toggle ping endpoint avaliablility
     type: boolean
     default: true
+  - name: terraform_version
+    displayName: Version of terrform to use
+    type: string
+    default: '0.12.29'
   - name: jinja_templates
     type: object
     displayName:  Key/values for custom jinja templating
