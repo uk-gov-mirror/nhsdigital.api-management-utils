@@ -16,9 +16,6 @@ parameters:
     type: boolean
 
 steps:
-- bash: 'brew install npm curl'
-  displayName: 'Setup curl and jq'
-
 - bash: |
     declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
     export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
