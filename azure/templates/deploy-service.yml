@@ -147,7 +147,10 @@ steps:
 
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
       poetry run ansible-playbook deploy-apigee-proxy.yml
-      poetry run ansible-playbook deploy-apigee-product.yml
+      if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+        poetry run ansible-playbook deploy-apigee-product.yml
+      fi
+
     displayName: 'Deploy Proxy and Product'
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
