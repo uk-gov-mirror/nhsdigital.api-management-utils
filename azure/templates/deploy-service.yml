@@ -35,7 +35,6 @@ steps:
   - bash: |
       git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-      git checkout APM-1361-ping-endpoint
     displayName: Clone utils
 
   - bash: "make install"
