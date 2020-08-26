@@ -16,7 +16,7 @@ parameters:
     type: boolean
 
 steps:
-- bash: 'sudo apt-get install npm curl jq -y'
+- bash: 'brew install npm curl'
   displayName: 'Setup curl and jq'
 
 - bash: |
