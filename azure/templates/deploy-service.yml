@@ -12,6 +12,8 @@ parameters:
   - name: service_base_path
   - name: jinja_templates
     type: object
+  - name: has_monitoring
+    type: boolean
   - name: pre_template
     type: stepList
   - name: post_template
@@ -153,6 +155,13 @@ steps:
       poetry run ansible-playbook deploy-apigee-proxy.yml
       poetry run ansible-playbook deploy-apigee-product.yml
     displayName: 'Deploy Proxy and Product'
+
+  - ${{ if parameters.has_monitoring }}:
+      - bash: |
+          export PING="${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk${{ parameters.service_base_path }}/_ping"
+
+          curl -X POST -H "apikey: $(secret.MonitoringApiKey)" "https://internal-dev.api.service.nhs.uk/monitoring-sd/service" -d "{\"${{ parameters.service_name }}\": {\"${{ parameters.apigee_environment }}\": [\"${PING}\"]}}"
+        displayName: Add monitoring endpoints
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}

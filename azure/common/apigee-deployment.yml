@@ -34,6 +34,10 @@ parameters:
     type: object
     displayName:  Key/values for custom jinja templating
     default: []
+  - name: has_monitoring
+    type: boolean
+    displayName: Whether monitoring is needed
+    default: false
   - name: secret_ids
     displayName: List of additional AWS Secrets Manager Secret IDs
     type: object
@@ -69,6 +73,7 @@ parameters:
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
+      - has_monitoring
 
 extends:
   template: ./deploy-stages.yml
