@@ -1,0 +1,18 @@
+parameters:
+  - name: method
+    values:
+      - POST
+      - GET
+  - name: url
+  - name: headers
+    default: ''
+  - name: body
+    default: ''
+  - name: display_name
+    default: ''
+
+
+steps:
+  - bash: |
+      curl -X '${{ method }}' -H '${{ headers }}' '${{ url }}' -d '${{ body }}'
+    displayName: ${{ coalesce(parameters.display_name, join(' ', [parameters.method, parameters.url] )) }}
