@@ -33,7 +33,6 @@
   git:
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
-    version: APM-1214-common-pipeline
     depth: 1
 
 - name: delete git history
