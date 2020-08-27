@@ -32,12 +32,6 @@ steps:
     workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)
     displayName: "Check for ECS proxy definitions"
 
-  - bash: |
-      git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-      git checkout ${{ resources.repositories.common.ref }}
-      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-    displayName: Clone utils
-
   - bash: "make install"
     workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
     displayName: "Install utils pre-requisites"
