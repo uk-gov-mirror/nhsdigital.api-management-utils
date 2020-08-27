@@ -10,13 +10,6 @@ parameters:
     type: stepList
     default: []
 
-resources:
-  repositories:
-    - repository: utils
-      name: NHSDigital/api-management-utils
-      endpoint: NHSDigital
-      type: github
-
 jobs:
   - job: build
     displayName: Build & Test
@@ -93,7 +86,7 @@ jobs:
         workingDirectory: ${{ parameters.service_name }}
         displayName: "Check for ECS proxy definitions"
 
-      - checkout: utils
+      - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
       - bash: "make install"
