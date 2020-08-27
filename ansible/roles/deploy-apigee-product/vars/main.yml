@@ -18,6 +18,7 @@ approval_type: "{{ (APIGEE_ENVIRONMENT == 'prod') | ternary('manual', 'auto') }}
 env_names:
   infra-dev: 'Infrastructure Development'
   internal-dev: 'Internal Development'
+  internal-dev-sandbox: 'Internal Dev Sandbox'
   internal-qa: 'Internal QA'
   internal-qa-sandbox: 'Internal QA Sandbox'
   dev: 'Development'
