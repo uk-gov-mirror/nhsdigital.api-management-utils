@@ -134,10 +134,6 @@ stages:
                       apigee_environment: ${{ parameters.environment }}
                       fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                 
-                - template: "../components/clone-utils.yml" 
-                  parameters:
-                    service_name: ${{ parameters.service_name }}
-
                 - template: "../templates/deploy-service.yml"
                   parameters:
                     service_name: ${{ parameters.service_name }}
