@@ -95,7 +95,6 @@ jobs:
 
       - checkout: utils
         path: "s/${{ parameters.service_name }}/utils"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
