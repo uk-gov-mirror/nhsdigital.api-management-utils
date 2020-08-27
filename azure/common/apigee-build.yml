@@ -149,6 +149,7 @@ jobs:
 
       - bash: |
           cp -R utils dist/utils
+        workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy utils into artifact"
 
       - publish: ${{ parameters.service_name}}/dist
