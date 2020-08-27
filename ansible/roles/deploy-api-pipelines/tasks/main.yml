@@ -7,18 +7,23 @@
 - name: login to azure
   shell: az login
 
+- name: check pipelines folder
+  shell: az pipelines folder list --path "/{{ PREFIX }}" | jq '.[]'
+  register: cmd_check_pipeline_folder
+
 - name: create pipelines folder
   shell: az pipelines folder create --path "/{{ PREFIX }}"
+  when: cmd_check_pipeline_folder.stdout == ''
 
 - name: create build pipeline
   shell: >
-    az pipelines create 
-    --name "{{ PREFIX }}-Build" 
-    --repository {{ REPO }} 
-    --repository-type github 
-    --folder-path "/{{ PREFIX }}" 
-    --service-connection {{ SERVICE_CONNECTION }} 
-    --branch master 
+    az pipelines create
+    --name "{{ PREFIX }}-Build"
+    --repository {{ REPO }}
+    --repository-type github
+    --folder-path "/{{ PREFIX }}"
+    --service-connection "{{ SERVICE_CONNECTION }}"
+    --branch master
     --yaml-path azure/azure-build-pipeline.yml
 
 - name: create pull request pipeline
@@ -28,7 +33,7 @@
     --repository {{ REPO }} 
     --repository-type github 
     --folder-path "/{{ PREFIX }}" 
-    --service-connection {{ SERVICE_CONNECTION }} 
+    --service-connection "{{ SERVICE_CONNECTION }}"
     --branch master
     --yaml-path azure/azure-pr-pipeline.yml
     --skip-first-run true
@@ -40,7 +45,7 @@
     --repository {{ REPO }} 
     --repository-type github 
     --folder-path "/{{ PREFIX }}" 
-    --service-connection {{ SERVICE_CONNECTION }} 
+    --service-connection "{{ SERVICE_CONNECTION }}"
     --branch master 
     --yaml-path azure/azure-release-pipeline.yml
     --skip-first-run true

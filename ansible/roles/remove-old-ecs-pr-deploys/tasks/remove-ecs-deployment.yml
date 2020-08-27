@@ -1,14 +1,25 @@
 
 - name: extract vars
   set_fact:
-    service_id: "{{  ns_service_tuple.1 }}"
-    namespaced_name: "{{ ns_service_tuple.0 }}"
-    pr_number: "{{ ns_service_tuple.0 |  regex_replace('^' + ns_service_tuple.1 + '-', '')  }}"
+    apigee_environment: "{{ ns_service_tuple.0 }}"
+    namespaced_name: "{{ ns_service_tuple.1 }}"
+    service_id: "{{  ns_service_tuple.2 }}"
+    pr_number: "{{ ns_service_tuple.1 |  regex_replace('^' + ns_service_tuple.2 + '-', '')  }}"
+
+- name: check api_environment
+  fail:
+    msg: "unsupport API environment {{ apigee_environment }}"
+  when: APIGEE_ENVIRONMENT not in ('internal-dev', 'internal-dev-sandbox')
+
+- name: check pr_number
+  fail:
+    msg: "pr_number not set"
+  when: not pr_number
 
 - name: get service created at
   shell: >
     set -o pipefail;
-    {{ aws_cmd }} ecs describe-services --cluster apis-internal-dev
+    {{ aws_cmd }} ecs describe-services --cluster apis-{{ apigee_environment }}
     --services {{ namespaced_name }} --query services[0].createdAt | xargs -i date --utc -d @{} '+%FT%TZ'
   args:
     executable: /bin/bash
@@ -37,7 +48,7 @@
       }}
 
 # left these in to print some useful info about each service
-- debug: msg="processing service - {{ service_id }} - pr - {{ pr_number }}"
+- debug: msg="processing service - {{ apigee_environment }} - {{ service_id }} - pr - {{ pr_number }}"
 - debug: msg="created at, {{ get_service_created_at.stdout }}"
 - debug: msg="current_date, {{ ansible_date_time.iso8601 }}"
 - debug: msg="age_hours, {{ age_hours }}"

@@ -83,106 +83,71 @@ parameters:
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
+  - name: _pipeline_defaults
+    type: object
+    default:
+      - name_suffix: '-Pull-Request'
+        deploy_template: pr.yml
+        environments:
+        - internal-dev
+        - internal-dev-sandbox
+      - name_suffix: '-Release'
+        deploy_template: release.yml
+        environments:
+          - internal-dev
+          - internal-dev-sandbox
+          - internal-qa
+          - internal-qa-sandbox
+          - dev
+          - ref
+          - int
+          - sandbox
+          - prod
 
 extends:
   template: ./deploy-stages.yml
   parameters:
     ${{ each param in parameters }}:
-      ${{ if notIn(param.key, 'apigee_deployments', '_scoped_pipeline_vars') }}:
+      ${{ if notIn(param.key, 'apigee_deployments', '_scoped_pipeline_vars', '_pipeline_defaults') }}:
         ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
           ${{ param.key }}: ${{ param.value }}
 
-    ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Request') }}:
-      deploy_template: pr.yml
-    ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
-      deploy_template: release.yml
+    ${{ each pipeline_default in parameters._pipeline_defaults }}:
+      ${{ if endsWith(variables['Build.DefinitionName'], pipeline_default.name_suffix) }}:
+        deploy_template: ${{ pipeline_default.deploy_template }}
 
-    # If apigee_deployments was specified, forward it regardless of which deploy template
-    ${{ if gt(length(parameters.apigee_deployments), 0) }}:
-      apigee_deployments:
-        - ${{ each apigee_deployment in parameters.apigee_deployments }}:
-          - environment: ${{ apigee_deployment.environment }}
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ if apigee_deployment[var] }}:
-                ${{ var }}: ${{ apigee_deployment[var] }}
-              ${{ if not(apigee_deployment[var]) }}:
-                ${{ var }}: ${{ parameters[var] }}
-            stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
-            ${{ if not(apigee_deployment.depends_on) }}:
-              ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
-                depends_on: []
-              ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
-            ${{ if apigee_deployment.depends_on }}:
-              depends_on: ${{ apigee_deployment.depends_on }}
+        # If apigee_deployments was specified, accept it regardless of which pipeline we are in
+        ${{ if gt(length(parameters.apigee_deployments), 0) }}:
+          apigee_deployments:
+            - ${{ each apigee_deployment in parameters.apigee_deployments }}:
+              - environment: ${{ apigee_deployment.environment }}
+                stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                  ${{ if apigee_deployment[var] }}:
+                    ${{ var }}: ${{ apigee_deployment[var] }}
+                  ${{ if not(apigee_deployment[var]) }}:
+                    ${{ var }}: ${{ parameters[var] }}
+                ${{ if not(apigee_deployment.depends_on) }}:
+                  ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
+                    depends_on: []
+                  ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
+                    depends_on:
+                      - internal_qa
+                      - internal_qa_sandbox
+                ${{ if apigee_deployment.depends_on }}:
+                  depends_on: ${{ apigee_deployment.depends_on }}
 
-    # otherwise pick a different default based on the whether it's the PR or release pipeline
-    ${{ if eq(0, length(parameters.apigee_deployments)) }}:
-      ${{ if endsWith(variables['Build.DefinitionName'], '-Pull-Request') }}:
-        apigee_deployments:
-          - stage_name: internal_dev
-            environment: internal-dev
-            depends_on: []
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - ${{ if parameters.deploy_review_sandbox }}:
-            - stage_name: internal_dev_sandbox
-              environment: internal-dev
-              depends_on: []
-              ${{ each var in parameters._scoped_pipeline_vars }}:
-                ${{ var }}: ${{ parameters[var] }}
-
-      ${{ if endsWith(variables['Build.DefinitionName'], '-Release') }}:
-        apigee_deployments:
-          - stage_name: internal_dev
-            environment: internal-dev
-            depends_on: []
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: internal_qa
-            environment: internal-qa
-            depends_on: []
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: internal_qa_sandbox
-            environment: internal-qa-sandbox
-            depends_on: []
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: deploy_ref
-            environment: ref
-            depends_on:
-              - internal_qa
-              - internal_qa_sandbox
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: dev
-            environment: dev
-            depends_on:
-              - internal_qa
-              - internal_qa_sandbox
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: deploy_int
-            environment: int
-            depends_on:
-              - internal_qa
-              - internal_qa_sandbox
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: sandbox
-            environment: sandbox
-            depends_on:
-              - internal_qa
-              - internal_qa_sandbox
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
-          - stage_name: prod
-            environment: prod
-            depends_on:
-              - internal_qa
-              - internal_qa_sandbox
-            ${{ each var in parameters._scoped_pipeline_vars }}:
-              ${{ var }}: ${{ parameters[var] }}
+        # otherwise set the default parameters for this pipeline
+        ${{ if eq(0, length(parameters.apigee_deployments)) }}:
+          apigee_deployments:
+            - ${{ each environment in pipeline_default.environments }}:
+              - environment: ${{ environment }}
+                stage_name: ${{ replace(environment, '-', '_') }}
+                ${{ if startsWith(environment, 'internal-') }}:
+                  depends_on: []
+                ${{ if not(startsWith(environment, 'internal-')) }}:
+                  depends_on:
+                    - internal_qa
+                    - internal_qa_sandbox
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                  ${{ var }}: ${{ parameters[var] }}

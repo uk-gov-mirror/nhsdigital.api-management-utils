@@ -126,7 +126,7 @@ steps:
 
         # deploy ecs proxies
         # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} SANDBOX=false \
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible deploy-ecs-proxies
       fi
     displayName: Deploy ECS proxies
@@ -147,7 +147,10 @@ steps:
 
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
       poetry run ansible-playbook deploy-apigee-proxy.yml
-      poetry run ansible-playbook deploy-apigee-product.yml
+      if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+        poetry run ansible-playbook deploy-apigee-product.yml
+      fi
+
     displayName: 'Deploy Proxy and Product'
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:

@@ -2,6 +2,7 @@ parameters:
   - name: environment
     values:      
       - internal-dev
+      - internal-dev-sandbox
       - internal-qa
       - internal-qa-sandbox
       - ref

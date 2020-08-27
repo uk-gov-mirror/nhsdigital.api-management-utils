@@ -3,12 +3,15 @@ parameters:
     type: string
     values:
       - internal-dev
+      - internal-dev-sandbox
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
   - name: stage_name
   - name: service_name
   - name: short_service_name
+  - name: friendly_api_name
+    default: ''
   - name: service_base_path
   - name: product_display_name
   - name: product_description
@@ -29,7 +32,6 @@ parameters:
   - name: deploy_review_sandbox
     type: boolean
   - name: spec_file
-    type: string
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
@@ -40,20 +42,12 @@ parameters:
     type: object
   - name: ping
     type: boolean
-  - name: friendly_api_name
-    type: string
-    default: ''
 
 stages:
   - template: ./deploy-stage.yml
     parameters:
-      ${{ if eq(parameters.stage_name, 'internal_dev') }}:
-        notify: true
-        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
-        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
-      ${{ if eq(parameters.stage_name, 'internal_dev_sandbox') }}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
-        service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}-sandbox
+      fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
+      service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
       ${{ each param in parameters }}:
         ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
           ${{ param.key }}: ${{ param.value }}

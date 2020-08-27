@@ -3,7 +3,7 @@
   command: >
     {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
     --resource-type-filters elasticloadbalancing:targetgroup --query
-    'ResourceTagMappingList[].Tags[?Key==`api-namespaced-name`||Key==`api-service`].Value'
+    'ResourceTagMappingList[].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
   changed_when: no
   register: get_all_namespaced_services
   when: (target_service_id | length) == 0
@@ -12,7 +12,7 @@
   command: >
     {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
     --resource-type-filters elasticloadbalancing:targetgroup --query
-    'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-namespaced-name`||Key==`api-service`].Value'
+    'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
   changed_when: no
   register: get_service_namespaced_services
   when: (target_service_id | length) > 0
