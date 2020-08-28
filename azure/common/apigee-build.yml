@@ -10,13 +10,6 @@ parameters:
     type: stepList
     default: []
 
-resources:
-  repositories:
-    - repository: utils
-      name: NHSDigital/api-management-utils
-      endpoint: NHSDigital
-      type: github
-
 jobs:
   - job: build
     displayName: Build & Test
@@ -93,9 +86,8 @@ jobs:
         workingDirectory: ${{ parameters.service_name }}
         displayName: "Check for ECS proxy definitions"
 
-      - checkout: utils
+      - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
@@ -147,6 +139,11 @@ jobs:
           cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          cp -R utils dist/utils
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Copy utils into artifact"
 
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
