@@ -46,8 +46,8 @@ parameters:
   - name: ping
     type: boolean
   - name: friendly_api_name
-    type: string
-    default: ''
+  - name: has_monitoring
+    type: boolean
 
 stages:
   - template: ./deploy-stage.yml

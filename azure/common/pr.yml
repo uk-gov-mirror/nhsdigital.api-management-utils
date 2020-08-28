@@ -11,12 +11,13 @@ parameters:
   - name: service_name
   - name: short_service_name
   - name: friendly_api_name
-    default: ''
   - name: service_base_path
   - name: product_display_name
   - name: product_description
   - name: fully_qualified_service_name
   - name: proxy_path
+  - name: has_monitoring
+    type: boolean
   - name: secret_ids
     type: object
   - name: config_ids
