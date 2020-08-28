@@ -141,7 +141,7 @@ jobs:
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
-          cp -R utils dist/utils
+          rsync -a utils dist --exclude .venv
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy utils into artifact"
 
