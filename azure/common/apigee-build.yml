@@ -9,6 +9,9 @@ parameters:
   - name: test_steps
     type: stepList
     default: []
+  - name: post_ecs_push
+    type: stepList
+    default: []
 
 jobs:
   - job: build
@@ -134,6 +137,9 @@ jobs:
           make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible build-ecs-proxies
         displayName: "Build and push ECS proxies"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - ${{ each post_ecs_push in parameters.post_ecs_push }}:
+          - ${{ post_ecs_push }}
 
       - bash: |
           cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
