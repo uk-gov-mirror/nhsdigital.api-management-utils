@@ -49,7 +49,7 @@ parameters:
     type: stepList
   - name: notify
     type: boolean
-    default: false
+    default: true
 
 stages:
   - stage: ${{ parameters.stage_name }}
