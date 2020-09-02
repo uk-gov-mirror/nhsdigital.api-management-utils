@@ -90,7 +90,8 @@ parameters:
         deploy_template: pr.yml
         environments:
         - internal-dev
-        - internal-dev-sandbox
+        - ${{ if parameters.deploy_review_sandbox }}:
+          - internal-dev-sandbox
       - name_suffix: '-Release'
         deploy_template: release.yml
         environments:
