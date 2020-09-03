@@ -88,7 +88,6 @@ parameters:
       - jinja_templates
       - proxy_path
       - has_monitoring
-      - has_monitoring
   - name: _pipeline_defaults
     type: object
     default:
