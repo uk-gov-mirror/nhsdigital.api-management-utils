@@ -14,5 +14,5 @@ parameters:
 
 steps:
   - bash: |
-      echo curl -X '${{ parameters.method }}' -H '${{ parameters.headers }}' -d '${{ parameters.body }}' '${{ parameters.url }}'
+      curl -X '${{ parameters.method }}' -H '${{ parameters.headers }}' -d '${{ parameters.body }}' '${{ parameters.url }}'
     displayName: ${{ coalesce(parameters.display_name, 'curl') }}
