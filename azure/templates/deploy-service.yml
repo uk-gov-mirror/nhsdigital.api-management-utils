@@ -153,9 +153,9 @@ steps:
       - template: '../components/curl.yml'
         parameters:
           display_name: Add monitoring endpoints
-          ${{ if eq(apigee_environment, prod) }}:
+          ${{ if eq(parameters.apigee_environment, prod) }}:
             url: "https://api.service.nhs.uk/monitoring-sd/service"
-          ${{ if not(eq(apigee_environment, prod)) }}:
+          ${{ if not(eq(parameters.apigee_environment, prod)) }}:
             url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
           method: POST
           headers: "apikey: $(secret.MONITORING_API_KEY)"
