@@ -158,7 +158,8 @@ steps:
           ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
             url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
           method: POST
-          headers: "apikey: $(secret.MONITORING_API_KEY)"
+          headers: >
+            apikey: $(secret.MONITORING_API_KEY)
           body: >
             {
               "${{ parameters.service_name }}": {
