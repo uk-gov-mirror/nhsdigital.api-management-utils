@@ -15,4 +15,4 @@ parameters:
 steps:
   - bash: |
       curl -X '${{ method }}' -H '${{ headers }}' '${{ url }}' -d '${{ body }}'
-    displayName: ${{ coalesce(parameters.display_name, join(' ', [parameters.method, parameters.url] )) }}
+    displayName: ${{ coalesce(parameters.display_name, 'curl') }}
