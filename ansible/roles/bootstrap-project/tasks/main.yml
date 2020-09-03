@@ -27,7 +27,7 @@
 
 - name: set repo_location
   set_fact:
-    repo_location: "{{ DEST }}/{{ config.meta.canonical_name }}"
+    repo_location: "{{ DEST }}/{{ config.meta.service_name }}"
 
 - name: clone template repository
   git:
@@ -63,17 +63,17 @@
     - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
     - "{{ repo_location }}/azure/azure-pr-pipeline.yml"
-    - "{{ repo_location }}/azure/azure-build-pipeline.yml"
     - "{{ repo_location }}/azure/azure-release-pipeline.yml"
+    - "{{ repo_location }}/azure/project.yml"
 
 - name: rename live proxy file
-  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_name }}.xml"
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_service_name }}.xml"
 
 - name: rename sandbox proxy file
-  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config.meta.short_name }}.xml"
+  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config.meta.short_service_name }}.xml"
 
 - name: rename live target file
-  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config.meta.short_name }}-target.xml"
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config.meta.short_service_name }}-target.xml"
   
 - name: ensure specification folder exists
   file:
@@ -83,11 +83,11 @@
 - name: copy config oas to repo
   copy:
     src: "{{ CONFIG }}"
-    dest: "{{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml"
+    dest: "{{ repo_location }}/specification/{{ config.meta.service_name }}.yaml"
 
 - name: generate sandbox server
   shell:
-    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config.meta.canonical_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
+    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config.meta.service_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
 
 - name: set sandbox server default port to 9000
   replace:

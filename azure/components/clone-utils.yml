@@ -1,0 +1,13 @@
+parameters:
+  - name: service_name
+    type: string
+
+steps:
+  - bash: |
+      git clone https://github.com/NHSDigital/api-management-utils.git $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
+    displayName: Clone utils
+
+  - bash: "make install"
+    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: "Install utils pre-requisites"

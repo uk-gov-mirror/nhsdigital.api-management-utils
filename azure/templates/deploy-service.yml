@@ -1,6 +1,4 @@
 parameters:
-  - name: notify
-    type: boolean
   - name: proxy_path
   - name: product_display_name
   - name: product_description
@@ -14,6 +12,7 @@ parameters:
     type: object
   - name: has_monitoring
     type: boolean
+  - name: ping
   - name: pre_template
     type: stepList
   - name: post_template
@@ -24,17 +23,6 @@ parameters:
     type: stepList
 
 steps:
-  - ${{ if parameters.notify }}:
-      - bash: |
-          export COMMIT_SHA=`echo $(Build.SourceVersionMessage) | cut -d' ' -f2`
-          echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
-        displayName: Set COMMIT_SHA
-
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: pending
-          description: "Deploy to ${{ parameters.apigee_environment }} started"
-
   - bash: |
       ls -R
       if [[ -f ecs-proxies-deploy.yml ]]; then
@@ -87,8 +75,14 @@ steps:
       export PROXIES_DIR="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
-      export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
+      export RELEASE_RELEASEID=$(Build.BuildId)
+
+      if [[ $SERVICE_ARTIFACT_NAME == v* ]]; then
+        export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      else
+        export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
+      fi
 
       if [ -f  $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
         source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
@@ -133,7 +127,7 @@ steps:
 
         # deploy ecs proxies
         # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} SANDBOX=false \
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible deploy-ecs-proxies
       fi
     displayName: Deploy ECS proxies
@@ -150,10 +144,14 @@ steps:
       export PRODUCT_DESCRIPTION="${{ parameters.product_description }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export PING="${{ parameters.ping }}"
 
       cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
       poetry run ansible-playbook deploy-apigee-proxy.yml
-      poetry run ansible-playbook deploy-apigee-product.yml
+      if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+        poetry run ansible-playbook deploy-apigee-product.yml
+      fi
+
     displayName: 'Deploy Proxy and Product'
 
   - ${{ if parameters.has_monitoring }}:
@@ -162,7 +160,7 @@ steps:
           display_name: Add monitoring endpoints
           ${{ if eq(apigee_environment, prod) }}:
             url: "https://api.service.nhs.uk/monitoring-sd/service"
-          ${{ if neq(apigee_environment, prod) }}:
+          ${{ if not(eq(apigee_environment, prod)) }}:
             url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
           method: POST
           headers: "apikey: $(secret.MONITORING_API_KEY)"
@@ -177,16 +175,3 @@ steps:
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step}}
-
-  - ${{ if parameters.notify }}:
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: success
-          on_success: true
-          description: "Deploy to ${{ parameters.apigee_environment }} started"
-
-      - template: '../components/update-github-status.yml'
-        parameters:
-          state: failure
-          on_failure: true
-          description: "Deploy to ${{ parameters.apigee_environment }} started"

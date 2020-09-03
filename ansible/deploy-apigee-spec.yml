@@ -5,23 +5,19 @@
 
   vars:
     SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}"
-    SERVICE_BASE_PATH: "{{ lookup('env', 'SERVICE_BASE_PATH') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
-    PROXY_DIR: "{{ lookup('env', 'PROXY_DIR') }}"
-    PING: "{{ (lookup('env', 'PING') | length > 0) | ternary(lookup('env', 'PING'), 'true') }}"
+    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
+    FRIENDLY_NAME: "{{ lookup('env', 'FRIENDLY_NAME') }}"
+    VISIBLE: "{{ lookup('env', 'VISIBLE') }}"
+    REQUIRE_CALLBACK_URL: "{{ lookup('env', 'REQUIRE_CALLBACK_URL') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
       fail:
         msg: "SERVICE_NAME not set"
       when: not SERVICE_NAME
-
-    - name: check SERVICE_BASE_PATH
-      fail:
-        msg: "SERVICE_BASE_PATH not set"
-      when: not SERVICE_BASE_PATH
 
     - name: check APIGEE_ENVIRONMENT
       fail:
@@ -38,14 +34,24 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-    - name: check PROXY_DIR
+    - name: check SPEC_FILE
       fail:
-        msg: "PROXY_DIR not set"
-      when: not PROXY_DIR
+        msg: "SPEC_FILE not set"
+      when: not SPEC_FILE
 
-    - name: show PING
-      debug:
-        var: PING
+    - name: check FRIENDLY_NAME
+      fail:
+        msg: "FRIENDLY_NAME not set"
+      when: not FRIENDLY_NAME
+    
+    - name: check VISIBLE
+      fail:
+        msg: "VISIBLE not set"
+      when: not VISIBLE
 
+    - name: check REQUIRE_CALLBACK_URL
+      fail:
+        msg: "REQUIRE_CALLBACK_URL not set"
+      when: not REQUIRE_CALLBACK_URL
   roles:
-    - deploy-apigee-proxy
+    - deploy-apigee-spec
