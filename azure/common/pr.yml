@@ -48,6 +48,7 @@ stages:
     parameters:
       fully_qualified_service_name: ${{ parameters.service_name }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
       service_base_path: ${{ parameters.service_base_path }}-pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
+      notify: true
       ${{ each param in parameters }}:
         ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
           ${{ param.key }}: ${{ param.value }}
