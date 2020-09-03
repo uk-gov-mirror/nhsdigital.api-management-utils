@@ -11,6 +11,7 @@ parameters:
   - name: service_name
   - name: short_service_name
   - name: friendly_api_name
+    default: ''
   - name: service_base_path
   - name: product_display_name
   - name: product_description
