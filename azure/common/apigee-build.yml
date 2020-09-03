@@ -9,13 +9,9 @@ parameters:
   - name: test_steps
     type: stepList
     default: []
-
-resources:
-  repositories:
-    - repository: utils
-      name: NHSDigital/api-management-utils
-      endpoint: NHSDigital
-      type: github
+  - name: post_ecs_push
+    type: stepList
+    default: []
 
 jobs:
   - job: build
@@ -93,9 +89,8 @@ jobs:
         workingDirectory: ${{ parameters.service_name }}
         displayName: "Check for ECS proxy definitions"
 
-      - checkout: utils
+      - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
@@ -143,10 +138,18 @@ jobs:
         displayName: "Build and push ECS proxies"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
+      - ${{ each post_ecs_push in parameters.post_ecs_push }}:
+          - ${{ post_ecs_push }}
+
       - bash: |
           cp ${{ parameters.service_name }}/ecs-*.yml ${{ parameters.service_name }}/dist || true
         displayName: "Copy ecs-proxies-deploy configs into build artifact"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
+          rsync -a utils dist --exclude .venv
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Copy utils into artifact"
 
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
