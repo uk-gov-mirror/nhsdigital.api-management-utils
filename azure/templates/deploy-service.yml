@@ -10,7 +10,7 @@ parameters:
   - name: service_base_path
   - name: jinja_templates
     type: object
-  - name: has_monitoring
+  - name: enable_monitoring
     type: boolean
   - name: ping
   - name: pre_template
@@ -149,7 +149,7 @@ steps:
 
     displayName: 'Deploy Proxy and Product'
 
-  - ${{ if parameters.has_monitoring }}:
+  - ${{ if parameters.enable_monitoring }}:
       - template: '../components/curl.yml'
         parameters:
           display_name: Add monitoring endpoints

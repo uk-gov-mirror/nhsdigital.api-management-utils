@@ -48,7 +48,7 @@ parameters:
     type: object
     displayName:  Key/values for custom jinja templating
     default: []
-  - name: has_monitoring
+  - name: enable_monitoring
     type: boolean
     displayName: Whether monitoring is needed
     default: false
@@ -87,7 +87,7 @@ parameters:
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
-      - has_monitoring
+      - enable_monitoring
   - name: _pipeline_defaults
     type: object
     default:

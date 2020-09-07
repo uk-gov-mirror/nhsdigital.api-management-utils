@@ -1,6 +1,6 @@
 parameters:
   - name: environment
-    values:      
+    values:
       - internal-dev
       - internal-dev-sandbox
       - internal-qa
@@ -46,7 +46,7 @@ parameters:
   - name: ping
     type: boolean
   - name: friendly_api_name
-  - name: has_monitoring
+  - name: enable_monitoring
     type: boolean
 
 stages:
