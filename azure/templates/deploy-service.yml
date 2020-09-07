@@ -13,6 +13,7 @@ parameters:
   - name: enable_monitoring
     type: boolean
   - name: ping
+    type: boolean
   - name: pre_template
     type: stepList
   - name: post_template
