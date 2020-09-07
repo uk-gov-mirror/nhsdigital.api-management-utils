@@ -17,6 +17,8 @@ parameters:
   - name: product_description
   - name: fully_qualified_service_name
   - name: proxy_path
+  - name: enable_monitoring
+    type: boolean
   - name: secret_ids
     type: object
   - name: config_ids

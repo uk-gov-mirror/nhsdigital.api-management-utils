@@ -50,6 +50,8 @@ parameters:
   - name: notify
     type: boolean
     default: false
+  - name: enable_monitoring
+    type: boolean
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -62,7 +64,7 @@ stages:
             deploy:
               steps:
                 - download: none
-                  
+
                 - task: DownloadPipelineArtifact@2
                   inputs:
                     source: "specific"
@@ -133,7 +135,7 @@ stages:
                     expose:
                       apigee_environment: ${{ parameters.environment }}
                       fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                
+
                 - template: "../templates/deploy-service.yml"
                   parameters:
                     service_name: ${{ parameters.service_name }}
@@ -151,6 +153,7 @@ stages:
                     pre_deploy: ${{ parameters.pre_deploy }}
                     post_deploy: ${{ parameters.post_deploy }}
                     ping: ${{ parameters.ping }}
+                    enable_monitoring: ${{ parameters.enable_monitoring }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: "../templates/deploy-spec.yml"
@@ -163,7 +166,7 @@ stages:
                       portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
                       make_spec_visible: ${{ parameters.make_spec_visible }}
                       friendly_api_name: ${{ parameters.friendly_api_name }}
-                
+
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'
                     parameters:

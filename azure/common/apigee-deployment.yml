@@ -48,6 +48,10 @@ parameters:
     type: object
     displayName:  Key/values for custom jinja templating
     default: []
+  - name: enable_monitoring
+    type: boolean
+    displayName: Whether monitoring is needed
+    default: false
   - name: secret_ids
     displayName: List of additional AWS Secrets Manager Secret IDs
     type: object
@@ -83,6 +87,7 @@ parameters:
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
+      - enable_monitoring
   - name: _pipeline_defaults
     type: object
     default:
