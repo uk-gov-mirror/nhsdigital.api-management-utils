@@ -57,7 +57,7 @@ steps:
           set -euo pipefail
 
           cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-          for template_file in $(egrep -lir --include=*.{xml,js} '{{  *${{ jinja_template.key }}  *}}' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
+          for template_file in $(egrep -lir --include=*.{xml,js} '*${{ jinja_template.key }}' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
             echo Matched ${{ jinja_template.key }} in $template_file
             poetry run python scripts/template.py '{ "${{ jinja_template.key }}": "${{ jinja_template.value }}"}' --file=$template_file > /tmp/live.xml
             mv /tmp/live.xml $template_file
