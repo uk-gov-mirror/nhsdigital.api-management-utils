@@ -17,7 +17,7 @@ parameters:
 
 steps:
 - bash: |
-    declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-dev"]="(Internal Development)" )
+    declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" ["sandbox"]="(Sandbox)" ["int"]="(Integration Testing)" ["dev"]="(Development)" ["ref"]="(Reference)" ["internal-qa"]="(Internal QA)" ["internal-qa-sandbox"]="(Internal QA Sandbox)" ["internal-dev"]="(Internal Development)" ["internal-dev-sandbox"]="(Internal Development Sandbox)" )
     export FRIENDLY_ENV="${FRIENDLY_ENV_NAMES["${{ parameters.apigee_environment }}"]}"
 
     if [ -z "${{ parameters.friendly_api_name }}" ]; then
