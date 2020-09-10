@@ -30,13 +30,11 @@ parameters:
   - name: product_display_name
   - name: product_description
   - name: spec_file
-    type: string
   - name: portal_api_requires_callback_url
     type: boolean
   - name: make_spec_visible
     type: boolean
   - name: friendly_api_name
-    type: string
   - name: ping
     type: boolean
   - name: pre_template
@@ -52,6 +50,18 @@ parameters:
     default: false
   - name: enable_monitoring
     type: boolean
+  - name: _expose_blacklist
+    type: object
+    default:
+      - _expose_blacklist
+      - pre_template
+      - post_template
+      - pre_deploy
+      - post_deploy
+      - secret_ids
+      - config_ids
+      - depends_on
+      - jinja_templates
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -130,13 +140,14 @@ stages:
                       state: pending
                       description: "Deploy to ${{ parameters.environment }} started"
 
-                - template: "../components/expose-pipeline-values.yml"
-                  parameters:
-                    expose:
-                      apigee_environment: ${{ parameters.environment }}
-                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                - ${{ each param in parameters }}:
+                  - ${{ if not(containsValue(parameters._expose_blacklist, param.key)) }}:
+                    - bash: |
+                        set -euo pipefail
+                        echo "##vso[task.setvariable variable=${{ upper(param.key) }}]${{ param.value }}"
+                      displayName: Setting ${{ upper(param.key) }}=${{ param.value }}
 
-                - template: "../templates/deploy-service.yml"
+                - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
                     short_service_name: ${{ parameters.short_service_name }}
@@ -156,7 +167,7 @@ stages:
                     enable_monitoring: ${{ parameters.enable_monitoring }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
-                  - template: "../templates/deploy-spec.yml"
+                  - template: '../templates/deploy-spec.yml'
                     parameters:
                       spec_file: ${{ parameters.spec_file }}
                       service_name: ${{ parameters.service_name }}
