@@ -78,6 +78,7 @@ parameters:
     default: []
   - name: _scoped_pipeline_vars
     type: object
+    displayName: All the pipeline parameters which support per-environment scoping.
     default:
       - service_name
       - short_service_name
@@ -88,6 +89,18 @@ parameters:
       - jinja_templates
       - proxy_path
       - enable_monitoring
+      - pre_template
+      - post_template
+      - pre_deploy
+      - post_deploy
+  - name: _scoped_step_list_vars
+    type: object
+    displayName: Subset of scoped pipeline variables that are of type stepList
+    default:
+      - pre_template
+      - post_template
+      - pre_deploy
+      - post_deploy
   - name: _pipeline_defaults
     type: object
     default:
@@ -113,7 +126,7 @@ extends:
   template: ./deploy-stages.yml
   parameters:
     ${{ each param in parameters }}:
-      ${{ if notIn(param.key, 'apigee_deployments', '_scoped_pipeline_vars', '_pipeline_defaults') }}:
+      ${{ if notIn(param.key, 'apigee_deployments', '_scoped_pipeline_vars', '_scoped_step_list_vars', '_pipeline_defaults') }}:
         ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
           ${{ param.key }}: ${{ param.value }}
 
@@ -129,7 +142,18 @@ extends:
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                   ${{ if apigee_deployment[var] }}:
-                    ${{ var }}: ${{ apigee_deployment[var] }}
+                    ${{ if containsValue(parameters._scoped_step_list_vars, var) }}:
+                      ${{ var }}:
+                        - ${{ each step in apigee_deployment[var] }}:
+                            ${{ each pair in step }}:
+                              # Assume scoped template paths are
+                              # relative to azure/ in @self repo
+                              ${{ if and(eq(pair.key, 'template'), not(contains(pair.value, '@'))) }}:
+                                ${{ pair.key }}: azure/${{ pair.value }}@self
+                              ${{ if not(and(eq(pair.key, 'template'), not(contains(pair.value, '@')))) }}:
+                                ${{ pair.key }}: ${{ pair.value }}
+                    ${{ if not(containsValue(parameters._scoped_step_list_vars, var)) }}:
+                      ${{ var }}: ${{ apigee_deployment[var] }}
                   ${{ if not(apigee_deployment[var]) }}:
                     ${{ var }}: ${{ parameters[var] }}
                 ${{ if not(apigee_deployment.depends_on) }}:
