@@ -16,7 +16,7 @@ parameters:
 jobs:
   - job: build
     displayName: Build & Test
-    timeoutInMinutes: 10
+    timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-latest'
     variables:
