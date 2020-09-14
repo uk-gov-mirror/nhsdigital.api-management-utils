@@ -1,0 +1,21 @@
+- name: list apps
+  uri:
+    url: "{{ dapi_uri }}/apps?expand=true&includeCred=false"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: apps
+
+- name: "dbug"
+  debug:
+    msg: "{{ apps }}"
+
+- name: set app_names
+  set_fact:
+    app_names: "{{ apps.json.app | json_query(_query) | list }}"
+  vars:
+    _query: "attributes[? name=='DisplayName'].value"
+
+- name: "dbug"
+  debug:
+    msg: "{{ app_names }}"
