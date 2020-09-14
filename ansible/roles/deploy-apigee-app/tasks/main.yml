@@ -4,6 +4,7 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     return_content: yes
+    status_code: 200
   register: apps
 
 - name: "dbug"
@@ -12,10 +13,28 @@
 
 - name: set app_names
   set_fact:
-    app_names: "{{ apps.json.app | json_query(_query) | list }}"
-  vars:
-    _query: "attributes[? name=='DisplayName'].value"
+    app_names: "{{ apps.json.app | map(attribute='name') | list }}"
 
 - name: "dbug"
   debug:
     msg: "{{ app_names }}"
+
+- name: if not exists, create app
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+      body:
+        name: "{{ SERVICE_NAME }}"
+        keyExpiresIn: "-1"
+        attributes:
+          - name: "DisplayName"
+            value: "{{ SERVICE_NAME }}"
+    return_content: yes
+    status_code: 201
+  register: app
+  when: SERVICE_NAME not in app_names
+
+- name: "dbug"
+  debug:
+    msg: "{{ app }}"
