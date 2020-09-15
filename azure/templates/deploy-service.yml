@@ -12,6 +12,8 @@ parameters:
     type: object
   - name: enable_monitoring
     type: boolean
+  - name: deploy_test_app
+    type: boolean
   - name: ping
     type: boolean
   - name: pre_template
@@ -149,6 +151,14 @@ steps:
       fi
 
     displayName: 'Deploy Proxy and Product'
+
+  - ${{ if parameters.deploy_test_app }}:
+    - template: '../components/deploy-app.yml'
+      parameters:
+        service_name: ${{ parameters.service_name }}
+        apigee_environment: ${{ parameters.apigee_environment }}
+        apigee_organization: ${{ parameters.apigee_organization }}
+        fully_qualified_service_name: ${{ fully_qualified_service_name }}
 
   - ${{ if parameters.enable_monitoring }}:
       - template: '../components/curl.yml'

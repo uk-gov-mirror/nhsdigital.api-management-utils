@@ -26,6 +26,10 @@ parameters:
     displayName: Deploy review sandbox?
     type: boolean
     default: false
+  - name: deploy_test_app
+    displayName: Deploy test application?
+    type: boolean
+    default: false
   - name: spec_file
     displayName: Path to OAS spec file for this service
     type: string

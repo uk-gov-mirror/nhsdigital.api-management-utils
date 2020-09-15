@@ -1,0 +1,20 @@
+parameters:
+  - name: service_name
+    type: string
+  - name: apigee_environment
+  - name: apigee_organization
+  - name: fully_qualified_service_name
+    type: string
+
+steps:
+  - bash: |
+      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
+      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+      export API_PRODUCT="${{ parameters.fully_qualified_service_name }}"
+      export CALLBACK_URL="https://nhsd-apim-testing-${{ parameters.apigee_environment }}.herokuapp.com/callback"
+
+      poetry run ansible-playbook ansible/deploy-apigee-spec.yml
+    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: "Deploy Test App"

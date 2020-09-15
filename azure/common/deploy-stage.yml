@@ -29,6 +29,8 @@ parameters:
   - name: proxy_path
   - name: product_display_name
   - name: product_description
+  - name: deploy_test_app
+    type: boolean
   - name: spec_file
   - name: portal_api_requires_callback_url
     type: boolean
@@ -171,6 +173,7 @@ stages:
                     post_deploy: ${{ parameters.post_deploy }}
                     ping: ${{ parameters.ping }}
                     enable_monitoring: ${{ parameters.enable_monitoring }}
+                    deploy_test_app: ${{ parameters.deploy_test_app }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: '../templates/deploy-spec.yml'

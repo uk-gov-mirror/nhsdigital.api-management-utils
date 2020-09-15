@@ -33,6 +33,8 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: deploy_test_app
+    type: boolean
   - name: spec_file
     type: string
   - name: portal_api_requires_callback_url
