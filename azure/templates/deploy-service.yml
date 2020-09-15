@@ -153,7 +153,7 @@ steps:
     displayName: 'Deploy Proxy and Product'
 
   - ${{ if parameters.deploy_test_app }}:
-    - template: '../components/deploy-app.yml'
+    - template: '../templates/deploy-app.yml'
       parameters:
         service_name: ${{ parameters.service_name }}
         apigee_environment: ${{ parameters.apigee_environment }}
