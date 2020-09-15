@@ -18,3 +18,11 @@ steps:
       poetry run ansible-playbook ansible/deploy-apigee-app.yml
     workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
     displayName: "Deploy Test App"
+  
+  - bash: |
+      echo "##vso[task.setvariable variable=API_KEY]`cat ./api_key.txt`"
+      echo "##vso[task.setvariable variable=secret.API_SECRET;issecret=true]`cat ./api_secret.txt`"
+      rm ./api_key.txt
+      rm ./api_secret.txt
+    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: "Set Test App Credentials"
