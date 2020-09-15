@@ -158,7 +158,7 @@ steps:
         service_name: ${{ parameters.service_name }}
         apigee_environment: ${{ parameters.apigee_environment }}
         apigee_organization: ${{ parameters.apigee_organization }}
-        fully_qualified_service_name: ${{ fully_qualified_service_name }}
+        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
 
   - ${{ if parameters.enable_monitoring }}:
       - template: '../components/curl.yml'
