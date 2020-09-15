@@ -7,34 +7,91 @@
     status_code: 200
   register: apps
 
-- name: "dbug"
-  debug:
-    msg: "{{ apps }}"
-
 - name: set app_names
   set_fact:
     app_names: "{{ apps.json.app | map(attribute='name') | list }}"
 
-- name: "dbug"
-  debug:
-    msg: "{{ app_names }}"
-
 - name: if not exists, create app
   uri:
     url: "{{ dapi_uri }}/developers/{{ developer }}/apps"
+    method: POST
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-      body:
-        name: "{{ SERVICE_NAME }}"
-        keyExpiresIn: "-1"
-        attributes:
-          - name: "DisplayName"
-            value: "{{ SERVICE_NAME }}"
+    body:
+      name: "{{ SERVICE_NAME }}"
+      keyExpiresIn: "-1"
+      apiProducts:
+        - "{{ API_PRODUCT }}"
+      attributes:
+        - name: "DisplayName"
+          value: "{{ SERVICE_NAME }}"
+      callbackUrl: "{{ CALLBACK_URL }}"
+    body_format: json
     return_content: yes
     status_code: 201
   register: app
   when: SERVICE_NAME not in app_names
 
+- name: if exists, get app details
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  register: app_details
+  when: SERVICE_NAME in app_names
+
+- name: set app_key
+  set_fact:
+    app_key: "{{ app_details.json.credentials[0].consumerKey }}"
+  when: SERVICE_NAME in app_names
+
+- name: if exists, update app
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body:
+      name: "{{ SERVICE_NAME }}"
+      apiProducts:
+        - "{{ API_PRODUCT }}"
+      attributes:
+        - name: "DisplayName"
+          value: "{{ SERVICE_NAME }}"
+      callbackUrl: "{{ CALLBACK_URL }}"
+    body_format: json
+    return_content: yes
+    status_code: 200
+  when: SERVICE_NAME in app_names
+
+- name: if exists, revoke old app credentials
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}/keys/{{ app_key }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+    status_code: 200
+  when: SERVICE_NAME in app_names
+
+- name: if exists, get new app credentials
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  register: app
+  when: SERVICE_NAME in app_names
+
 - name: "dbug"
   debug:
     msg: "{{ app }}"
+
+- copy:
+    content: "{{ app.json.credentials[0].consumerKey }}"
+    dest: "./api_key.txt"
+
+- copy:
+    content: "{{ app.json.credentials[0].consumerSecret }}"
+    dest: "./api_secret.txt"

@@ -8,6 +8,8 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+    API_PRODUCT: "{{ lookup('env', 'API_PRODUCT') }}"
+    CALLBACK_URL: "{{ lookup('env', 'CALLBACK_URL') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
@@ -29,6 +31,16 @@
       fail:
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
+      
+    - name: check API_PRODUCT
+      fail:
+        msg: "API_PRODUCT not set"
+      when: not API_PRODUCT
+
+    - name: check CALLBACK_URL
+      fail:
+        msg: "CALLBACK_URL not set"
+      when: not CALLBACK_URL
 
   roles:
     - deploy-apigee-app
