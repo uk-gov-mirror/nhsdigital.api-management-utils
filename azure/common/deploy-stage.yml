@@ -195,7 +195,7 @@ stages:
                   - template: '../templates/deploy-app.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}
-                      apigee_environment: ${{ parameters.apigee_environment }}
+                      apigee_environment: ${{ parameters.environment }}
                       apigee_organization: ${{ parameters.apigee_organization }}
                       fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                       test_app_callback_url: ${{ parameters.test_app_callback_url }}
