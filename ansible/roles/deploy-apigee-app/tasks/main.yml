@@ -84,14 +84,10 @@
   register: app
   when: SERVICE_NAME in app_names
 
-- name: "dbug"
-  debug:
-    msg: "{{ app }}"
-
 - copy:
     content: "{{ app.json.credentials[0].consumerKey }}"
-    dest: "./api_key.txt"
+    dest: "{{ SECRET_LOCATION }}/api_key.txt"
 
 - copy:
     content: "{{ app.json.credentials[0].consumerSecret }}"
-    dest: "./api_secret.txt"
+    dest: "{{ SECRET_LOCATION }}/api_secret.txt"
