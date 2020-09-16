@@ -30,6 +30,10 @@ parameters:
     displayName: Deploy test application?
     type: boolean
     default: false
+  - name: test_app_callback_url
+    displayName: Supply a callback url for the test application (Only valid for deploy test app)
+    type: string
+    default: ''
   - name: spec_file
     displayName: Path to OAS spec file for this service
     type: string

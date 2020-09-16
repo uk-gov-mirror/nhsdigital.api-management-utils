@@ -31,6 +31,8 @@ parameters:
   - name: product_description
   - name: deploy_test_app
     type: boolean
+  - name: test_app_callback_url
+    type: string
   - name: spec_file
   - name: portal_api_requires_callback_url
     type: boolean
@@ -64,6 +66,7 @@ parameters:
       - config_ids
       - depends_on
       - jinja_templates
+      - deploy_test_app
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -174,6 +177,7 @@ stages:
                     ping: ${{ parameters.ping }}
                     enable_monitoring: ${{ parameters.enable_monitoring }}
                     deploy_test_app: ${{ parameters.deploy_test_app }}
+                    test_app_callback_url: ${{ parameters.test_app_callback_url }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: '../templates/deploy-spec.yml'

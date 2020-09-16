@@ -91,3 +91,7 @@
 - copy:
     content: "{{ app.json.credentials[0].consumerSecret }}"
     dest: "{{ SECRET_LOCATION }}/api_secret.txt"
+  
+- copy:
+    content: "{{ app.json.callbackUrl }}"
+    dest: "{{ SECRET_LOCATION }}/callback_url.txt"
