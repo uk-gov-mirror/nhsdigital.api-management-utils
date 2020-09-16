@@ -84,14 +84,17 @@
   register: app
   when: SERVICE_NAME in app_names
 
-- copy:
+- name: copy api_key into file
+  copy:
     content: "{{ app.json.credentials[0].consumerKey }}"
     dest: "{{ SECRET_LOCATION }}/api_key.txt"
 
-- copy:
+- name: copy api_secret into file
+  copy:
     content: "{{ app.json.credentials[0].consumerSecret }}"
     dest: "{{ SECRET_LOCATION }}/api_secret.txt"
   
-- copy:
+- name: copy callback_url into file
+  copy:
     content: "{{ app.json.callbackUrl }}"
     dest: "{{ SECRET_LOCATION }}/callback_url.txt"
