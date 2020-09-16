@@ -67,6 +67,7 @@ parameters:
       - depends_on
       - jinja_templates
       - deploy_test_app
+      - test_app_callback_url
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -158,6 +159,9 @@ stages:
                     echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
                   displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
 
+                - ${{ each pre_deploy_step in parameters.pre_deploy }}:
+                  - ${{ pre_deploy_step}}
+
                 - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
@@ -172,12 +176,8 @@ stages:
                     proxy_path: ${{ parameters.proxy_path }}
                     pre_template: ${{ parameters.pre_template }}
                     post_template: ${{ parameters.post_template }}
-                    pre_deploy: ${{ parameters.pre_deploy }}
-                    post_deploy: ${{ parameters.post_deploy }}
                     ping: ${{ parameters.ping }}
                     enable_monitoring: ${{ parameters.enable_monitoring }}
-                    deploy_test_app: ${{ parameters.deploy_test_app }}
-                    test_app_callback_url: ${{ parameters.test_app_callback_url }}
 
                 - ${{ if ne(parameters.spec_file, '') }}:
                   - template: '../templates/deploy-spec.yml'
@@ -190,6 +190,18 @@ stages:
                       portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
                       make_spec_visible: ${{ parameters.make_spec_visible }}
                       friendly_api_name: ${{ parameters.friendly_api_name }}
+
+                - ${{ if parameters.deploy_test_app }}:
+                  - template: '../templates/deploy-app.yml'
+                    parameters:
+                      service_name: ${{ parameters.service_name }}
+                      apigee_environment: ${{ parameters.apigee_environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                      test_app_callback_url: ${{ parameters.test_app_callback_url }}
+                
+                - ${{ each post_deploy_step in parameters.post_deploy }}:
+                  - ${{ post_deploy_step}}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

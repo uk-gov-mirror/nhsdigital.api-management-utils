@@ -30,8 +30,11 @@ steps:
     displayName: "Deploy Test App"
   
   - bash: |
+      echo 'Setting API_KEY...'
       echo "##vso[task.setvariable variable=API_KEY]`cat $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_key.txt`"
+      echo 'Setting CALLBACK_URL...'
       echo "##vso[task.setvariable variable=CALLBACK_URL]`cat $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/callback_url.txt`"
+      echo 'Setting API_SECRET...'
       echo "##vso[task.setvariable variable=secret.API_SECRET;issecret=true]`cat $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_secret.txt`"
       rm $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_key.txt
       rm $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_secret.txt
