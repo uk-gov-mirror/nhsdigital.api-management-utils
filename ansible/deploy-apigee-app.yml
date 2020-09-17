@@ -10,7 +10,7 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     API_PRODUCT: "{{ lookup('env', 'API_PRODUCT') }}"
     CALLBACK_URL: "{{ lookup('env', 'CALLBACK_URL') }}"
-    SECRET_LOCATION: "{{ lookup('env', 'SECRET_LOCATION') }}"
+    VAR_PATH: "{{ lookup('env', 'VAR_PATH') }}"
 
 
   pre_tasks:
@@ -44,10 +44,10 @@
         msg: "CALLBACK_URL not set"
       when: not CALLBACK_URL
 
-    - name: check SECRET_LOCATION
+    - name: check VAR_PATH
       fail:
-        msg: "SECRET_LOCATION not set"
-      when: not SECRET_LOCATION
+        msg: "VAR_PATH not set"
+      when: not VAR_PATH
 
   roles:
     - deploy-apigee-app

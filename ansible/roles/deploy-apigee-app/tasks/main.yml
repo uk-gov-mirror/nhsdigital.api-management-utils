@@ -32,7 +32,29 @@
   register: app
   when: SERVICE_NAME not in app_names
 
-- name: if exists, get app details
+- name: debug
+  debug:
+    msg: "{{ app }}"
+
+- name: if not exists, copy api_key into file
+  copy:
+    content: "{{ app.json.credentials[0].consumerKey }}"
+    dest: "{{ VAR_PATH }}/api_key.txt"
+  when: SERVICE_NAME not in app_names
+
+- name: if not exists, copy api_secret into file
+  copy:
+    content: "{{ app.json.credentials[0].consumerSecret }}"
+    dest: "{{ VAR_PATH }}/api_secret.txt"
+  when: SERVICE_NAME not in app_names
+  
+- name: if not exists, copy callback_url into file
+  copy:
+    content: "{{ app.json.callbackUrl }}"
+    dest: "{{ VAR_PATH }}/callback_url.txt"
+  when: SERVICE_NAME not in app_names
+
+- name: if not exists, get app details
   uri:
     url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
     headers:
@@ -41,7 +63,7 @@
   register: app_details
   when: SERVICE_NAME in app_names
 
-- name: set app_key
+- name: if exists, set app_key
   set_fact:
     app_key: "{{ app_details.json.credentials[0].consumerKey }}"
   when: SERVICE_NAME in app_names
@@ -84,17 +106,20 @@
   register: app
   when: SERVICE_NAME in app_names
 
-- name: copy api_key into file
+- name: if exists, copy api_key into file
   copy:
     content: "{{ app.json.credentials[0].consumerKey }}"
-    dest: "{{ SECRET_LOCATION }}/api_key.txt"
+    dest: "{{ VAR_PATH }}/api_key.txt"
+  when: SERVICE_NAME in app_names
 
-- name: copy api_secret into file
+- name: if exists, copy api_secret into file
   copy:
     content: "{{ app.json.credentials[0].consumerSecret }}"
-    dest: "{{ SECRET_LOCATION }}/api_secret.txt"
+    dest: "{{ VAR_PATH }}/api_secret.txt"
+  when: SERVICE_NAME in app_names
   
-- name: copy callback_url into file
+- name: if exists, copy callback_url into file
   copy:
     content: "{{ app.json.callbackUrl }}"
-    dest: "{{ SECRET_LOCATION }}/callback_url.txt"
+    dest: "{{ VAR_PATH }}/callback_url.txt"
+  when: SERVICE_NAME in app_names
