@@ -43,12 +43,6 @@
     content: "{{ app.json.credentials[0].consumerSecret }}"
     dest: "{{ VAR_PATH }}/api_secret.txt"
   when: SERVICE_NAME not in app_names
-  
-- name: if not exists, copy callback_url into file
-  copy:
-    content: "{{ app.json.callbackUrl }}"
-    dest: "{{ VAR_PATH }}/callback_url.txt"
-  when: SERVICE_NAME not in app_names
 
 - name: if not exists, get app details
   uri:
@@ -112,10 +106,4 @@
   copy:
     content: "{{ app.json.credentials[0].consumerSecret }}"
     dest: "{{ VAR_PATH }}/api_secret.txt"
-  when: SERVICE_NAME in app_names
-  
-- name: if exists, copy callback_url into file
-  copy:
-    content: "{{ app.json.callbackUrl }}"
-    dest: "{{ VAR_PATH }}/callback_url.txt"
   when: SERVICE_NAME in app_names
