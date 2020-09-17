@@ -32,10 +32,6 @@
   register: app
   when: SERVICE_NAME not in app_names
 
-- name: debug
-  debug:
-    msg: "{{ app }}"
-
 - name: if not exists, copy api_key into file
   copy:
     content: "{{ app.json.credentials[0].consumerKey }}"
