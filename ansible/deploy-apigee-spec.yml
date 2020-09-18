@@ -46,12 +46,12 @@
     
     - name: check VISIBLE
       fail:
-        msg: "VISIBLE not set"
-      when: not VISIBLE
+        msg: "VISIBLE not True or False"
+      when: (VISIBLE != False) and (VISIBLE != True)
 
     - name: check REQUIRE_CALLBACK_URL
       fail:
-        msg: "REQUIRE_CALLBACK_URL not set"
-      when: not REQUIRE_CALLBACK_URL
+        msg: "REQUIRE_CALLBACK_URL not True or False"
+      when: (REQUIRE_CALLBACK_URL != False) and (REQUIRE_CALLBACK_URL != True)
   roles:
     - deploy-apigee-spec
