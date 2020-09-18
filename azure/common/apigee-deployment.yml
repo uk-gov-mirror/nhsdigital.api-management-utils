@@ -34,8 +34,8 @@ parameters:
     displayName: Does the portal api require a callback url? (only valid for deploy spec)
     default: true
   - name: make_spec_visible
-    displayName: Make spec visible? (only valid if spec_file is specified)
-    default: true
+    displayName: Make spec available for developer subscription? (only valid if spec_file is specified)
+    default: false
   - name: fully_qualified_service_name
     displayName: Supply a custom name for your release (only valid for release pipeline)
     type: string
@@ -93,6 +93,7 @@ parameters:
       - post_template
       - pre_deploy
       - post_deploy
+      - make_spec_visible
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
