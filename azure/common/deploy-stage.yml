@@ -64,6 +64,8 @@ parameters:
       - post_template
       - pre_deploy
       - post_deploy
+      - functional_test_steps
+      - non_functional_test_steps
       - secret_ids
       - config_ids
       - depends_on
