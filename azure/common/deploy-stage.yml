@@ -193,6 +193,9 @@ stages:
                       make_spec_visible: ${{ parameters.make_spec_visible }}
                       friendly_api_name: ${{ parameters.friendly_api_name }}
 
+                - ${{ each post_deploy_step in parameters.post_deploy }}:
+                  - ${{ post_deploy_step }}
+
                 - ${{ if or(parameters.functional_test_steps, parameters.non_functional_test_steps) }}:
                   - template: '../templates/deploy-app.yml'
                     parameters:
@@ -203,9 +206,6 @@ stages:
                       test_app_callback_url: ${{ parameters.test_app_callback_url }}
                       functional_test_steps: ${{ parameters.functional_test_steps }}
                       non_functional_test_steps: ${{ parameters.non_functional_test_steps }}
-                
-                - ${{ each post_deploy_step in parameters.post_deploy }}:
-                  - ${{ post_deploy_step}}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'
