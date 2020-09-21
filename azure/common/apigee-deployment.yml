@@ -26,14 +26,18 @@ parameters:
     displayName: Deploy review sandbox?
     type: boolean
     default: false
-  - name: deploy_test_app
-    displayName: Deploy test application?
-    type: boolean
-    default: false
   - name: test_app_callback_url
     displayName: Supply a callback url for the test application (Only valid for deploy test app)
     type: string
     default: ''
+  - name: functional_test_steps
+    displayName: Steps to run for functional testing
+    type: stepList
+    default: []
+  - name: non_functional_test_steps
+    displayName: Steps to run for non-functional testing
+    type: stepList
+    default: []
   - name: spec_file
     displayName: Path to OAS spec file for this service
     type: string
@@ -101,6 +105,8 @@ parameters:
       - post_template
       - pre_deploy
       - post_deploy
+      - functional_test_steps
+      - non_functional_test_steps
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
@@ -109,6 +115,8 @@ parameters:
       - post_template
       - pre_deploy
       - post_deploy
+      - functional_test_steps
+      - non_functional_test_steps
   - name: _pipeline_defaults
     type: object
     default:

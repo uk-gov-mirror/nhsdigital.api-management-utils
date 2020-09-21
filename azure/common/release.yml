@@ -33,8 +33,10 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
-  - name: deploy_test_app
-    type: boolean
+  - name: functional_test_steps
+    type: stepList
+  - name: non_functional_test_steps
+    type: stepList
   - name: test_app_callback_url
     type: string
   - name: spec_file

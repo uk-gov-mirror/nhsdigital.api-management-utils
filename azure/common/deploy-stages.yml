@@ -7,8 +7,6 @@ parameters:
     type: object
   - name: deploy_review_sandbox
     type: boolean
-  - name: deploy_test_app
-    type: boolean
   - name: test_app_callback_url
     type: string
   - name: spec_file

@@ -7,11 +7,13 @@ parameters:
     type: string
   - name: test_app_callback_url
     type: string
+  - name: functional_test_steps
+    type: stepList
+  - name: non_functional_test_steps
+    type: stepList
 
 steps:
   - bash: |
-      set -euo pipefail
-
       if [ -z "${{ parameters.test_app_callback_url }}" ]; then
         export CALLBACK_URL="https://nhsd-apim-testing-${{ parameters.apigee_environment }}.herokuapp.com/callback"
       else
@@ -19,25 +21,52 @@ steps:
       fi
 
       echo "##vso[task.setvariable variable=CALLBACK_URL]$CALLBACK_URL"
+    displayName: Set Callback URL
 
-      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
-      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
-      export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
-      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-      export API_PRODUCT="${{ parameters.fully_qualified_service_name }}"
-      export VAR_PATH="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+  - ${{ if parameters.functional_test_steps }}:
+    - bash: |
+        set -euo pipefail
 
-      poetry run ansible-playbook ansible/deploy-apigee-app.yml
-    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-    displayName: "Deploy Test App"
+        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
+        export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+        export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+        export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+        export API_PRODUCT="internal-testing-${{ parameters.apigee_environment }}"
+        export VAR_PATH="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+
+        poetry run ansible-playbook ansible/deploy-apigee-app.yml
+      workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+      displayName: "Deploy Test App For Functional Testing"
+
+  - ${{ if parameters.functional_test_steps }}:
+    - template: ../components/set-app-credentials.yml
+      parameters:
+        service_name: ${{ parameters.service_name }}
+
+  - ${{ if parameters.functional_test_steps }}:
+    - ${{ each functional_test_step in parameters.functional_test_steps }}:
+      - ${{ functional_test_step }}
+
+  - ${{ if parameters.non_functional_test_steps }}:
+    - bash: |
+        set -euo pipefail
+
+        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
+        export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+        export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+        export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+        export API_PRODUCT="${{ parameters.fully_qualified_service_name }}"
+        export VAR_PATH="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+
+        poetry run ansible-playbook ansible/deploy-apigee-app.yml
+      workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+      displayName: "Deploy Test App For Non-Functional Testing"
   
-  - bash: |
-      echo 'Setting API_KEY...'
-      echo "##vso[task.setvariable variable=API_KEY]`cat $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_key.txt`"
-      echo 'Setting API_SECRET...'
-      echo "##vso[task.setvariable variable=secret.API_SECRET;issecret=true]`cat $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_secret.txt`"
-
-      rm $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_key.txt
-      rm $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/api_secret.txt
-    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-    displayName: "Set Test App Credentials"
+  - ${{ if parameters.non_functional_test_steps }}:
+    - template: ../components/set-app-credentials.yml
+      parameters:
+        service_name: ${{ parameters.service_name }}
+  
+  - ${{ if parameters.non_functional_test_steps }}:
+    - ${{ each functional_test_step in parameters.non_functional_test_steps }}:
+      - ${{ functional_test_step }}

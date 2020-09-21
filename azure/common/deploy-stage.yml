@@ -29,10 +29,6 @@ parameters:
   - name: proxy_path
   - name: product_display_name
   - name: product_description
-  - name: deploy_test_app
-    type: boolean
-  - name: test_app_callback_url
-    type: string
   - name: spec_file
   - name: portal_api_requires_callback_url
     type: boolean
@@ -49,6 +45,12 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
+  - name: functional_test_steps
+    type: stepList
+  - name: non_functional_test_steps
+    type: stepList
+  - name: test_app_callback_url
+    type: string
   - name: notify
     type: boolean
     default: false
@@ -191,7 +193,7 @@ stages:
                       make_spec_visible: ${{ parameters.make_spec_visible }}
                       friendly_api_name: ${{ parameters.friendly_api_name }}
 
-                - ${{ if parameters.deploy_test_app }}:
+                - ${{ if or(parameters.functional_test_steps, parameters.non_functional_test_steps) }}:
                   - template: '../templates/deploy-app.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}
@@ -199,6 +201,8 @@ stages:
                       apigee_organization: ${{ parameters.apigee_organization }}
                       fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
                       test_app_callback_url: ${{ parameters.test_app_callback_url }}
+                      functional_test_steps: ${{ parameters.functional_test_steps }}
+                      non_functional_test_steps: ${{ parameters.non_functional_test_steps }}
                 
                 - ${{ each post_deploy_step in parameters.post_deploy }}:
                   - ${{ post_deploy_step}}
