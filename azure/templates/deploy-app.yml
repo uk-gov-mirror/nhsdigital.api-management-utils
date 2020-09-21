@@ -43,9 +43,8 @@ steps:
       parameters:
         service_name: ${{ parameters.service_name }}
 
-  - ${{ if parameters.functional_test_steps }}:
-    - ${{ each functional_test_step in parameters.functional_test_steps }}:
-      - ${{ functional_test_step }}
+  - ${{ each functional_test_step in parameters.functional_test_steps }}:
+    - ${{ functional_test_step }}
 
   - ${{ if parameters.non_functional_test_steps }}:
     - bash: |
@@ -67,6 +66,5 @@ steps:
       parameters:
         service_name: ${{ parameters.service_name }}
   
-  - ${{ if parameters.non_functional_test_steps }}:
-    - ${{ each functional_test_step in parameters.non_functional_test_steps }}:
-      - ${{ functional_test_step }}
+  - ${{ each functional_test_step in parameters.non_functional_test_steps }}:
+    - ${{ functional_test_step }}
