@@ -68,7 +68,6 @@ parameters:
       - config_ids
       - depends_on
       - jinja_templates
-      - deploy_test_app
       - test_app_callback_url
 
 stages:
@@ -196,7 +195,7 @@ stages:
                 - ${{ each post_deploy_step in parameters.post_deploy }}:
                   - ${{ post_deploy_step }}
 
-                - ${{ if or(ne(parameters.functional_test_steps, []), ne(parameters.non_functional_test_steps, []) }}:
+                - ${{ if or(parameters.functional_test_steps, parameters.non_functional_test_steps) }}:
                   - template: '../templates/deploy-app.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}
