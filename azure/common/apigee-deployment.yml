@@ -107,6 +107,7 @@ parameters:
       - post_deploy
       - functional_test_steps
       - non_functional_test_steps
+      - test_app_callback_url
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
