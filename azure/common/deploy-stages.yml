@@ -18,18 +18,18 @@ parameters:
   - name: ping
     type: boolean
   - name: deploy_template
-  - name: _scoped_test_vars
-    type: object
-    default:
-      - functional_tests_steps
-      - non_functional_tests_steps
-      - test_app_callback_url
-      - test_app_attributes
-  - name: _scoped_test_step_list_vars
-    type: object
-    default:
-      - functional_tests_steps
-      - non_functional_tests_steps
+  # - name: _scoped_test_vars
+  #   type: object
+  #   default:
+  #     - functional_test
+  #     - non_functional_test
+  #     - test_app_callback_url
+  #     - test_app_attributes
+  # - name: _scoped_test_step_list_vars
+  #   type: object
+  #   default:
+  #     - functional_test
+  #     - non_functional_test
 
 stages:
   - ${{ each apigee_deployment in parameters.apigee_deployments }}:
@@ -64,16 +64,16 @@ stages:
           friendly_api_name: ${{ apigee_deployment.product_display_name }}
 
         # if tests specified per env add test parameters
-        ${{ if parameters.tests }}:
-          ${{ each var in parameters._scoped_pipeline_vars }}:
-            ${{ if tests[var] }}:
-              ${{ if containsValue(parameters._scoped_test_step_list_vars, var) }}:
-                ${{ var }}:
-                  - ${{ each step in apigee_deployment[var] }}:
-                      ${{ each pair in step }}:
-                        # Assume scoped template paths are
-                        # relative to azure/ in @self repo
-                        ${{ if and(eq(pair.key, 'template'), not(contains(pair.value, '@'))) }}:
-                          ${{ pair.key }}: azure/${{ pair.value }}@self
-                        ${{ if not(and(eq(pair.key, 'template'), not(contains(pair.value, '@')))) }}:
-                          ${{ pair.key }}: ${{ pair.value }}
+        # ${{ if parameters.tests }}:
+        #   ${{ each var in parameters._scoped_test_vars }}:
+        #     ${{ if tests[var] }}:
+        #       ${{ if containsValue(parameters._scoped_test_step_list_vars, var) }}:
+        #         ${{ var }}:
+        #           - ${{ each step in tests[var] }}:
+        #               ${{ each pair in step }}:
+        #                 # Assume scoped template paths are
+        #                 # relative to azure/ in @self repo
+        #                 ${{ if and(eq(pair.key, 'template'), not(contains(pair.value, '@'))) }}:
+        #                   ${{ pair.key }}: azure/${{ pair.value }}@self
+        #                 ${{ if not(and(eq(pair.key, 'template'), not(contains(pair.value, '@')))) }}:
+        #                   ${{ pair.key }}: ${{ pair.value }}

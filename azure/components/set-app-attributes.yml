@@ -1,9 +1,9 @@
 parameters:
-  - name: test_app_attributes
+  - name: attributes
     type: object
 
 steps:
-  - ${{ each attribute in parameters.test_app_attributes }}:
+  - ${{ each attribute in parameters.attributes }}:
     - bash: |
         export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
         export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"

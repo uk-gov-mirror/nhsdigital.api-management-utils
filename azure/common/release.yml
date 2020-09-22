@@ -33,14 +33,14 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
-  - name: functional_test_steps
-    type: stepList
-  - name: non_functional_test_steps
-    type: stepList
-  - name: test_app_callback_url
-    type: string
-  - name: test_app_attributes
-    type: object
+  # - name: functional_test_steps
+  #   type: stepList
+  # - name: non_functional_test_steps
+  #   type: stepList
+  # - name: test_app_callback_url
+  #   type: string
+  # - name: test_app_attributes
+  #   type: object
   - name: spec_file
     type: string
   - name: portal_api_requires_callback_url
@@ -56,6 +56,8 @@ parameters:
   - name: friendly_api_name
   - name: enable_monitoring
     type: boolean
+  - name: tests
+    type: object
 
 stages:
   - template: ./deploy-stage.yml
