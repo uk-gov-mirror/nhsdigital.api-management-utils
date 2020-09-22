@@ -1,0 +1,3 @@
+apigee_management_api_uri: "https://api.enterprise.apigee.com/v1"
+dapi_uri: "{{ apigee_management_api_uri }}/organizations/{{ APIGEE_ORGANIZATION }}"
+developer: "apm-testing-{{ APIGEE_ENVIRONMENT }}@nhs.net"

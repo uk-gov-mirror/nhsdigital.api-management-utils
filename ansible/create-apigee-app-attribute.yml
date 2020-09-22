@@ -1,0 +1,46 @@
+- name: "create apigee app attribute"
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  vars:
+    SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}"
+    APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+    APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
+    APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+    ATTRIBUTE_NAME: "{{ lookup('env', 'ATTRIBUTE_NAME') }}"
+    ATTRIBUTE_VALUE: "{{ lookup('env', 'ATTRIBUTE_VALUE') }}"
+
+  pre_tasks:
+    - name: check SERVICE_NAME
+      fail:
+        msg: "SERVICE_NAME not set"
+      when: not SERVICE_NAME
+
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+    - name: check APIGEE_ORGANIZATION
+      fail:
+        msg: "APIGEE_ORGANIZATION not set"
+      when: not APIGEE_ORGANIZATION
+
+    - name: check APIGEE_ACCESS_TOKEN
+      fail:
+        msg: "APIGEE_ACCESS_TOKEN not set"
+      when: not APIGEE_ACCESS_TOKEN
+    
+    - name: check ATTRIBUTE_NAME
+      fail:
+        msg: "ATTRIBUTE_NAME not set"
+      when: not ATTRIBUTE_NAME
+
+    - name: check ATTRIBUTE_VALUE
+      fail:
+        msg: "ATTRIBUTE_VALUE not set"
+      when: not ATTRIBUTE_VALUE
+
+  roles:
+    - create-apigee-app-attribute

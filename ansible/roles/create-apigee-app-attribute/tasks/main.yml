@@ -1,0 +1,27 @@
+- name: get app attributes
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  register: app
+
+- name: set attribute as dict
+  set_fact:
+    attribute: "[{ \"name\": \"{{ ATTRIBUTE_NAME }}\", \"value\": \"{{ ATTRIBUTE_VALUE}}\" }]"
+
+- name: add attribute to existing attributes
+  set_fact:
+    attributes: "{{ app.json.attributes + attribute }}"
+
+- name: add attribute to apigee test application
+  uri:
+    url: "{{ dapi_uri }}/developers/{{ developer }}/apps/{{ SERVICE_NAME }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body:
+      attributes: "{{ attributes }}"
+    body_format: json
+    return_content: yes
+    status_code: 200
