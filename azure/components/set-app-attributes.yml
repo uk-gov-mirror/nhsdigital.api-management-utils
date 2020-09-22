@@ -10,5 +10,5 @@ steps:
         export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
         export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
         export ATTRIBUTE_NAME="${{ attribute.key }}"
-        export ATTRIBUTE_VALUE-"${{ attribute.value }}"
+        export ATTRIBUTE_VALUE="${{ attribute.value }}"
       displayName: Setting atrribute ${{ attribute.key }} for test app
