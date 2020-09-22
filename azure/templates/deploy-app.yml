@@ -7,6 +7,8 @@ parameters:
     type: string
   - name: test_app_callback_url
     type: string
+  - name: test_app_attributes
+    type: object
   - name: functional_test_steps
     type: stepList
   - name: non_functional_test_steps
@@ -27,7 +29,7 @@ steps:
     - bash: |
         set -euo pipefail
 
-        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
+        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
         export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
         export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
         export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
@@ -37,6 +39,11 @@ steps:
         poetry run ansible-playbook ansible/deploy-apigee-app.yml
       workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
       displayName: "Deploy test app for functional testing"
+
+  - ${{ if parameters.functional_test_steps }}:
+    - template: ../components/set-app-attributes.yml
+      parameters:
+        test_app_attributes: ${{ parameters.test_app_attributes }}
 
   - ${{ if parameters.functional_test_steps }}:
     - template: ../components/set-app-credentials.yml
@@ -50,7 +57,7 @@ steps:
     - bash: |
         set -euo pipefail
 
-        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}-test-app"
+        export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
         export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
         export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
         export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
@@ -60,6 +67,11 @@ steps:
         poetry run ansible-playbook ansible/deploy-apigee-app.yml
       workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
       displayName: "Deploy test app for non-functional testing"
+  
+  - ${{ if parameters.non_functional_test_steps }}:
+    - template: ../components/set-app-attributes.yml
+      parameters:
+        test_app_attributes: ${{ parameters.test_app_attributes }}
   
   - ${{ if parameters.non_functional_test_steps }}:
     - template: ../components/set-app-credentials.yml

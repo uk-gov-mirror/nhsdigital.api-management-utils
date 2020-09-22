@@ -39,6 +39,8 @@ parameters:
     type: stepList
   - name: test_app_callback_url
     type: string
+  - name: test_app_attributes
+    type: object
   - name: spec_file
     type: string
   - name: portal_api_requires_callback_url

@@ -51,6 +51,8 @@ parameters:
     type: stepList
   - name: test_app_callback_url
     type: string
+  - name: test_app_attributes
+    type: object
   - name: notify
     type: boolean
     default: false
@@ -71,6 +73,7 @@ parameters:
       - depends_on
       - jinja_templates
       - test_app_callback_url
+      - test_app_attributes
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -207,6 +210,7 @@ stages:
                       test_app_callback_url: ${{ parameters.test_app_callback_url }}
                       functional_test_steps: ${{ parameters.functional_test_steps }}
                       non_functional_test_steps: ${{ parameters.non_functional_test_steps }}
+                      test_app_attributes: ${{ parameters.test_app_attributes }}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

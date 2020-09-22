@@ -27,7 +27,7 @@ parameters:
     type: boolean
     default: false
   - name: test_app_callback_url
-    displayName: Supply a callback url for the test application (Only valid for deploy test app)
+    displayName: Supply a callback url for the test application (Only valid for func and non-func test steps)
     type: string
     default: ''
   - name: functional_test_steps
@@ -37,6 +37,10 @@ parameters:
   - name: non_functional_test_steps
     displayName: Steps to run for non-functional testing
     type: stepList
+    default: []
+  - name: test_app_attributes
+    displayName: List of attributes for test applicaiton (Only valid for func and non-func test steps)
+    type: object
     default: []
   - name: spec_file
     displayName: Path to OAS spec file for this service
@@ -108,6 +112,7 @@ parameters:
       - functional_test_steps
       - non_functional_test_steps
       - test_app_callback_url
+      - test_app_attributes
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
