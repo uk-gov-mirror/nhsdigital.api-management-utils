@@ -20,7 +20,7 @@
   shell: >
     set -o pipefail;
     {{ aws_cmd }} ecs describe-services --cluster apis-{{ apigee_environment }}
-    --services {{ namespaced_name }} --query services[0].createdAt | xargs -i date --utc -d @{} '+%FT%TZ'
+    --services {{ namespaced_name }} --query services[0].createdAt | sed 's#null#1577836800#' | xargs -i date --utc -d @{} '+%FT%TZ'
   args:
     executable: /bin/bash
   register: get_service_created_at
