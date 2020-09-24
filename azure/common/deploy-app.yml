@@ -1,10 +1,4 @@
 parameters:
-  - name: service_name
-    type: string
-  - name: apigee_environment
-  - name: apigee_organization
-  - name: fully_qualified_service_name
-    type: string
   - name: api_product
     type: string
     default: ''
@@ -26,21 +20,29 @@ steps:
         export CALLBACK_URL="${{ parameters.callback_url }}"
       fi
 
+      if [ -z "${{ parameters.api_product }}" ]; then
+        export API_PRODUCT="internal-testing-$(ENVIRONMENT)"
+      else
+        export API_PRODUCT="${{ parameters.api_product }}"
+      fi
+
+      echo "##vso[task.setvariable variable=API_PRODUCT]$API_PRODUCT"
       echo "##vso[task.setvariable variable=CALLBACK_URL]$CALLBACK_URL"
     displayName: Set test app details
 
   - bash: |
       set -euo pipefail
 
-      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
-      export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
-      export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export SERVICE_NAME="$(FULLY_QUALIFIED_SERVICE_NAME)"
+      export APIGEE_ENVIRONMENT="$(ENVIRONMENT)"
+      export APIGEE_ORGANIZATION="nhsd-$(APIGEE_ORGANIZATION)"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-      export API_PRODUCT="${{ parameters.api_product }}"
-      export VAR_PATH="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+      export API_PRODUCT="$(API_PRODUCT)"
+      export CALLBACK_URL=$(CALLBACK_URL)
+      export VAR_PATH="$(Pipeline.Workspace)/s/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/utils"
 
       poetry run ansible-playbook ansible/deploy-apigee-app.yml
-    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    workingDirectory: "$(Pipeline.Workspace)/s/$(SERVICE_NAME)/$(SERVICE_ARTIFACT_NAME)/utils"
     displayName: "Deploy test app for functional testing"
 
   - template: ../components/set-app-attributes.yml
@@ -49,9 +51,7 @@ steps:
 
   - template: ../components/set-app-credentials.yml
     parameters:
-      service_name: ${{ parameters.service_name }}
+      service_name: $(SERVICE_NAME)
 
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
-
-# TODO: Add removal of test app
