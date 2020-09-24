@@ -45,21 +45,11 @@ parameters:
     type: stepList
   - name: post_deploy
     type: stepList
-  # - name: functional_test_steps
-  #   type: stepList
-  # - name: non_functional_test_steps
-  #   type: stepList
-  # - name: test_app_callback_url
-  #   type: string
-  # - name: test_app_attributes
-  #   type: object
   - name: notify
     type: boolean
     default: false
   - name: enable_monitoring
     type: boolean
-  - name: tests
-    type: object
   - name: _expose_blacklist
     type: object
     default:
@@ -68,22 +58,10 @@ parameters:
       - post_template
       - pre_deploy
       - post_deploy
-      # - functional_test_steps
-      # - non_functional_test_steps
       - secret_ids
       - config_ids
       - depends_on
       - jinja_templates
-      # - test_app_callback_url
-      # - test_app_attributes
-      - tests
-  - name: _scoped_test_vars
-    type: object
-    default:
-      - functional_test
-      - non_functional_test
-      - test_app_callback_url
-      - test_app_attributes
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -209,50 +187,6 @@ stages:
 
                 - ${{ each post_deploy_step in parameters.post_deploy }}:
                   - ${{ post_deploy_step }}
-
-                - ${{ if parameters.tests }}:
-                  - template: '../templates/deploy-app.yml'
-                    parameters:
-                      service_name: ${{ parameters.service_name }}
-                      apigee_environment: ${{ parameters.environment }}
-                      apigee_organization: ${{ parameters.apigee_organization }}
-                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                      ${{ each var in parameters._scoped_test_vars }}:
-                        ${{ if tests[var] }}:
-                          ${{ if eq(tests[var], 'functional_test') }}:
-                            ${{ each config in tests[var] }}:
-                              ${{ if eq(config, 'steps')}}:
-                                steps: 
-                                  - ${{ each step in config[tests[var]] }}:
-                                      ${{ each pair in step }}:
-                                        # Assume scoped template paths are
-                                        # relative to azure/ in @self repo
-                                        ${{ if and(eq(pair.key, 'template'), not(contains(pair.value, '@'))) }}:
-                                          ${{ pair.key }}: azure/${{ pair.value }}@self
-                                        ${{ if not(and(eq(pair.key, 'template'), not(contains(pair.value, '@')))) }}:
-                                          ${{ pair.key }}: ${{ pair.value }}
-                              ${{ if eq(config, 'test_app_callback_url') }}:
-                                callback_url: ${{ config[tests[var]] }}
-                              ${{ if eq(config, 'test_app_attributes') }}:
-                                attributes: ${{ config[tests[var]] }}
-                              api_product: "internal-testing-${{ parameters.environment }}"
-                          ${{ if eq(tests[var], 'non_functional_test') }}:
-                            ${{ each config in tests[var] }}:
-                              ${{ if eq(config, 'steps')}}:
-                                steps: 
-                                  - ${{ each step in config[tests[var]] }}:
-                                      ${{ each pair in step }}:
-                                        # Assume scoped template paths are
-                                        # relative to azure/ in @self repo
-                                        ${{ if and(eq(pair.key, 'template'), not(contains(pair.value, '@'))) }}:
-                                          ${{ pair.key }}: azure/${{ pair.value }}@self
-                                        ${{ if not(and(eq(pair.key, 'template'), not(contains(pair.value, '@')))) }}:
-                                          ${{ pair.key }}: ${{ pair.value }}
-                              ${{ if eq(config, 'test_app_callback_url') }}:
-                                callback_url: ${{ config[tests[var]] }}
-                              ${{ if eq(config, 'test_app_attributes') }}:
-                                attributes: ${{ config[tests[var]] }}
-                              api_product: "${{ parameters.fully_qualified_service_name }}"
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

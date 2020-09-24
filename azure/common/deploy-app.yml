@@ -7,12 +7,16 @@ parameters:
     type: string
   - name: api_product
     type: string
+    default: ''
   - name: callback_url
     type: string
+    default: ''
   - name: attributes
     type: object
+    default: []
   - name: steps
     type: stepList
+    default: []
 
 steps:
   - bash: |
@@ -23,7 +27,7 @@ steps:
       fi
 
       echo "##vso[task.setvariable variable=CALLBACK_URL]$CALLBACK_URL"
-    displayName: Set callback URL
+    displayName: Set test app details
 
   - bash: |
       set -euo pipefail
@@ -50,30 +54,4 @@ steps:
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
 
-  # - ${{ if parameters.non_functional_test_steps }}:
-  #   - bash: |
-  #       set -euo pipefail
-
-  #       export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
-  #       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
-  #       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
-  #       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-  #       export API_PRODUCT="${{ parameters.fully_qualified_service_name }}"
-  #       export VAR_PATH="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-
-  #       poetry run ansible-playbook ansible/deploy-apigee-app.yml
-  #     workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
-  #     displayName: "Deploy test app for non-functional testing"
-  
-  # - ${{ if parameters.non_functional_test_steps }}:
-  #   - template: ../components/set-app-attributes.yml
-  #     parameters:
-  #       test_app_attributes: ${{ parameters.test_app_attributes }}
-  
-  # - ${{ if parameters.non_functional_test_steps }}:
-  #   - template: ../components/set-app-credentials.yml
-  #     parameters:
-  #       service_name: ${{ parameters.service_name }}
-  
-  # - ${{ each functional_test_step in parameters.non_functional_test_steps }}:
-  #   - ${{ functional_test_step }}
+# TODO: Add removal of test app
