@@ -1,8 +1,6 @@
 parameters:
   - name: apigee_deployments
     type: object
-  - name: tests
-    type: object
   - name: secret_ids
     type: object
   - name: config_ids
