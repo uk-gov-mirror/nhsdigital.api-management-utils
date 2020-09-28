@@ -8,9 +8,6 @@ parameters:
   - name: attributes
     type: object
     default: []
-  - name: steps
-    type: stepList
-    default: []
 
 steps:
   - bash: |
@@ -52,6 +49,3 @@ steps:
   - template: ../components/set-app-credentials.yml
     parameters:
       service_name: $(SERVICE_NAME)
-
-  - ${{ each step in parameters.steps }}:
-    - ${{ step }}
