@@ -162,5 +162,7 @@ steps:
           headers: "apikey: $(MONITORING_API_KEY)"
           body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
 
-  - ${{ each post_deploy_step in parameters.post_deploy }}:
-    - ${{ post_deploy_step}}
+  - jobs:
+    - ${{ each post_deploy_step in parameters.post_deploy }}:
+      - job:
+        - ${{ post_deploy_step}}
