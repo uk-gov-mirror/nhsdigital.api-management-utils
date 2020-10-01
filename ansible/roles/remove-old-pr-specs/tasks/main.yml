@@ -27,3 +27,11 @@
 - name: determine whether to remove
   include_tasks: remove-pr-spec.yml
   loop: "{{ pr_specs }}"
+
+- name: remove pr spec
+  uri:
+    url: "{{ specs_resource_uri }}/331254"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+
