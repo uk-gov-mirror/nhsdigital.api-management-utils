@@ -85,11 +85,6 @@ stages:
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
 
-                - bash: |
-                    echo "$(Build.SourceVersion)"
-                    echo "$(Build.SourceVersionMessage)"
-                    echo "$(resources.pipeline.build_pipeline.sourceCommit)"
-
                 - task: DownloadSecureFile@1
                   name: aws_config
                   inputs:
