@@ -12,7 +12,7 @@
     service_id: "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
-    APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis{{ '' if APIGEE_ENVIRONMENT == 'prod' else '.ptl' }}.apim.uk"
+    APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis{{ 'prod' if APIGEE_ENVIRONMENT == 'prod' else '.ptl' }}.api.platform.nhs.uk"
     pr_number: "{{ lookup('env','pr_number') }}"
     APIM_PROXY_HOSTNAME: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}.{{ APIM_BASENAME }}"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"

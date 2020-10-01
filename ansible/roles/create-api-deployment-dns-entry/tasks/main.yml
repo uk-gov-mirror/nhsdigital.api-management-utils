@@ -1,10 +1,11 @@
 
+- name: print workspace
+  debug: msg="workspace - {{ workspace }}"
 
 - name: create temporary directory
   tempfile:
     state: directory
   register: temp_dir
-
 
 - name: set output dir ( allows override with  temp_out_dir )
   set_fact:
