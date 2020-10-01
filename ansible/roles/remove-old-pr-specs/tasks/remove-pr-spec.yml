@@ -37,3 +37,4 @@
     method: DELETE
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+  when: should_remove
