@@ -17,7 +17,6 @@
     state: absent
   when: out_dir != temp_dir.path
 
-
 - name: template terraform
   block:
 
@@ -29,7 +28,7 @@
       with_filetree: "{{ '../templates' }}"
       when: item.state == 'directory'
 
-    - name: template proxies files
+    - name: template files
       template:
         src: '{{ item.src }}'
         dest: "{{ out_dir }}/{{ item.path }}"
