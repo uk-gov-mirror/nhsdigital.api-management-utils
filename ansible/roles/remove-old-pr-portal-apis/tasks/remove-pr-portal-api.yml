@@ -29,7 +29,7 @@
     msg: "Removing {{ item.apiId }}"
   when: should_remove
 
-- name: remove pr spec
+- name: remove pr portal api
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ item.id }}"
     method: DELETE
