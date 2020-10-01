@@ -1,10 +1,3 @@
-- name: extract vars
-  set_fact:
-    spec_time_created: "{{ item.created }}"
-
-- debug:
-    msg: "{{ spec_time_created }}" 
-
 - name: parse_created_at
   set_fact:
     should_remove: >-
@@ -12,7 +5,7 @@
         (
           (
             (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
-            (spec_time_created | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+            (item.created | to_datetime('%Y-%m-%dT%H:%M:%S.%fZ'))
           ).total_seconds() / 3600
         ) >= (retain_hours | int)
       }}
@@ -21,7 +14,7 @@
         (
           (
             (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) -
-            (spec_time_created | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+            (item.created | to_datetime('%Y-%m-%dT%H:%M:%S.%fZ'))
           ).total_seconds() / 3600
         )
       }}
