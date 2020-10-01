@@ -6,32 +6,12 @@
     return_content: yes
   register: specs
 
-- name: debug
-  debug:
-    msg: "{{ specs.json.contents }}"
-
 - name: set spec_names
   set_fact:
     pr_specs: "{{ specs.json.contents | to_json | from_json | json_query(_query) }}"
   vars:
     _query: "[?contains(name, '-pr-')]"
 
-- name: debug
-  debug:
-    msg: "{{ pr_specs }}"
-
-- name: current time
-  debug:
-    msg: "{{ ansible_date_time }}"
-
 - name: determine whether to remove
   include_tasks: remove-pr-spec.yml
   loop: "{{ pr_specs }}"
-
-- name: remove pr spec
-  uri:
-    url: "{{ specs_resource_uri }}/331254"
-    method: DELETE
-    headers:
-      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-
