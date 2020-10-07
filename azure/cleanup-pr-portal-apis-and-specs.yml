@@ -25,16 +25,14 @@ jobs:
         inputs:
           secureFile: ptl_aws_config
 
-      - bash: |
-          mkdir -p ~/.aws
-          mv $(aws_config.secureFilePath) ~/.aws/config
-          chmod 400 ~/.aws/config
-        displayName: "Get AWS config"
-
       - template: build-prereqs.yml
         parameters:
           utils_dir: "./"
 
       - bash: |
-          make -C ansible remove-old-ecs-pr-deploys
-        displayName: "cleanup older pr deploys"
+          make -C ansible remove-old-pr-portal-apis
+        displayName: "cleanup old pr portal apis"
+
+      - bash: |
+          make -C ansible remove-old-pr-specs
+        displayName: "cleanup old pr specs"
