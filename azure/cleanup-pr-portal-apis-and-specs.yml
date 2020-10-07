@@ -16,8 +16,25 @@ jobs:
     displayName: Cleanup PR specs
     timeoutInMinutes: 240
     pool:
-      vmImage: 'ubuntu-20.04'
+      vmImage: "ubuntu-20.04"
     steps:
       - checkout: self
 
-  # TODO: Not implemented
+      - task: DownloadSecureFile@1
+        name: aws_config
+        inputs:
+          secureFile: ptl_aws_config
+
+      - bash: |
+          mkdir -p ~/.aws
+          mv $(aws_config.secureFilePath) ~/.aws/config
+          chmod 400 ~/.aws/config
+        displayName: "Get AWS config"
+
+      - template: build-prereqs.yml
+        parameters:
+          utils_dir: "./"
+
+      - bash: |
+          make -C ansible remove-old-ecs-pr-deploys
+        displayName: "cleanup older pr deploys"
