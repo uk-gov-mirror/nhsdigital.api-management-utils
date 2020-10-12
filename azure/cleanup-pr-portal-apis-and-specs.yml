@@ -1,0 +1,65 @@
+name: "$(SourceBranchName)+$(BuildID)"
+
+trigger: none
+pr: none
+
+schedules:
+  - cron: "0 2 * * *"
+    displayName: Daily PR cleanup
+    branches:
+      include:
+        - master
+    always: true
+
+jobs:
+  - job: build
+    displayName: Cleanup PR specs
+    timeoutInMinutes: 240
+    pool:
+      vmImage: "ubuntu-20.04"
+    steps:
+      - checkout: self
+
+      - task: DownloadSecureFile@1
+        name: aws_config
+        inputs:
+          secureFile: ptl_aws_config
+
+      - bash: |
+          mkdir -p ~/.aws
+          mv $(aws_config.secureFilePath) ~/.aws/config
+          chmod 400 ~/.aws/config
+        displayName: "Get AWS config"
+
+      - template: build-prereqs.yml
+        parameters:
+          utils_dir: "./"
+
+      - template: ./components/get-aws-secrets-and-ssm-params.yml
+        parameters:
+          secret_ids:
+            - ptl/azure-devops/apigee-nonprod/APIGEE_OTP_KEY
+            - ptl/azure-devops/apigee-nonprod/APIGEE_PASSWORD
+          config_ids:
+            - /ptl/azure-devops/apigee-nonprod/APIGEE_USERNAME
+
+      - template: ./components/get-mfa-code.yml
+        parameters:
+          apigee_otp_key: $(APIGEE_OTP_KEY)
+
+      - template: ./components/get-access-token.yml
+        parameters:
+          apigee_username: $(APIGEE_USERNAME)
+          apigee_password: $(APIGEE_PASSWORD)
+
+      - bash: |
+          export APIGEE_ORGANIZATION="nhsd-nonprod"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          make -C ansible remove-old-pr-portal-apis
+        displayName: "cleanup old pr portal apis"
+
+      - bash: |
+          export APIGEE_ORGANIZATION="nhsd-nonprod"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          make -C ansible remove-old-pr-specs
+        displayName: "cleanup old pr specs"
