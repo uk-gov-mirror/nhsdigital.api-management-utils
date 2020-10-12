@@ -29,7 +29,7 @@ jobs:
         parameters:
           utils_dir: "./"
 
-      - template: ../components/get-aws-secrets-and-ssm-params.yml
+      - template: ./components/get-aws-secrets-and-ssm-params.yml
         parameters:
           secret_ids:
             - ptl/azure-devops/apigee-nonprod/APIGEE_OTP_KEY
@@ -37,11 +37,11 @@ jobs:
           config_ids:
             - /ptl/azure-devops/apigee-nonprod/APIGEE_USERNAME
 
-      - template: ../components/get-mfa-code.yml
+      - template: ./components/get-mfa-code.yml
         parameters:
           apigee_otp_key: $(APIGEE_OTP_KEY)
 
-      - template: ../components/get-access-token.yml
+      - template: ./components/get-access-token.yml
         parameters:
           apigee_username: $(APIGEE_USERNAME)
           apigee_password: $(APIGEE_PASSWORD)
