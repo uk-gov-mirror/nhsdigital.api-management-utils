@@ -53,9 +53,11 @@ jobs:
           apigee_password: $(APIGEE_PASSWORD)
 
       - bash: |
+          export APIGEE_ORGANIZATION="nhsd-nonprod"
           make -C ansible remove-old-pr-portal-apis
         displayName: "cleanup old pr portal apis"
 
       - bash: |
+          export APIGEE_ORGANIZATION="nhsd-nonprod"
           make -C ansible remove-old-pr-specs
         displayName: "cleanup old pr specs"
