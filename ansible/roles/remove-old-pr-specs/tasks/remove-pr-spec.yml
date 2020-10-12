@@ -30,12 +30,11 @@
 - debug:
     msg: "Removing {{ item.name }}"
   when: should_remove
-# - name: remove pr spec
-#   uri:
-#     url: "{{ specs_resource_uri }}/{{ item.id }}"
-#     method: DELETE
-#     headers:
-#       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-#   when: should_remove
-#
-#  COMMENTED OUT FOR DRY RUN
+
+- name: remove pr spec
+  uri:
+    url: "{{ specs_resource_uri }}/{{ item.id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+  when: should_remove
