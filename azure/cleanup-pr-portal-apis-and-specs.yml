@@ -29,15 +29,22 @@ jobs:
         parameters:
           utils_dir: "./"
 
-      - template: "../components/set-facts.yml"
+      - template: ../components/get-aws-secrets-and-ssm-params.yml
         parameters:
-          service_name: ${{ parameters.service_name }}
           secret_ids:
             - ptl/azure-devops/apigee-nonprod/APIGEE_OTP_KEY
             - ptl/azure-devops/apigee-nonprod/APIGEE_PASSWORD
           config_ids:
             - /ptl/azure-devops/apigee-nonprod/APIGEE_USERNAME
-            - /ptl/azure-devops/GITHUB_USER
+
+      - template: ../components/get-mfa-code.yml
+        parameters:
+          apigee_otp_key: $(APIGEE_OTP_KEY)
+
+      - template: ../components/get-access-token.yml
+        parameters:
+          apigee_username: $(APIGEE_USERNAME)
+          apigee_password: $(APIGEE_PASSWORD)
 
       - bash: |
           make -C ansible remove-old-pr-portal-apis
