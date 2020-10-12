@@ -29,6 +29,16 @@ jobs:
         parameters:
           utils_dir: "./"
 
+      - template: "../components/set-facts.yml"
+        parameters:
+          service_name: ${{ parameters.service_name }}
+          secret_ids:
+            - ptl/azure-devops/apigee-nonprod/APIGEE_OTP_KEY
+            - ptl/azure-devops/apigee-nonprod/APIGEE_PASSWORD
+          config_ids:
+            - /ptl/azure-devops/apigee-nonprod/APIGEE_USERNAME
+            - /ptl/azure-devops/GITHUB_USER
+
       - bash: |
           make -C ansible remove-old-pr-portal-apis
         displayName: "cleanup old pr portal apis"
