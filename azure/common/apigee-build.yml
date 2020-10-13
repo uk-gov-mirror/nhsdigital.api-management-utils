@@ -151,5 +151,12 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy utils into artifact"
 
+      - bash: |
+          if [ -d "products" ]; then
+             rsync -a products dist
+          fi
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Copy products into artifact"
+
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"

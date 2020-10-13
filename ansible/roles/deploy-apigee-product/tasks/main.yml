@@ -1,31 +1,8 @@
-- name: see if product already exists
-  uri:
-    url: "{{ apis_apiproducts_uri }}/{{ SERVICE_NAME }}"
-    headers:
-      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-    status_code: [200, 404] # 404 is a useful response, and we don't want to crash on it
-    return_content: yes
-  register: check_product_response
-
-- name: decide whether to create or update
+- name: Set default product
   set_fact:
-    should_create: "{{ check_product_response.status == 404 }}"
-
-- name: define method and uri
-  set_fact:
-    apiproduct_method: "{{ should_create | ternary('POST', 'PUT') }}"
-    apiproduct_uri: "{{ should_create | ternary(apis_apiproducts_uri, apis_apiproducts_uri + '/' + SERVICE_NAME) }}"
-
-- name: create or update product
-  uri:
-    url: "{{ apiproduct_uri }}"
-    method: "{{ apiproduct_method }}"
-    headers:
-      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-    body_format: json
-    body:
+    default_product:
       name: "{{ SERVICE_NAME }}"
-      displayName: "{{ PRODUCT_DISPLAY_NAME }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
+      displayName: "{{ PRODUCT_DISPLAY_NAME }}" # Environment name appended later
       description: "{{ PRODUCT_DESCRIPTION }}"
       approvalType: "{{ approval_type }}"
       proxies: "{{ proxies }}"
@@ -39,5 +16,45 @@
       quotaTimeUnit: minute
       environments:
         - "{{ APIGEE_ENVIRONMENT }}"
-    status_code: [200, 201]
+      scopes: []
 
+- name: Find API product files
+  set_fact:
+    # we are in dist/utils/ansible
+    # want to look in dist/products
+    api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
+
+- name: Read API product files
+  set_fact:
+    api_products: >-
+      {{ (api_products | default([])) + [lookup('file', filename) | from_yaml] }}
+  loop: "{{ api_product_files }} "
+  loop_control:
+    loop_var: filename
+
+- name: Assert that producer defined product(s) have 'name' but not 'environment'
+  assert:
+    that:
+      - product.environment is not defined or product.environment == [APIGEE_ENVIRONMENT]
+      - product.name is defined
+  loop: "{{ api_products }}"
+  loop_control:
+    loop_var: product
+
+- name: Use default_product if api_products is empty
+  set_fact:
+    api_products: "{{ [default_product] }}"
+  when: (api_products | default([]) | length) < 1
+
+- name: Check all product names are unique
+  assert:
+    that:
+      - "{{ api_products | map(attribute='name') | unique | count == api_products | count }}"
+    fail_msg: "Error! API products defined in {{ api_product_files }} do not have unique name attributes."
+    success_msg: "API Product names are unique."
+
+- name: Deploy products
+  include_tasks: deploy-product.yml
+  loop: "{{ api_products }}"
+  loop_control:
+    loop_var: _product
