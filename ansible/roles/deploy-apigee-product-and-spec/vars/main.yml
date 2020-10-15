@@ -26,3 +26,8 @@ env_names:
   int: 'Integration'
   sandbox: 'Sandbox'
   prod: 'Live'
+portals_base_uri: "https://apigee.com/portals/api/sites"
+portals_list_uri: "{{ portals_base_uri }}?orgname={{ APIGEE_ORGANIZATION }}"
+dapi_uri: "https://apigee.com/dapi/api/organizations/{{ APIGEE_ORGANIZATION }}"
+specs_list_uri: "{{ dapi_uri }}/specs/folder/home"
+specs_resource_uri: "{{ dapi_uri }}/specs/doc"

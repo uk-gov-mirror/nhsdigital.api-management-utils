@@ -11,6 +11,8 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     PRODUCT_DISPLAY_NAME: "{{ lookup('env', 'PRODUCT_DISPLAY_NAME') }}"
     PRODUCT_DESCRIPTION: "{{ lookup('env', 'PRODUCT_DESCRIPTION') }}"
+    PROXY_DIR: "{{ lookup('env', 'PROXY_DIR') }}"
+    PING: "{{ (lookup('env', 'PING') | length > 0) | ternary(lookup('env', 'PING'), 'true') }}"
 
   pre_tasks:
     - name: check SERVICE_NAME
@@ -47,5 +49,26 @@
       fail:
         msg: "PRODUCT_DESCRIPTION not set"
       when: not PRODUCT_DESCRIPTION
+
+    - name: check SPEC_FILE
+      fail:
+        msg: "SPEC_FILE not set"
+      when: not SPEC_FILE
+
+    - name: check FRIENDLY_NAME
+      fail:
+        msg: "FRIENDLY_NAME not set"
+      when: not FRIENDLY_NAME
+
+    - name: check VISIBLE
+      fail:
+        msg: "VISIBLE not True or False"
+      when: (VISIBLE != False) and (VISIBLE != True)
+
+    - name: check REQUIRE_CALLBACK_URL
+      fail:
+        msg: "REQUIRE_CALLBACK_URL not True or False"
+      when: (REQUIRE_CALLBACK_URL != False) and (REQUIRE_CALLBACK_URL != True)
+
   roles:
     - deploy-apigee-product

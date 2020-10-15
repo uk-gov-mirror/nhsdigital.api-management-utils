@@ -62,3 +62,6 @@
     body_format: json
     body: "{{ product }}"
     status_code: [200, 201]
+
+- name: deploy spec
+  include_task: deploy-spec.yml
