@@ -64,4 +64,5 @@
     status_code: [200, 201]
 
 - name: deploy spec
-  include_task: deploy-spec.yml
+  include_tasks: deploy-spec.yml
+  when: SPEC_FILE
