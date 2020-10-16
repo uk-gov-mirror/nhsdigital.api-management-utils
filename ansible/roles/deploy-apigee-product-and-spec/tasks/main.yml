@@ -23,6 +23,7 @@
     # we are in dist/utils/ansible
     # want to look in dist/products
     api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
+  ignore_errors: yes # folder may not exist
 
 - name: Read API product files
   set_fact:
