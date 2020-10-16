@@ -35,7 +35,7 @@
 - name: Assert that producer defined product(s) have 'name' but not 'environment'
   assert:
     that:
-      - product.environment is not defined or product.environment == [APIGEE_ENVIRONMENT]
+      - product.environment is not defined
       - product.name is defined
   loop: "{{ api_products }}"
   loop_control:

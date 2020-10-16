@@ -24,7 +24,7 @@
 - name: Append (friendly) environment name to product (display) name
   vars:
     # updated_name prevents each environment's API products from overwriting one another.    
-    updated_name: "{{ SERVICE_NAME + '-' + product.name }}"
+    updated_name: "{{ product.name | ternary(SERVICE_NAME + '-' + product.name, SERVICE_NAME) }}"
     updated_display_name: "{{ product.displayName }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
   set_fact:
     product: >-
