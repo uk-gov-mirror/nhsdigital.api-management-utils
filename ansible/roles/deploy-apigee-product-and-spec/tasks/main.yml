@@ -38,7 +38,7 @@
     that:
       - product.environment is not defined
       - product.name is defined
-  loop: "{{ api_products }}"
+  loop: "{{ api_products | default([]) }}"
   loop_control:
     loop_var: product
 
