@@ -51,7 +51,7 @@
   assert:
     that:
       - "{{ api_products | map(attribute='name') | unique | count == api_products | count }}"
-    fail_msg: "Error! API products defined in {{ api_product_files }} do not have unique name attributes."
+    fail_msg: "Error! API products do not have unique name attributes."
     success_msg: "API Product names are unique."
 
 - name: Deploy products
