@@ -172,10 +172,10 @@ steps:
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
       export PING="${{ parameters.ping }}"
-      if [[ -z ${{parameters.spec_file }} ]]; then
-        export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.spec_file }}"
-      else
+      if [[ -z "${{ parameters.spec_file }}" ]]; then
         export SPEC_FILE=""
+      else
+        export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.spec_file }}"
       fi
       export FRIENDLY_NAME="$(FRIENDLY_NAME)"
       export VISIBLE="${{ parameters.make_spec_visible }}"
