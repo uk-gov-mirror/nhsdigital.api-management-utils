@@ -29,7 +29,7 @@
   set_fact:
     api_products: >-
       {{ (api_products | default([])) + [lookup('file', filename) | from_yaml] }}
-  loop: "{{ api_product_files }} "
+  loop: "{{ api_product_files | default([]) }} "
   loop_control:
     loop_var: filename
 
