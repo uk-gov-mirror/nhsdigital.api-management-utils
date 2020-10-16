@@ -1,3 +1,4 @@
+# Expects product.name to be defined (from deploy-spec)
 - name: list portals
   uri:
     url: "{{ portals_list_uri }}"
@@ -34,26 +35,26 @@
   uri:
     url: "{{ specs_resource_uri }}"
     method: POST
-    body: '{"folder": "{{ folder_id }}", "name": "{{ SERVICE_NAME }}", "kind": "Doc"}'
+    body: '{"folder": "{{ folder_id }}", "name": "{{ product.name }}", "kind": "Doc"}'
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
     return_content: yes
   register: spec
-  when: SERVICE_NAME not in spec_names
+  when: product.name not in spec_names
 
 - name: if not exists, set spec_id
   set_fact:
     spec_id: "{{ spec.json.id }}"
-  when: SERVICE_NAME not in spec_names
+  when: product.name not in spec_names
 
 - name: if exists, set spec_id
   set_fact:
     spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
   vars:
-    _query: "[? name=='{{ SERVICE_NAME }}'].id"
-  when: SERVICE_NAME in spec_names
+    _query: "[? name=='{{ product.name }}'].id"
+  when: product.name in spec_names
 
 - name: create/update spec file
   uri:
@@ -86,24 +87,24 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      edgeAPIProductName: "{{ product.name }}"
       requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
-      specId: "{{ SERVICE_NAME }}"
+      specId: "{{ product.name }}"
       title: "{{ FRIENDLY_NAME }}"
       visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME not in api_names
+  when: product.name not in api_names
 
 - name: if api exists in portal, set apidoc_id
   set_fact:
     apidoc_id: "{{ apidocs.json.data | json_query(_query) | first }}"
   vars:
-    _query: "[? apiId=='{{ SERVICE_NAME }}'].id"
-  when: SERVICE_NAME in api_names
+    _query: "[? apiId=='{{ product.name }}'].id"
+  when: product.name in api_names
 
 - name: if api exist in portal, update portal api
   uri:
@@ -112,17 +113,17 @@
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      edgeAPIProductName: "{{ product.name }}"
       requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
-      specId: "{{ SERVICE_NAME }}"
+      specId: "{{ product.name }}"
       title: "{{ FRIENDLY_NAME }}"
       visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in api_names
 
 - name: if api exist in portal, get api_doc
   uri:
@@ -132,7 +133,7 @@
     status_code: 200
     return_content: yes
   register: apidoc
-  when: SERVICE_NAME in api_names
+  when: product.name in api_names
 
 - name: if api exist in portal, update api
   uri:
@@ -147,7 +148,7 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in api_names
 
 - name: if api exist in portal, update spec snapshot
   uri:
@@ -156,4 +157,4 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in api_names
