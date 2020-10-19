@@ -159,7 +159,7 @@
     status_code: 200
     return_content: yes
   register: apidoc
-  when: product.name in api_names
+  when: product.name in apidoc_names
 
 - name: if api exist in portal, update api
   uri:
@@ -174,7 +174,7 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: product.name in api_names
+  when: product.name in apidoc_names
 
 - name: ... ensuring latest spec snapshot
   uri:
