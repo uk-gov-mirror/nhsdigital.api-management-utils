@@ -151,6 +151,31 @@
     status_code: 200
   when: product.name in apidoc_names
 
+- name: if api exist in portal, get api_doc
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidoc
+  when: product.name in api_names
+
+- name: if api exist in portal, update api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
+    method: PUT
+    body:
+      anonAllowed: "{{ apidoc.json.data.anonAllowed }}"
+      description: "{{ apidoc.json.data.description }}"
+      specId: "{{ apidoc.json.data.specId }}"
+      visibility: "{{ apidoc.json.data.visibility }}"
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+  when: product.name in api_names
+
 - name: ... ensuring latest spec snapshot
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}/snapshot"
