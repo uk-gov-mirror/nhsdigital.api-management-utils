@@ -11,6 +11,12 @@
   set_fact:
     portal_id: "{{ portals.json.data[0].id }}"
 
+
+
+
+
+
+
 - name: list specs
   uri:
     url: "{{ specs_list_uri }}"
@@ -32,7 +38,12 @@
     spec_content: "{{ lookup('file', SPEC_FILE) }}"
   when: SPEC_FILE
 
-- name: if not exists, create spec
+- name: set spec_content
+  set_fact:
+    spec_content: null
+  when: not SPEC_FILE
+
+- name: if not exists, create spec...
   uri:
     url: "{{ specs_resource_uri }}"
     method: POST
@@ -43,20 +54,19 @@
     status_code: 200
     return_content: yes
   register: spec
-  when: SPEC_FILE and (product.name not in spec_names)
+  when: spec_content and (product.name not in spec_names)
 
-
-- name: if not exists, set spec_id
+- name: ... and get spec_id from response
   set_fact:
     spec_id: "{{ spec.json.id }}"
-  when: product.name not in spec_names
+  when: spec_content and product.name not in spec_names
 
 - name: if exists, set spec_id
   set_fact:
     spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
   vars:
     _query: "[? name=='{{ product.name }}'].id"
-  when: product.name in spec_names
+  when: spec_content and product.name in spec_names
 
 - name: create/update spec file
   uri:
@@ -67,9 +77,16 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SPEC_FILE
+  when: spec_content
 
-- name: get apidocs
+
+
+
+
+
+
+
+- name: get portal objects (product/spec combo)
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
     method: GET
@@ -79,11 +96,11 @@
     return_content: yes
   register: apidocs
 
-- name: set api_names
+- name: Get list of names of portal objects (same as product names)
   set_fact:
-    api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
+    apidoc_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
 
-- name: if api not exist in portal, create portal api
+- name: if apidoc does not exist in portal, create it
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
     method: POST
@@ -100,16 +117,18 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: product.name not in api_names
+  when: product.name not in apidoc_names
 
-- name: if api exists in portal, set apidoc_id
+# If it does exist, get ID
+- name: if portal object already exists, get id...
   set_fact:
     apidoc_id: "{{ apidocs.json.data | json_query(_query) | first }}"
   vars:
     _query: "[? apiId=='{{ product.name }}'].id"
-  when: product.name in api_names
+  when: product.name in apidoc_names
 
-- name: if api exist in portal, update portal api
+# and update existing...
+- name: ... and update it...
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
     method: PUT
@@ -126,38 +145,13 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: product.name in api_names
+  when: product.name in apidoc_names
 
-- name: if api exist in portal, get api_doc
-  uri:
-    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
-    headers:
-      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-    status_code: 200
-    return_content: yes
-  register: apidoc
-  when: product.name in api_names
-
-- name: if api exist in portal, update api
-  uri:
-    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
-    method: PUT
-    body:
-      anonAllowed: "{{ apidoc.json.data.anonAllowed }}"
-      description: "{{ apidoc.json.data.description }}"
-      specId: "{{ apidoc.json.data.specId }}"
-      visibility: "{{ apidoc.json.data.visibility }}"
-    body_format: json
-    headers:
-      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-    status_code: 200
-  when: product.name in api_names
-
-- name: if api exist in portal, update spec snapshot
+- name: ... ensuring latest spec snapshot
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}/snapshot"
     method: PUT
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: product.name in api_names
+  when: product.name in apidoc_names
