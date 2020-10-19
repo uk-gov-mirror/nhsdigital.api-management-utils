@@ -43,6 +43,10 @@
     spec_content: null
   when: not (SPEC_FILE | bool)
 
+- name: set null spec_id
+  set_fact:
+    spec_id: null
+
 - name: if not exists, create spec...
   uri:
     url: "{{ specs_resource_uri }}"
