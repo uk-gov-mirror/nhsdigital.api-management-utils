@@ -36,12 +36,12 @@
 - name: set spec_content
   set_fact:
     spec_content: "{{ lookup('file', SPEC_FILE) }}"
-  when: SPEC_FILE
+  when: SPEC_FILE | bool
 
 - name: set spec_content
   set_fact:
     spec_content: null
-  when: not SPEC_FILE
+  when: not (SPEC_FILE | bool)
 
 - name: if not exists, create spec...
   uri:
