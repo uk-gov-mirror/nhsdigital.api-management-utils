@@ -8,7 +8,7 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
-    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
+    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') | default('', True) }}"
     FRIENDLY_NAME: "{{ lookup('env', 'FRIENDLY_NAME') }}"
     PRODUCT_DISPLAY_NAME: "{{ lookup('env', 'PRODUCT_DISPLAY_NAME') }}"
     PRODUCT_DESCRIPTION: "{{ lookup('env', 'PRODUCT_DESCRIPTION') }}"
@@ -45,11 +45,6 @@
       fail:
         msg: "PRODUCT_DESCRIPTION not set"
       when: not PRODUCT_DESCRIPTION
-
-    # - name: check SPEC_FILE
-    #   fail:
-    #     msg: "SPEC_FILE not set"
-    #   when: not SPEC_FILE
 
     - name: check FRIENDLY_NAME
       fail:
