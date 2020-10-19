@@ -65,4 +65,3 @@
 
 - name: deploy spec
   include_tasks: deploy-spec.yml
-  when: SPEC_FILE

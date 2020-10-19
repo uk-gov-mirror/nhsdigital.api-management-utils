@@ -30,6 +30,7 @@
 - name: set spec_content
   set_fact:
     spec_content: "{{ lookup('file', SPEC_FILE) }}"
+  when: SPEC_FILE
 
 - name: if not exists, create spec
   uri:
@@ -42,7 +43,8 @@
     status_code: 200
     return_content: yes
   register: spec
-  when: product.name not in spec_names
+  when: SPEC_FILE and (product.name not in spec_names)
+
 
 - name: if not exists, set spec_id
   set_fact:
@@ -65,6 +67,7 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
+  when: SPEC_FILE
 
 - name: get apidocs
   uri:
@@ -86,7 +89,7 @@
     method: POST
     body:
       anonAllowed: "True"
-      description: ""
+      description: "{{ product.description }}"
       edgeAPIProductName: "{{ product.name }}"
       requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
