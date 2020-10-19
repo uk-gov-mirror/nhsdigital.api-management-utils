@@ -41,7 +41,13 @@ steps:
     workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)
     displayName: "Check for ECS proxy definitions"
 
-  - bash: "make install"
+  - bash: |
+      n=0
+      until [ "$n" -ge 3 ]
+      do
+        make install && break
+        n=$((n+1))
+      done
     workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
     displayName: "Install utils pre-requisites"
 
