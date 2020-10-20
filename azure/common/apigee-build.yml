@@ -43,7 +43,6 @@ jobs:
           parameters:
             state: pending
             description: "Deploy to ${{ parameters.environment }} started"
-            environment: ${{ parameters.environment }}
 
       - checkout: self
         path: "s/${{ parameters.service_name }}"
