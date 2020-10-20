@@ -40,7 +40,7 @@ jobs:
             chmod 400 ~/.aws/config
           displayName: "Get AWS config"
 
-        - template: ./components/get-aws-secrets-and-ssm-params.yml
+        - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
             secret_ids:
               - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
