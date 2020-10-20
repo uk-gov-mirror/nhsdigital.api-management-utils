@@ -42,7 +42,7 @@ jobs:
         - template: '../components/update-github-status.yml'
           parameters:
             state: pending
-            description: "Deploy to ${{ parameters.environment }} started"
+            description: "Build started"
 
       - checkout: self
         path: "s/${{ parameters.service_name }}"
@@ -180,10 +180,10 @@ jobs:
           parameters:
             state: success
             on_success: true
-            description: "Deploy to ${{ parameters.environment }} succeeded"
+            description: "Build succeeded"
 
         - template: '../components/update-github-status.yml'
           parameters:
             state: failure
             on_failure: true
-            description: "Deploy to ${{ parameters.environment }} failed"
+            description: "Build failed"
