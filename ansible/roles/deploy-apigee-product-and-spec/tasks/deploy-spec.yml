@@ -1,3 +1,4 @@
+# Expects product.name to be defined (from deploy-spec)
 - name: list portals
   uri:
     url: "{{ portals_list_uri }}"
@@ -9,6 +10,12 @@
 - name: set portal_id
   set_fact:
     portal_id: "{{ portals.json.data[0].id }}"
+
+
+
+
+
+
 
 - name: list specs
   uri:
@@ -29,31 +36,41 @@
 - name: set spec_content
   set_fact:
     spec_content: "{{ lookup('file', SPEC_FILE) }}"
+  when: SPEC_FILE | bool
 
-- name: if not exists, create spec
+- name: set spec_content
+  set_fact:
+    spec_content: null
+  when: not (SPEC_FILE | bool)
+
+- name: set null spec_id
+  set_fact:
+    spec_id: null
+
+- name: if not exists, create spec...
   uri:
     url: "{{ specs_resource_uri }}"
     method: POST
-    body: '{"folder": "{{ folder_id }}", "name": "{{ SERVICE_NAME }}", "kind": "Doc"}'
+    body: '{"folder": "{{ folder_id }}", "name": "{{ product.name }}", "kind": "Doc"}'
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
     return_content: yes
   register: spec
-  when: SERVICE_NAME not in spec_names
+  when: spec_content and (product.name not in spec_names)
 
-- name: if not exists, set spec_id
+- name: ... and get spec_id from response
   set_fact:
     spec_id: "{{ spec.json.id }}"
-  when: SERVICE_NAME not in spec_names
+  when: spec_content and product.name not in spec_names
 
 - name: if exists, set spec_id
   set_fact:
     spec_id: "{{ specs.json.contents | json_query(_query) | first }}"
   vars:
-    _query: "[? name=='{{ SERVICE_NAME }}'].id"
-  when: SERVICE_NAME in spec_names
+    _query: "[? name=='{{ product.name }}'].id"
+  when: spec_content and product.name in spec_names
 
 - name: create/update spec file
   uri:
@@ -64,8 +81,16 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
+  when: spec_content
 
-- name: get apidocs
+
+
+
+
+
+
+
+- name: get portal objects (product/spec combo)
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
     method: GET
@@ -75,54 +100,56 @@
     return_content: yes
   register: apidocs
 
-- name: set api_names
+- name: Get list of names of portal objects (same as product names)
   set_fact:
-    api_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
+    apidoc_names: "{{ apidocs.json.data | map(attribute='apiId') | list }}"
 
-- name: if api not exist in portal, create portal api
+- name: if apidoc does not exist in portal, create it
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
     method: POST
     body:
       anonAllowed: "True"
-      description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      description: "{{ product.description }}"
+      edgeAPIProductName: "{{ product.name }}"
       requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
-      specId: "{{ SERVICE_NAME }}"
+      specId: "{{ product.name }}"
       title: "{{ FRIENDLY_NAME }}"
       visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME not in api_names
+  when: product.name not in apidoc_names
 
-- name: if api exists in portal, set apidoc_id
+# If it does exist, get ID
+- name: if portal object already exists, get id...
   set_fact:
     apidoc_id: "{{ apidocs.json.data | json_query(_query) | first }}"
   vars:
-    _query: "[? apiId=='{{ SERVICE_NAME }}'].id"
-  when: SERVICE_NAME in api_names
+    _query: "[? apiId=='{{ product.name }}'].id"
+  when: product.name in apidoc_names
 
-- name: if api exist in portal, update portal api
+# and update existing...
+- name: ... and update it...
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}"
     method: PUT
     body:
       anonAllowed: "True"
       description: ""
-      edgeAPIProductName: "{{ SERVICE_NAME }}"
+      edgeAPIProductName: "{{ product.name }}"
       requireCallbackUrl: "{{ REQUIRE_CALLBACK_URL }}"
       specContent: "{{ spec_id }}"
-      specId: "{{ SERVICE_NAME }}"
+      specId: "{{ product.name }}"
       title: "{{ FRIENDLY_NAME }}"
       visibility: "{{ VISIBLE }}"
     body_format: json
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in apidoc_names
 
 - name: if api exist in portal, get api_doc
   uri:
@@ -132,7 +159,7 @@
     status_code: 200
     return_content: yes
   register: apidoc
-  when: SERVICE_NAME in api_names
+  when: product.name in apidoc_names
 
 - name: if api exist in portal, update api
   uri:
@@ -147,13 +174,13 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in apidoc_names
 
-- name: if api exist in portal, update spec snapshot
+- name: ... ensuring latest spec snapshot
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc_id }}/snapshot"
     method: PUT
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     status_code: 200
-  when: SERVICE_NAME in api_names
+  when: product.name in apidoc_names

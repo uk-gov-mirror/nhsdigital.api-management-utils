@@ -1,0 +1,67 @@
+# Assumes _product (the loop var) and default_product (fact) are set
+
+- name: Use default_product values for all unset fields
+  set_fact:
+    product: "{{ default_product | combine(_product, recursive=True) }}"
+
+- name: Ensure all default_product attributes are present
+  vars:
+    def_attrs: "{{ default_product.attributes | map(attribute='name') | list}}"
+    attrs: "{{ product.attributes | map(attribute='name') | list }}"
+    missing_attrs: "{{ def_attrs | difference(attrs) }}"
+  set_fact:
+    product: >
+      {{ product
+         | combine({'attributes' : product.attributes
+                                   + default_product['attributes']
+                                   | selectattr('name', 'match', name) },
+                   recursive=True) }}
+  loop: "{{ missing_attrs }}"
+  loop_control:
+    loop_var: name
+
+
+- name: Append (friendly) environment name to product (display) name
+  vars:
+    # updated_name prevents each environment's API products from overwriting one another.    
+    updated_name: "{{ product.name | ternary(SERVICE_NAME + '-' + product.name, SERVICE_NAME) }}"
+    updated_display_name: "{{ product.displayName }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)"
+  set_fact:
+    product: >-
+      {{ product | combine({'displayName': updated_display_name,
+                            'name': updated_name }) }}
+
+- name: see if product already exists
+  uri:
+    url: "{{ apis_apiproducts_uri + '/' + product.name }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: [200, 404] # 404 is a useful response, and we don't want to crash on it
+    return_content: yes
+  register: check_product_response
+
+- name: decide whether to create or update
+  set_fact:
+    should_create: "{{ check_product_response.status == 404 }}"
+
+- name: define method and uri
+  set_fact:
+    apiproduct_method: "{{ should_create | ternary('POST', 'PUT') }}"
+    apiproduct_uri: >-
+      {{
+          should_create | ternary(apis_apiproducts_uri,
+                                  apis_apiproducts_uri + '/' + product.name)
+      }}
+
+- name: create or update product
+  uri:
+    url: "{{ apiproduct_uri }}"
+    method: "{{ apiproduct_method }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body_format: json
+    body: "{{ product }}"
+    status_code: [200, 201]
+
+- name: deploy spec
+  include_tasks: deploy-spec.yml
