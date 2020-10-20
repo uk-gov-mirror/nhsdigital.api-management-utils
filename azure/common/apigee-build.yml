@@ -32,16 +32,21 @@ jobs:
         name: aws_config
         inputs:
           secureFile: ptl_aws_config
-      
-      - template: "../components/set-facts.yml"
-        parameters:
-          service_name: ${{ parameters.service_name }}
-          secret_ids:
-            - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
-          config_ids:
-            - /ptl/azure-devops/GITHUB_USER
-
+    
       - ${{ if parameters.notify }}:
+        - bash: |
+            mkdir -p ~/.aws
+            mv $(aws_config.secureFilePath) ~/.aws/config
+            chmod 400 ~/.aws/config
+          displayName: "Get AWS config"
+
+        - template: ./components/get-aws-secrets-and-ssm-params.yml
+          parameters:
+            secret_ids:
+              - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
+            config_ids:
+              - /ptl/azure-devops/GITHUB_USER
+
         - bash: |
             export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
             echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
