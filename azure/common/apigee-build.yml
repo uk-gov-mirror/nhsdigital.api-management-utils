@@ -32,6 +32,14 @@ jobs:
         name: aws_config
         inputs:
           secureFile: ptl_aws_config
+      
+      - template: "../components/set-facts.yml"
+        parameters:
+          service_name: ${{ parameters.service_name }}
+          secret_ids:
+            - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
+          config_ids:
+            - /ptl/azure-devops/GITHUB_USER
 
       - ${{ if parameters.notify }}:
         - bash: |
