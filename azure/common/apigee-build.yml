@@ -14,7 +14,7 @@ parameters:
     default: []
   - name: notify
     type: boolean
-    default: false
+    default: true
 
 jobs:
   - job: build
