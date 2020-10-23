@@ -85,7 +85,13 @@ jobs:
       - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
         displayName: Install python dependencies
 
-      - bash: "make install"
+      - bash: |
+          n=0
+          until [ "$n" -ge 3 ]
+          do
+            make install && break
+            n=$((n+1))
+          done
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
 
