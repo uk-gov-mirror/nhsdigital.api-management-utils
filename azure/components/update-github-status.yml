@@ -27,7 +27,12 @@ parameters:
 
 steps:
   - bash: |
-      curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName) ${{ parameters.environment }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
+      if [[ "$(COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
+        curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName) ${{ parameters.environment }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
+      else
+        echo "##[warning]$(COMMIT_SHA) doesn't look like a commit hash"
+        echo "##[task.logissue type=warning]Task wasn't able to find the right commit sha value to notify github."
+      fi
     displayName: "Notify GitHub: ${{ parameters.state }}"
     condition: |
       or(
