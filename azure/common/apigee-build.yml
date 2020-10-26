@@ -185,6 +185,10 @@ jobs:
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy utils into artifact"
 
+      - bash: |
+          cd ${{ parameters.service_name }}/utils
+          git rev-parse HEAD > ../dist/.utils-version
+
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
 
