@@ -12,12 +12,12 @@
 - name: upload proxy bundle
   shell:
     cmd: >
-       curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}'
-       -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data'
-       "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}"
+      curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}'
+      -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data'
+      "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}"
     warn: false
   register: "proxy_upload_response"
-  no_log: true
+  no_log: false
   changed_when: yes
 
 - name: get revision number of upload
