@@ -52,6 +52,10 @@ parameters:
     type: boolean
     displayName: Whether monitoring is needed
     default: false
+  - name: secret_file_ids
+    displayName: List of additional AWS Secrets Manager multiline Secret IDs 
+    type: object
+    default: []
   - name: secret_ids
     displayName: List of additional AWS Secrets Manager Secret IDs
     type: object
