@@ -22,7 +22,7 @@
   changed_when: yes
 
 - set_fact:
-  error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | list }}"
+    error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | list }}"
 
 - name: check proxy upload success
   fail:
