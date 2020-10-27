@@ -42,6 +42,7 @@ jobs:
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
+            service_name: ${{ parameters.service_name }}
             secret_ids:
               - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
             config_ids:
