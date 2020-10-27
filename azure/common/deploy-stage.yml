@@ -167,18 +167,10 @@ stages:
                     post_deploy: ${{ parameters.post_deploy }}
                     ping: ${{ parameters.ping }}
                     enable_monitoring: ${{ parameters.enable_monitoring }}
-
-                - ${{ if ne(parameters.spec_file, '') }}:
-                  - template: '../templates/deploy-spec.yml'
-                    parameters:
-                      spec_file: ${{ parameters.spec_file }}
-                      service_name: ${{ parameters.service_name }}
-                      apigee_environment: ${{ parameters.environment }}
-                      apigee_organization: ${{ parameters.apigee_organization }}
-                      fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                      make_spec_visible: ${{ parameters.make_spec_visible }}
-                      friendly_api_name: ${{ parameters.friendly_api_name }}
+                    portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                    make_spec_visible: ${{ parameters.make_spec_visible }}
+                    friendly_api_name: ${{ parameters.friendly_api_name }}
+                    spec_file: ${{ parameters.spec_file }}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

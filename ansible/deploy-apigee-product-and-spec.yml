@@ -8,8 +8,10 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
-    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') }}"
+    SPEC_FILE: "{{ lookup('env', 'SPEC_FILE') | default('', True) }}"
     FRIENDLY_NAME: "{{ lookup('env', 'FRIENDLY_NAME') }}"
+    PRODUCT_DISPLAY_NAME: "{{ lookup('env', 'PRODUCT_DISPLAY_NAME') }}"
+    PRODUCT_DESCRIPTION: "{{ lookup('env', 'PRODUCT_DESCRIPTION') }}"
     VISIBLE: "{{ lookup('env', 'VISIBLE') }}"
     REQUIRE_CALLBACK_URL: "{{ lookup('env', 'REQUIRE_CALLBACK_URL') }}"
 
@@ -34,16 +36,21 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-    - name: check SPEC_FILE
+    - name: check PRODUCT_DISPLAY_NAME
       fail:
-        msg: "SPEC_FILE not set"
-      when: not SPEC_FILE
+        msg: "PRODUCT_DISPLAY_NAME not set"
+      when: not PRODUCT_DISPLAY_NAME
+
+    - name: check PRODUCT_DESCRIPTION
+      fail:
+        msg: "PRODUCT_DESCRIPTION not set"
+      when: not PRODUCT_DESCRIPTION
 
     - name: check FRIENDLY_NAME
       fail:
         msg: "FRIENDLY_NAME not set"
       when: not FRIENDLY_NAME
-    
+
     - name: check VISIBLE
       fail:
         msg: "VISIBLE not True or False"
@@ -54,4 +61,4 @@
         msg: "REQUIRE_CALLBACK_URL not True or False"
       when: (REQUIRE_CALLBACK_URL != False) and (REQUIRE_CALLBACK_URL != True)
   roles:
-    - deploy-apigee-spec
+    - deploy-apigee-product-and-spec
