@@ -23,7 +23,7 @@
 
 - name: check proxy upload success
   fail:
-    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with {{ proxy_upload_response.stderr_lines }}"
+    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with {{ proxy_upload_response.stderr_lines[-1] }}"
   when: proxy_upload_response.rc != 0
 
 - name: get revision number of upload
