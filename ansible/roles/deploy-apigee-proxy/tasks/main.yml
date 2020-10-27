@@ -22,8 +22,9 @@
   changed_when: yes
 
 - name: check proxy upload success
+  errormsg: proxy_upload_response.stderr_lines | select('match', 'The requested URL returned error:') | list
   fail:
-    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with {{ proxy_upload_response.stderr_lines[-1] }}"
+    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with: {{ errormsg }}"
   when: proxy_upload_response.rc != 0
 
 - name: get revision number of upload
