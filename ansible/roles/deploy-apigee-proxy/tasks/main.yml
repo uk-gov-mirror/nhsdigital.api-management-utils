@@ -18,7 +18,7 @@
     warn: false
   register: "proxy_upload_response"
   # failed_when: false
-  no_log: false
+  no_log: true
   changed_when: yes
 
 - name: extract error message
