@@ -34,6 +34,7 @@ steps:
 
   - template: ../components/get-aws-secrets-and-ssm-params.yml
     parameters:
+      service_name: ${{ parameters.service_name }}
       secret_ids: ${{ parameters.secret_ids }}
       config_ids: ${{ parameters.config_ids }}
 
