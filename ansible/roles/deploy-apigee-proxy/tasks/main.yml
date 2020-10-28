@@ -23,7 +23,7 @@
 
 - name: extract error message
   set_fact:
-    error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | string }}"
+    error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | list | join('') }}"
 
 - name: check proxy upload success
   fail:
