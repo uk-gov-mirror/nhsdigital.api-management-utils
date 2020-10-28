@@ -192,6 +192,13 @@ jobs:
         displayName: "Copy utils into artifact"
 
       - bash: |
+          if [ -d "products" ]; then
+             rsync -a products dist
+          fi
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Copy products into artifact"
+
+      - bash: |
           cd ${{ parameters.service_name }}/utils
           git rev-parse HEAD > ../dist/.utils-version
 
