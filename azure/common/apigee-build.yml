@@ -48,6 +48,8 @@ jobs:
               - /ptl/azure-devops/GITHUB_USER
 
         - bash: |
+            echo "Build.SourceVersion: $(Build.SourceVersion)"
+            echo "Build.SourceVersion: $(Build.SourceVersionMessage)"
             export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
             echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
           displayName: Set COMMIT_SHA
