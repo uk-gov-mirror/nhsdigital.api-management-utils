@@ -2,6 +2,8 @@ parameters:
   - name: service_name
     displayName: Canonical service name, e.g. identity-service
     type: string
+  - name: secret_file_ids
+    type: object
   - name: secret_ids
     displayName: AWS Secrets Manager Secret IDs
     type: object
@@ -34,6 +36,7 @@ steps:
 
   - template: ../components/get-aws-secrets-and-ssm-params.yml
     parameters:
+      secret_file_ids: ${{ parameters.secret_file_ids }}
       secret_ids: ${{ parameters.secret_ids }}
       config_ids: ${{ parameters.config_ids }}
 

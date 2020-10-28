@@ -20,6 +20,8 @@ parameters:
   - name: pr_label
   - name: enable_monitoring
     type: boolean
+  - name: secret_file_ids
+    type: object
   - name: secret_ids
     type: object
   - name: config_ids
