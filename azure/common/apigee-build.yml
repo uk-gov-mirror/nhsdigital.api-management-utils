@@ -73,6 +73,7 @@ jobs:
             export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
             echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
           displayName: Set COMMIT_SHA
+          condition: always()
 
         - template: '../components/update-github-status.yml'
           parameters:
