@@ -71,13 +71,13 @@ jobs:
 
             COMMIT_SHA=""
 
-            if [[ "$(Build.SourceVersion)" =~ ^refs/tags/.+$ ]]; then
+            if [[ "$(Build.SourceBranch)" =~ ^refs/tags/.+$ ]]; then
                 echo "##[debug]Build appears to be a tag build"
                 echo "##[debug]Using Build.SourceVersion as COMMIT_SHA"
                 COMMIT_SHA="$(Build.SourceVersion)"
             fi
 
-            if [[ "$(Build.SourceVersion)" =~ ^refs/pull/.+$ ]]; then
+            if [[ "$(Build.SourceBranch)" =~ ^refs/pull/.+$ ]]; then
                 echo "##[debug]Build appears to be a pull request build"
                 echo "##[debug]Extracting COMMIT_SHA from Build.SourceVersionMessage"
                 COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
