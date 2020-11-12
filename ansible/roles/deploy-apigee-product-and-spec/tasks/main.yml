@@ -135,16 +135,14 @@
     loop_control:
       loop_var: filename
 
-  - name: Assert that producer defined products define 'name' but not 'environment'
+  - name: Assert that producer defined products define 'name'
     assert:
       that:
-        - product.environment is not defined # set inside loop
         - product.name is defined # Each needs a unique name
                                   # (SERVICE_NAME appended inside
                                   # loop)
       fail_msg: >-
-        User defined API products must have a 'name' field and no
-        'environment' field
+        User defined API products must have a 'name' field
       success_msg: User defined products successfully validated.
     loop: "{{ api_products | default([]) }}"
     loop_control:
