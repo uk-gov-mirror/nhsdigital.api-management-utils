@@ -148,6 +148,10 @@
     loop_control:
       loop_var: product
 
+  - name: filter products not meant for this environment
+    set_fact:
+      api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT)  }}"
+
   - name: use default_product if api_products is empty
     set_fact:
       api_products: "{{ [default_product] }}"
