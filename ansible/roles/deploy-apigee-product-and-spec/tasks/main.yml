@@ -150,7 +150,7 @@
 
   - name: filter products not meant for this environment
     set_fact:
-      api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT)  }}"
+      api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT) | list }}"
 
   - name: use default_product if api_products is empty
     set_fact:
