@@ -20,7 +20,7 @@
 
 - name: set apigee response
   set_fact:
-    apigee_response: "{{ proxy_upload_response.stdout.split('|')[:-1] | join('|') }}"
+    apigee_response: "{{ proxy_upload_response.stdout.split('|')[:-1] | join('|') | from_json }}"
 
 - name: set apigee response code
   set_fact:
