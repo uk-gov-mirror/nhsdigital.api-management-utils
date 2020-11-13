@@ -33,7 +33,7 @@
 
 - name: get revision number of upload
   set_fact:
-    revision: "{{ (apigee_response | from_json).revision }}"
+    revision: "{{ (apigee_response).revision }}"
 
 - name: update proxy deployment
   uri:
