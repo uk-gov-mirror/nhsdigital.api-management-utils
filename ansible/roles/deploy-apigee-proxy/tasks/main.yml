@@ -12,27 +12,28 @@
 - name: upload proxy bundle
   shell:
     cmd: >
-      curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}'
-      -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data'
-      "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}"
+      curl -s -o - -w "|%{http_code}" -X POST -q -H "Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}" -F "file=@/{{ tempdir.path }}/proxy.zip" "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
     warn: false
   register: "proxy_upload_response"
-  failed_when: false
   no_log: true
   changed_when: yes
 
-- name: extract error message
+- name: set apigee response
   set_fact:
-    error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | list | join('') }}"
+    apigee_response: "{{ proxy_upload_response.stdout.split('|')[:-1] | join('|') | from_json }}"
+
+- name: set apigee response code
+  set_fact:
+    apigee_response_code: "{{ proxy_upload_response.stdout.split('|')[-1] }}"
 
 - name: check proxy upload success
   fail:
-    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with: '{{ error_message }}'"
-  when: proxy_upload_response.rc != 0
+    msg: "Proxy upload failed with a {{ apigee_response_code }} return code and responsed with: '{{ apigee_response.message }}'"
+  when: apigee_response_code[0] != "2"
 
 - name: get revision number of upload
   set_fact:
-    revision: "{{ (proxy_upload_response.stdout | from_json).revision }}"
+    revision: "{{ (apigee_response).revision }}"
 
 - name: update proxy deployment
   uri:
