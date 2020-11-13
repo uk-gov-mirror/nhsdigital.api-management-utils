@@ -12,7 +12,7 @@
 - name: upload proxy bundle
   shell:
     cmd: >
-      curl -s -o - -w "|\n%{http_code}" -X POST -q -H "Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}" -F "file=@/{{ tempdir.path }}/proxy.zip" "{{ apis_api_uri }}?action=validate&name={{ SERVICE_NAME }}&validate=true"
+      curl -s -o - -w "|%{http_code}" -X POST -q -H "Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}" -F "file=@/{{ tempdir.path }}/proxy.zip" "{{ apis_api_uri }}?action=validate&name={{ SERVICE_NAME }}&validate=true"
     warn: false
   register: "proxy_upload_response"
   no_log: true
@@ -20,11 +20,11 @@
 
 - name: set apigee response
   set_fact:
-    apigee_response: "{{ proxy_upload_response.stdout.split('|')[0] }}"
+    apigee_response: "{{ proxy_upload_response.stdout.split('|')[:-1] | join('|') }}"
 
 - name: set apigee response code
   set_fact:
-    apigee_response_code: "{{ proxy_upload_response.stdout.split('|')[1][-3:] }}"
+    apigee_response_code: "{{ proxy_upload_response.stdout.split('|')[-1] }}"
 
 - name: check proxy upload success
   fail:
