@@ -1,0 +1,20 @@
+name: Test deployments
+
+on: push
+
+jobs:
+  test_deployments:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Scripts
+      uses: actions/checkout@v2
+
+    - name: Run Scripts
+      env:
+        AZURE_TOKEN: "${{ secrets.AZURE_TOKEN }}"
+      run: |
+        export BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+        export NOTIFY_COMMIT_SHA=$(git rev-parse HEAD)
+        echo BRANCH_NAME=${BRANCH_NAME}
+        echo NOTIFY_COMMIT_SHA=${NOTIFY_COMMIT_SHA}
+        python3 scripts/test_deployments.py
