@@ -30,8 +30,8 @@ steps:
 
       export GITHUB_NOTIFY_PATH=''
 
-      if [[ ! -z '${{ variables['github_notify_path'] }}' ]]; then
-         export GITHUB_NOTIFY_PATH='${{ variables['github_notify_path'] }}'
+      if [[ ! -z $(GITHUB_NOTIFY_PATH) ]]; then
+         export GITHUB_NOTIFY_PATH=$(GITHUB_NOTIFY_PATH)
       elif [[ "$(COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
          export GITHUB_NOTIFY_PATH='$(Build.Repository.Name)/statuses/$(COMMIT_SHA)'
       fi
