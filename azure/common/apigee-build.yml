@@ -70,7 +70,7 @@ jobs:
             echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
 
             if [[ ! -z $(NOTIFY_COMMIT_SHA) ]]; then
-                echo "##[debug]Using already proveded NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
+                echo "##[debug]Using already provided NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
             else
                 NOTIFY_COMMIT_SHA=""
 
