@@ -65,6 +65,8 @@ steps:
   - ${{ each pre_template_step in parameters.pre_template }}:
     - ${{ pre_template_step }}
 
+  - bash: echo "${{ parameters.jinja_templates }}""
+
   - ${{ each jinja_template in parameters.jinja_templates }}:
     - bash: |
           set -euo pipefail
