@@ -135,20 +135,33 @@
     loop_control:
       loop_var: filename
 
-  - name: Assert that producer defined products define 'name' but not 'environment'
+  - name: Assert that producer defined products define 'name'
     assert:
       that:
-        - product.environment is not defined # set inside loop
         - product.name is defined # Each needs a unique name
                                   # (SERVICE_NAME appended inside
                                   # loop)
       fail_msg: >-
-        User defined API products must have a 'name' field and no
-        'environment' field
+        User defined API products must have a 'name' field
       success_msg: User defined products successfully validated.
     loop: "{{ api_products | default([]) }}"
     loop_control:
       loop_var: product
+
+  - name: filter products not meant for this environment
+    set_fact:
+      api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT) | list }}"
+
+  # Uses python to filter nested environments
+  - name: filter environments to only include current environment
+    filter_api_products:
+      products: "{{ api_products }}"
+      environment: "{{ APIGEE_ENVIRONMENT }}"
+    register: filter_products_result
+
+  - name: set api_products as filtered products
+    set_fact:
+      api_products: "{{ filter_products_result.meta.products }}"
 
   - name: use default_product if api_products is empty
     set_fact:
