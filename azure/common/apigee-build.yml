@@ -34,7 +34,8 @@ jobs:
     container: 'laurenceisnotawizard/api-test:latest'
     variables:
       YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
-      PIP_CACHE_DIR: $(Pipeline.Workspace)/.pip
+      # Already in the image
+      # PIP_CACHE_DIR: $(Pipeline.Workspace)/.pip
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
     steps:
