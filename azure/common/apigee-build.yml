@@ -102,6 +102,7 @@ jobs:
       - checkout: self
         path: "s/${{ parameters.service_name }}"
         submodules: true
+        target: host
 
       - template: ../templates/setup-build-name.yml
         parameters:
