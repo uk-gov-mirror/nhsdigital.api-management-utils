@@ -33,6 +33,8 @@ jobs:
       vmImage: 'ubuntu-18.04'
     container: 'laurenceisnotawizard/api-test:latest'
     variables:
+      YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
+      PIP_CACHE_DIR: $(Pipeline.Workspace)/.pip
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
     steps:
@@ -110,22 +112,22 @@ jobs:
 
       - task: Cache@2
         inputs:
-          key: 'yarn-main | "$(Agent.OS)" | ${{ parameters.service_name }}/yarn.lock'
+          key: 'yarn | "$(Agent.OS)" | ${{ parameters.service_name }}/yarn.lock'
           restoreKeys: |
-            yarn-main | "$(Agent.OS)"
-            yarn-main
-          path: s/${{ parameters.service_name }}/node_modules
-        displayName: Cache top level node packages
+            yarn | "$(Agent.OS)"
+            yarn
+          path: $(YARN_CACHE_FOLDER)
+        displayName: Cache node packages
         continueOnError: true
 
       - task: Cache@2
         inputs:
-          key: 'yarn-sandbox | "$(Agent.OS)" | ${{ parameters.service_name }}/sandbox/yarn.lock'
+          key: 'poetry | "$(Agent.OS)" | ${{ parameters.service_name }}/poetry.lock'
           restoreKeys: |
-            yarn-sandbox | "$(Agent.OS)"
-            yarn-sandbox
-          path: s/${{ parameters.service_name }}/sandbox/node_modules
-        displayName: Cache top level node packages
+            poetry | "$(Agent.OS)"
+            poetry
+          path: $(PIP_CACHE_DIR)
+        displayName: Cache python packages
         continueOnError: true
 
       - bash: |
