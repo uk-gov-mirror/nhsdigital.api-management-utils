@@ -108,6 +108,24 @@ jobs:
         parameters:
           service_name: "${{ parameters.service_name }}"
 
+      - task: Cache@2
+        inputs:
+          key: 'yarn-main | "$(Agent.OS)" | yarn.lock'
+          restoreKeys: |
+            yarn-main | "$(Agent.OS)"
+            yarn-main
+          path: s/${{ parameters.service_name }}/node_modules
+        displayName: Cache top level node packages
+
+      - task: Cache@2
+        inputs:
+          key: 'yarn-sandbox | "$(Agent.OS)" | yarn.lock'
+          restoreKeys: |
+            yarn-sandbox | "$(Agent.OS)"
+            yarn-sandbox
+          path: s/${{ parameters.service_name }}/sandbox/node_modules
+        displayName: Cache top level node packages
+
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
