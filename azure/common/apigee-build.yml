@@ -31,6 +31,7 @@ jobs:
     timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-18.04'
+    container: 'ubuntu:18.04'
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
