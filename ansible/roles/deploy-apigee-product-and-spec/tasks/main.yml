@@ -124,7 +124,7 @@
     set_fact:
       # we are in dist/utils/ansible
       # want to look in dist/products
-      api_product_files: "{{ lookup('fileglob', '../../personal-demographics-service-api/products/*.yml').split(',') }}"
+      api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
     ignore_errors: yes # folder may not exist in older APIs
 
   - name: Read product files
