@@ -31,7 +31,7 @@ jobs:
     timeoutInMinutes: 30
     pool:
       vmImage: 'ubuntu-18.04'
-    container: 'laurenceisnotawizard/api-test:lates'
+    container: 'laurenceisnotawizard/api-test:latest'
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
