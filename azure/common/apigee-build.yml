@@ -110,7 +110,7 @@ jobs:
 
       - task: Cache@2
         inputs:
-          key: 'yarn-main | "$(Agent.OS)" | s/${{ parameters.service_name }}/yarn.lock'
+          key: 'yarn-main | "$(Agent.OS)" | ${{ parameters.service_name }}/yarn.lock'
           restoreKeys: |
             yarn-main | "$(Agent.OS)"
             yarn-main
@@ -119,7 +119,7 @@ jobs:
 
       - task: Cache@2
         inputs:
-          key: 'yarn-sandbox | "$(Agent.OS)" | s/${{ parameters.service_name }}/sandbox/yarn.lock'
+          key: 'yarn-sandbox | "$(Agent.OS)" | ${{ parameters.service_name }}/sandbox/yarn.lock'
           restoreKeys: |
             yarn-sandbox | "$(Agent.OS)"
             yarn-sandbox
