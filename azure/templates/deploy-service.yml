@@ -65,8 +65,17 @@ steps:
   - ${{ each pre_template_step in parameters.pre_template }}:
     - ${{ pre_template_step }}
 
-  - bash: echo "${{ parameters.jinja_templates }}""
+  - ${{ if parameters.jinja_templates }}:
+    - bash: echo "##vso[task.setvariable variable=TEMPLATE_DICT]''"
+      displayName: Initialise Template Dictionary
 
+  - ${{ each jinja_template in parameters.jinja_templates }}:
+    - bash: echo "##vso[task.setvariable variable=TEMPLATE_DICT]`poetry run script/template_dict.py $(TEMPLATE_DICT) --key='${{ jinja_template.key }}' --value='${{ jinja_template.value }}'`"
+      display: Add ${{ jinja_template.key }} to ${{ jinja_template.value }} within the template dictionary
+
+  - ${{ if parameters.jinja_templates }}:
+    - bash: echo "$(TEMPLATE_DICT)"
+    
   - ${{ each jinja_template in parameters.jinja_templates }}:
     - bash: |
           set -euo pipefail
