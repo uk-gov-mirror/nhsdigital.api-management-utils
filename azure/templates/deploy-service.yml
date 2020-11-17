@@ -74,6 +74,8 @@ steps:
             echo Matched ${{ jinja_template.key }} in $template_file
             poetry run python scripts/template.py '{ "${{ jinja_template.key }}": "${{ jinja_template.value }}"}' --file=$template_file > /tmp/live.xml
             mv /tmp/live.xml $template_file
+            echo "================ $template_file =================="
+            cat $template_file
           done
       displayName: Templating ${{ jinja_template.key }} to ${{ jinja_template.value }}
 
