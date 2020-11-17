@@ -116,6 +116,7 @@ jobs:
             yarn-main
           path: s/${{ parameters.service_name }}/node_modules
         displayName: Cache top level node packages
+        continueOnError: true
 
       - task: Cache@2
         inputs:
@@ -125,6 +126,7 @@ jobs:
             yarn-sandbox
           path: s/${{ parameters.service_name }}/sandbox/node_modules
         displayName: Cache top level node packages
+        continueOnError: true
 
       - bash: |
           n=0
