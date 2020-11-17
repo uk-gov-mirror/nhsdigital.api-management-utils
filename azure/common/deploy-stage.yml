@@ -72,6 +72,8 @@ stages:
     jobs:
       - deployment: deploy
         environment: ${{ parameters.environment }}
+        pool:
+          vmImage: 'ubuntu-18.04'
         strategy:
           runOnce:
             deploy:
