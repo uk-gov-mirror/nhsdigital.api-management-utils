@@ -108,26 +108,6 @@ jobs:
         parameters:
           service_name: "${{ parameters.service_name }}"
 
-      - task: UsePythonVersion@0
-        displayName: "Use Python 3.8"
-        inputs:
-          versionSpec: "3.8"
-
-      - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
-        displayName: Install apt dependencies
-
-      - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
-        displayName: Add apt-key
-
-      - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
-        displayName: Setup node deb sources
-
-      - bash: "sudo apt-get install -y nodejs"
-        displayName: Install node
-
-      - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-        displayName: Install python dependencies
-
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -168,6 +148,7 @@ jobs:
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
+        target: host
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
