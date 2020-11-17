@@ -124,7 +124,7 @@
     set_fact:
       # we are in dist/utils/ansible
       # want to look in dist/products
-      api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
+      api_product_files: "{{ lookup('fileglob', '../../personal-demographics-service-api/products/*.yml').split(',') }}"
     ignore_errors: yes # folder may not exist in older APIs
 
   - name: Read product files
@@ -151,6 +151,17 @@
   - name: filter products not meant for this environment
     set_fact:
       api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT) | list }}"
+
+  # Uses python to filter nested environments
+  - name: filter environments to only include current environment
+    filter_api_products:
+      products: "{{ api_products }}"
+      environment: "{{ APIGEE_ENVIRONMENT }}"
+    register: filter_products_result
+
+  - name: set api_products as filtered products
+    set_fact:
+      api_products: "{{ filter_products_result.meta.products }}"
 
   - name: use default_product if api_products is empty
     set_fact:
