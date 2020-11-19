@@ -117,7 +117,7 @@ jobs:
           restoreKeys: |
             poetry | "$(Agent.OS)"
             poetry
-          path: "~/.cache/pip"
+          path: "/~/.cache/pip"
         displayName: Cache python packages
         continueOnError: true
 
