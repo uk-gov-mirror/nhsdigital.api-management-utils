@@ -74,6 +74,7 @@ steps:
         set -euo pipefail
         cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
         template_dict=`poetry run python scripts/template_dict.py "$(TEMPLATE_DICT)" --key="${{ jinja_template.key }}" --value="${{ jinja_template.value }}"`
+        echo $template_dict
         echo "##vso[task.setvariable variable=TEMPLATE_DICT]$template_dict"
       displayName: "Add ${{ jinja_template.key }}: ${{ jinja_template.value }} within the template dictionary"
 
