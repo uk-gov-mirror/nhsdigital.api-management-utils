@@ -19,9 +19,7 @@ from docopt import docopt
 
 def main(args):
     dictionary = {}
-    if args["<dictionary>"]:
-        current_dict = args["<dictionary>"]
-        print(f"template_dict: {current_dict}")
+    if args["<dictionary>"] != "":
         dictionary = json.loads(args["<dictionary>"])
     dictionary[args["--key"]] = args["--value"]
     sys.stdout.write(str(dictionary))
