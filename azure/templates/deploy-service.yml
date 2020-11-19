@@ -91,10 +91,12 @@ steps:
               echo Matched ${{ jinja_template.key }} in $template_file adding to template files.
               template_files="${template_files},${template_file}"
             done
-            echo "Files: $template_files"
             files_to_template=`poetry run python scripts/template_set.py "$(TEMPLATE_FILES)" --value="$template_files"`
             echo "##vso[task.setvariable variable=TEMPLATE_FILES]$files_to_template"
         displayName: "Gather ${{ jinja_template.key }} files"
+
+    - bash: echo "$(TEMPLATE_FILES)"
+      displayName: Files to template
 
     # - ${{ each jinja_template in parameters.jinja_templates }}:
     #   - bash: |
