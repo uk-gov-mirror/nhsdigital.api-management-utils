@@ -102,6 +102,7 @@ steps:
       displayName: Files to template
 
     - bash: |
+        cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
         template_files=($(echo $(TEMPLATE_FILES) | tr ',' "\n"))
         for template_file in "${template_files[@]}"; do
           if [ "$template_file" != "''" ]; then
