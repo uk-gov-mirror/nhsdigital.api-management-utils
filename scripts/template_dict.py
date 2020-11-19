@@ -18,11 +18,11 @@ from docopt import docopt
 
 
 def main(args):
-    dictionary = {}
     try:
         dictionary = json.loads(args["<dictionary>"])
     except json.JSONDecodeError:
-        dictionary[args["--key"]] = args["--value"]
+        dictionary = {}
+    dictionary[args["--key"]] = args["--value"]
     sys.stdout.write(str(dictionary))
     sys.stdout.close()
 
