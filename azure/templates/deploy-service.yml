@@ -104,7 +104,7 @@ steps:
     - bash: |
         template_files=($(echo $(TEMPLATE_FILES) | tr ',' "\n"))
         for template_file in "${template_files[@]}"; do
-          if [ -z "$template_file" ]; then
+          if [ "$template_file" != "''" ]; then
             echo Templating file: $template_file
             poetry run python scripts/template.py '$(TEMPLATE_DICT)' --file="$template_file" > /tmp/live.xml
             mv /tmp/live.xml $template_file
