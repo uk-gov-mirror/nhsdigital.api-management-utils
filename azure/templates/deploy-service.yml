@@ -95,6 +95,7 @@ steps:
             template_files="${joined%,}"
             # convert to list to set
             files_to_template=`poetry run python scripts/template_set.py "$(TEMPLATE_FILES)" --value="$template_files"`
+            echo Files to template: $files_to_template
             echo "##vso[task.setvariable variable=TEMPLATE_FILES]$files_to_template"
         displayName: "Gather ${{ jinja_template.key }} files"
 
@@ -106,6 +107,7 @@ steps:
 
         template_files=($(echo $(TEMPLATE_FILES) | tr ',' "\n"))
         for template_file in "${template_files[@]}"; do
+          echo Templating file: $template_file
           poetry run python scripts/template.py '$(TEMPLATE_DICT)' --file=$template_file > /tmp/live.xml
           mv /tmp/live.xml $template_file
           echo "================ $template_file =================="
