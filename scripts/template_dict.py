@@ -20,6 +20,8 @@ from docopt import docopt
 def main(args):
     dictionary = {}
     if args["<dictionary>"] != "":
+        current_dict = args["<dictionary>"]
+        sys.stdout.write(f"dict: {current_dict}")
         dictionary = json.loads(args["<dictionary>"])
     dictionary[args["--key"]] = args["--value"]
     sys.stdout.write(str(dictionary))
