@@ -84,12 +84,16 @@ steps:
     - ${{ each jinja_template in parameters.jinja_templates }}:
       - bash: |
             set -euo pipefail
-
+            template_files=()
             cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
             for template_file in $(egrep -lir --include=*.{xml,js,py} '\W${{ jinja_template.key }}\W' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
               echo Matched ${{ jinja_template.key }} in $template_file adding to template files.
-              template_files="${template_files},${template_file}"
+              template_files+=("$template_file")
             done
+            # convert array to comma delimted string
+            printf -v joined '%s,' "${template_files[@]}"
+            template_files="${joined%,}"
+            # convert to list to set
             files_to_template=`poetry run python scripts/template_set.py "$(TEMPLATE_FILES)" --value="$template_files"`
             echo "##vso[task.setvariable variable=TEMPLATE_FILES]$files_to_template"
         displayName: "Gather ${{ jinja_template.key }} files"
@@ -108,20 +112,6 @@ steps:
           cat $template_file
         done
       displayName: Template files
-
-    # - ${{ each jinja_template in parameters.jinja_templates }}:
-    #   - bash: |
-    #         set -euo pipefail
-
-    #         cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-    #         for template_file in $(egrep -lir --include=*.{xml,js,py} '\W${{ jinja_template.key }}\W' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
-    #           echo Matched ${{ jinja_template.key }} in $template_file
-    #           poetry run python scripts/template.py '{ "${{ jinja_template.key }}": "${{ jinja_template.value }}"}' --file=$template_file > /tmp/live.xml
-    #           mv /tmp/live.xml $template_file
-    #           echo "================ $template_file =================="
-    #           cat $template_file
-    #         done
-    #     displayName: Templating ${{ jinja_template.key }} to ${{ jinja_template.value }}
 
   - bash: |
       set -euo pipefail
