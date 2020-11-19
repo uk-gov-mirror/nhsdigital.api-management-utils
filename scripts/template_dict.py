@@ -21,11 +21,8 @@ def main(args):
     try:
         dictionary = json.loads(args["<dictionary>"])
     except json.JSONDecodeError:
-        print("Error decoding")
-        print(args["<dictionary>"])
         dictionary = {}
     dictionary[args["--key"]] = args["--value"]
-    print(args["<dictionary>"])
     sys.stdout.write(json.dumps(dictionary))
     sys.stdout.close()
 
