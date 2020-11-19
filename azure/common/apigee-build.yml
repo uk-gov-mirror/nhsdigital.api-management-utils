@@ -30,7 +30,7 @@ jobs:
     displayName: Build & Test
     timeoutInMinutes: 30
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-18.04'
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
