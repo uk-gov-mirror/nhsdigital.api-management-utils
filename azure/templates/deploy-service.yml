@@ -86,7 +86,6 @@ steps:
             set -euo pipefail
 
             cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-            template_files=""
             for template_file in $(egrep -lir --include=*.{xml,js,py} '\W${{ jinja_template.key }}\W' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
               echo Matched ${{ jinja_template.key }} in $template_file adding to template files.
               template_files="${template_files},${template_file}"
@@ -97,6 +96,18 @@ steps:
 
     - bash: echo "$(TEMPLATE_FILES)"
       displayName: Files to template
+
+    - bash: |
+        set -euo pipefail
+
+        template_files=($(echo $(TEMPLATE_FILES) | tr ',' "\n"))
+        for template_file in "${template_files[@]}"; do
+          poetry run python scripts/template.py '$(TEMPLATE_DICT)' --file=$template_file > /tmp/live.xml
+          mv /tmp/live.xml $template_file
+          echo "================ $template_file =================="
+          cat $template_file
+        done
+      displayName: Template files
 
     # - ${{ each jinja_template in parameters.jinja_templates }}:
     #   - bash: |
