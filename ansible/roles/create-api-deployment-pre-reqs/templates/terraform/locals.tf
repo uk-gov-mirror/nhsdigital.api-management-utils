@@ -13,8 +13,8 @@ locals {
   workspaces             = contains(["internal-dev", "internal-dev-sandbox"], var.apigee_environment) ? [var.workspace, "${var.workspace}:*"] : [var.workspace]
 
 
-  public_alb_listener = data.terraform_remote_state.account.outputs.apis.alb-listener.public[var.apigee_environment]
-  public_alb          = data.terraform_remote_state.account.outputs.apis.alb.public[var.apigee_environment]
+  private_alb_listener = data.terraform_remote_state.account.outputs.apis.alb-listener.private[var.apigee_environment]
+  private_alb          = data.terraform_remote_state.account.outputs.apis.alb.private[var.apigee_environment]
   ecs_cluster         = data.terraform_remote_state.account.outputs.apis.ecs_clusters[var.apigee_environment]
   apis_subdomain      = data.terraform_remote_state.account.outputs.apis.apis_subdomain
 

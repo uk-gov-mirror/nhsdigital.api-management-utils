@@ -205,6 +205,8 @@ data "aws_iam_policy_document" "deploy-user" {
     ]
     resources = concat(
       [
+        "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener/app/apis-${var.apigee_environment}/*",
+        "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener-rule/app/apis-${var.apigee_environment}/*",
         "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener/app/apis-public-${var.apigee_environment}/*",
         "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:listener-rule/app/apis-public-${var.apigee_environment}/*",
       ],
