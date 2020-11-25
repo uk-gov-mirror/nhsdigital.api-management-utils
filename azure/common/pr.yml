@@ -52,9 +52,9 @@ parameters:
 
 
 stages:
-  - ${{ if eq(environment, 'manual-intervention') }}:
+  - ${{ if eq(parameters.environment, 'manual-intervention') }}:
     - template: ./deploy-manual-intervention.yml
-  - ${{ if not(eq(environment, 'manual-intervention')) }}:
+  - ${{ if not(eq(parameters.environment, 'manual-intervention')) }}:
     - template: ./deploy-stage.yml
       parameters:
         ${{ if eq(parameters.proxy_path, 'live')}}:
