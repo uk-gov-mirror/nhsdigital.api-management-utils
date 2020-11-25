@@ -17,7 +17,7 @@ guard-%:
 
 
 template-proxies: guard-PROXIES_DIR guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT
-	@PROXIES_DIR=$(PROXIES_DIR) SERVICE_BASE_PATH=$(SERVICE_BASE_PATH) APIGEE_ENVIRONMENT=$(APIGEE_ENVIRONMENT) ansible-playbook -i local template-proxies.yml
+	@poetry run ansible-playbook -i local template-proxies.yml
 
 build-ecs-proxies: guard-build_label guard-service_id guard-CONTAINER_VARS_FILE
 	@poetry run ansible-playbook -i local build-ecs-proxies.yml
