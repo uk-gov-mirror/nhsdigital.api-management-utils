@@ -1,5 +1,5 @@
 stages:
-  - stage: deploy
+  - stage: manual-intervention
     jobs:
       - deployment: deploy
         displayName: Runs in Hosted Pool
