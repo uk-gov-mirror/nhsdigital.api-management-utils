@@ -52,9 +52,9 @@ parameters:
 
 
 stages:
-  - ${{ if eq(apigee_deployment.environment, 'manual-intervention')) }}:
+  - ${{ if eq(apigee_deployment.environment, 'manual-intervention') }}:
     - template: ./deploy-manual-intervention.yml
-  - ${{ if not(eq(apigee_deployment.environment, 'manual-intervention'))) }}:
+  - ${{ if not(eq(apigee_deployment.environment, 'manual-intervention')) }}:
     - template: ./deploy-stage.yml
       parameters:
         ${{ if eq(parameters.proxy_path, 'live')}}:
