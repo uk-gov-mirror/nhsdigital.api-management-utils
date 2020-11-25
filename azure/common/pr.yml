@@ -4,6 +4,7 @@ parameters:
     values:
       - internal-dev
       - internal-dev-sandbox
+      - manual-intervention
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
@@ -48,15 +49,20 @@ parameters:
   - name: ping
     type: boolean
 
+
+
 stages:
-  - template: ./deploy-stage.yml
-    parameters:
-      ${{ if eq(parameters.proxy_path, 'live')}}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}
-      ${{ if ne(parameters.proxy_path, 'live')}}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}-${{ parameters.proxy_path }}
-      service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
-      notify: true
-      ${{ each param in parameters }}:
-        ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_label') }}:
-          ${{ param.key }}: ${{ param.value }}
+  - ${{ if eq(apigee_deployment.environment, 'manual-intervention')) }}:
+    - template: ./deploy-manual-intervention.yml
+  - ${{ if not(eq(apigee_deployment.environment, 'manual-intervention'))) }}:
+    - template: ./deploy-stage.yml
+      parameters:
+        ${{ if eq(parameters.proxy_path, 'live')}}:
+          fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}
+        ${{ if ne(parameters.proxy_path, 'live')}}:
+          fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}-${{ parameters.proxy_path }}
+        service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
+        notify: true
+        ${{ each param in parameters }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_label') }}:
+            ${{ param.key }}: ${{ param.value }}

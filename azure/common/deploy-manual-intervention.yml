@@ -1,0 +1,14 @@
+stages:
+  - stage: deploy
+    jobs:
+      - deployment: deploy
+        displayName: Runs in Hosted Pool
+        pool:
+          vmImage: "Ubuntu-16.04"
+        environment: "manual-intervention"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - bash: |
+                    echo Manual Intervention Stage
