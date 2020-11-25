@@ -28,7 +28,7 @@ stages:
             ${{ param.key }}: ${{ param.value }}
 
         # Compute the apigee organization & org level part of the AWS secret/config path
-        ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-dev-sandbox', 'internal-qa', 'internal-qa-sandbox', 'ref') }}:
+        ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-dev-sandbox', 'internal-qa', 'internal-qa-sandbox', 'ref', 'manual-intervention') }}:
           apigee_organization: nonprod
           aws_org_account: ptl
         ${{ if in(apigee_deployment.environment, 'dev', 'int', 'sandbox', 'prod') }}:

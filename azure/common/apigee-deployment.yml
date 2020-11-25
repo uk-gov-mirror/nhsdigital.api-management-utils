@@ -114,13 +114,11 @@ parameters:
         environments:
         - internal-dev
         - internal-dev-sandbox
-        - manual-intervention
       - name_suffix: '-Release'
         deploy_template: release.yml
         environments:
           - internal-dev
           - internal-dev-sandbox
-          - manual-intervention
           - internal-qa
           - internal-qa-sandbox
           - dev
