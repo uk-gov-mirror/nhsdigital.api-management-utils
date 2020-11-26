@@ -5,13 +5,13 @@ stages:
   - stage: ${{ parameters.stage_name }}
     jobs:
       - deployment: deploy
-        displayName: Runs in Hosted Pool
+        displayName: Manual Approval Required
         pool:
           vmImage: "Ubuntu-16.04"
-        environment: "manual-intervention"
+        environment: "manual-approval"
         strategy:
           runOnce:
             deploy:
               steps:
                 - bash: |
-                    echo Manual Intervention Stage
+                    echo Approved
