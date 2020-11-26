@@ -193,7 +193,7 @@ extends:
                     depends_on:
                       - internal_qa
                       - internal_qa_sandbox
-                  ${{ if not(startsWith(environment, 'internal-')) }}:
+                  ${{ if and(not(startsWith(environment, 'internal-')), ne(environment, 'prod')) }}:
                     depends_on:
                       - internal_qa
                       - internal_qa_sandbox
