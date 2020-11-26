@@ -126,11 +126,11 @@ parameters:
           - internal-dev-sandbox
           - internal-qa
           - internal-qa-sandbox
+          - manual-approval
           - dev
           - ref
           - int
           - sandbox
-          - manual-approval
           - prod
 
 extends:
@@ -188,8 +188,8 @@ extends:
                     depends_on: []
                   ${{ if not(startsWith(environment, 'internal-')) }}:
                     depends_on:
-                        - internal_qa
-                        - internal_qa_sandbox
+                      - internal_qa
+                      - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
             - ${{ if parameters.deploy_review_sandbox }}:
