@@ -186,18 +186,19 @@ extends:
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
                     depends_on: []
-                  ${{ if and(not(startsWith(environment, 'internal-')), ne(environment, 'prod')) }}:
-                    depends_on:
-                      - internal_qa
-                      - internal_qa_sandbox
-                  ${{ if eq(environment, 'prod') }}:
-                    ${{ if parameters.requires_approval }}:
+                  ${{ if not(startsWith(environment, 'internal-')) }}:
+                    ${{ if eq(environment, 'prod') }}:
+                      ${{ if parameters.requires_approval }}:
+                        depends_on:
+                          - manual_approval
+                      ${{ if not(parameters.requires_approval) }}:
+                        depends_on:
+                          - internal_qa
+                          - internal_qa_sandbox
+                    ${{ if ne(environment, 'prod') }}:
                       depends_on:
-                        - manual_approval
-                    ${{ if not(parameters.requires_approval) }}:
-                      depends_on:
-                        - internal_qa
-                        - internal_qa_sandbox
+                          - internal_qa
+                          - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
             - ${{ if parameters.deploy_review_sandbox }}:
