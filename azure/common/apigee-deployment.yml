@@ -181,18 +181,16 @@ extends:
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
-              - ${{ if eq(environment, 'manual-approval') }}:
-                - environment: ${{ environment }}
-                  stage_name: ${{ replace(environment, '-', '_') }}
-                  depends_on:
-                    - internal_qa
-                    - internal_qa_sandbox
               - ${{ if ne(environment, 'internal-dev-sandbox') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
                     depends_on: []
-                  ${{ if not(startsWith(environment, 'internal-')) }}:
+                  ${{ if and(not(startsWith(environment, 'internal-')), ne(environment, 'prod')) }}:
+                    depends_on:
+                      - internal_qa
+                      - internal_qa_sandbox
+                  ${{ if eq(environment, 'prod') }}:
                     ${{ if parameters.requires_approval }}:
                       depends_on:
                         - manual_approval
