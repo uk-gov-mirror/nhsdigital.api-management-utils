@@ -8,7 +8,7 @@ stages:
         displayName: Manual Approval Required
         pool:
           vmImage: "Ubuntu-16.04"
-        environment: "manual-intervention"
+        environment: "manual-approval"
         strategy:
           runOnce:
             deploy:
