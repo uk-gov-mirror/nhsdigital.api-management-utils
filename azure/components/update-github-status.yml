@@ -10,8 +10,8 @@ parameters:
   - name: description
     displayName: Description
     type: string
-  - name: environment
-    displayName: Apigee environment deploying against
+  - name: stage_name
+    displayName: Apigee stage deploying against
     type: string
     default: ""
   # Been through a lot of pain to try to get these next two to work. Unfortunately due to how templates
@@ -30,7 +30,7 @@ steps:
       echo "Reporting status for commit $(COMMIT_SHA)"
 
       if [[ "$(COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
-        curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName) ${{ parameters.environment }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
+        curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName): ${{ parameters.stage_name }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
       else
         echo "##[warning]$(COMMIT_SHA) doesn't look like a commit hash"
         echo "##[task.logissue type=warning]Task wasn't able to find the right commit sha value to notify github."
