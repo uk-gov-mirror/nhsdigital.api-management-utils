@@ -10,6 +10,7 @@ parameters:
       - int
       - sandbox
       - prod
+      - manual-approval
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
