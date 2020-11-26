@@ -1,5 +1,8 @@
+parameters:
+  - name: stage_name
+
 stages:
-  - stage: manual_intervention
+  - stage: ${{ parameters.stage_name }}
     jobs:
       - deployment: deploy
         displayName: Runs in Hosted Pool

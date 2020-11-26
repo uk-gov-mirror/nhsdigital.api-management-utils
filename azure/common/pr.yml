@@ -54,6 +54,8 @@ parameters:
 stages:
   - ${{ if eq(parameters.environment, 'manual-intervention') }}:
     - template: ./deploy-manual-intervention.yml
+      parameters:
+        stage_name: ${{ parameters.stage_name }}
   - ${{ if not(eq(parameters.environment, 'manual-intervention')) }}:
     - template: ./deploy-stage.yml
       parameters:
