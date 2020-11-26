@@ -4,7 +4,7 @@ parameters:
     values:
       - internal-dev
       - internal-dev-sandbox
-      - manual-approval
+      - manual-intervention
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
@@ -52,11 +52,11 @@ parameters:
 
 
 stages:
-  - ${{ if eq(parameters.environment, 'manual-approval') }}:
+  - ${{ if eq(parameters.environment, 'manual-intervention') }}:
     - template: ./deploy-manual-approval.yml
       parameters:
         stage_name: ${{ parameters.stage_name }}
-  - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
+  - ${{ if not(eq(parameters.environment, 'manual-intervention')) }}:
     - template: ./deploy-stage.yml
       parameters:
         ${{ if eq(parameters.proxy_path, 'live')}}:

@@ -118,7 +118,7 @@ parameters:
         environments:
         - internal-dev
         - internal-dev-sandbox
-        - manual-approval
+        - manual-intervention
       - name_suffix: '-Release'
         deploy_template: release.yml
         environments:
@@ -126,7 +126,7 @@ parameters:
           - internal-dev-sandbox
           - internal-qa
           - internal-qa-sandbox
-          - manual-approval
+          - manual-intervention
           - dev
           - ref
           - int
@@ -181,7 +181,7 @@ extends:
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
-              - ${{ if notIn(environment, 'internal-dev-sandbox', 'manual-approval', 'prod') }}:
+              - ${{ if notIn(environment, 'internal-dev-sandbox', 'manual-intervention', 'prod') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
@@ -199,7 +199,7 @@ extends:
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
             - ${{ if parameters.requires_approval }}:
-              - environment: manual-approval
+              - environment: manual-intervention
                 stage_name: manual_approval
                 depends_on:
                   - internal_qa
