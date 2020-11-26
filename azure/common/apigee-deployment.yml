@@ -202,9 +202,6 @@ extends:
                         - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-              # - ${{ if eq(environment, 'manual-approval') }}:
-              #   - ${{ if parameters.requires_approval }}:
-              #     - environment: 
             - ${{ if parameters.deploy_review_sandbox }}:
               - environment: internal-dev-sandbox
                 stage_name: internal_dev_sandbox
