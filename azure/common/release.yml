@@ -10,7 +10,7 @@ parameters:
       - int
       - sandbox
       - prod
-      - manual-approval
+      - manual-intervention
   - name: apigee_organization
   - name: aws_org_account
   - name: aws_env_account
@@ -53,11 +53,11 @@ parameters:
     type: boolean
 
 stages:
-  - ${{ if eq(parameters.environment, 'manual-approval') }}:
+  - ${{ if eq(parameters.environment, 'manual-intervention') }}:
     - template: ./deploy-manual-approval.yml
       parameters:
         stage_name: ${{ parameters.stage_name }}
-  - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
+  - ${{ if not(eq(parameters.environment, 'manual-intervention')) }}:
     - template: ./deploy-stage.yml
       parameters:
         ${{ if eq('', parameters.fully_qualified_service_name) }}:
