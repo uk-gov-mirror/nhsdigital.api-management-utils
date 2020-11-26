@@ -130,8 +130,8 @@ parameters:
           - ref
           - int
           - sandbox
-          - prod
           - manual-approval
+          - prod
 
 extends:
   template: ./deploy-stages.yml
@@ -181,7 +181,7 @@ extends:
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
-              - ${{ if ne(environment, 'internal-dev-sandbox') }}:
+              - ${{ if notIn(environment, 'internal-dev-sandbox', 'manual-approval') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
@@ -205,5 +205,13 @@ extends:
               - environment: internal-dev-sandbox
                 stage_name: internal_dev_sandbox
                 depends_on: []
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                    ${{ var }}: ${{ parameters[var] }}
+            - ${{ if parameters.requires_approval }}:
+              - environment: manual-approval
+                stage_name: manual_approval
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
