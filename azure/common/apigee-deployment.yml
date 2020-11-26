@@ -80,6 +80,10 @@ parameters:
     displayName: Steps to run after templating
     type: stepList
     default: []
+  - name: requires_approval
+    displayName: Requires manual approval
+    type: boolean
+    default: true
   - name: _scoped_pipeline_vars
     type: object
     displayName: All the pipeline parameters which support per-environment scoping.
@@ -114,6 +118,7 @@ parameters:
         environments:
         - internal-dev
         - internal-dev-sandbox
+        - manual-approval
       - name_suffix: '-Release'
         deploy_template: release.yml
         environments:
@@ -126,6 +131,7 @@ parameters:
           - int
           - sandbox
           - prod
+          - manual-approval
 
 extends:
   template: ./deploy-stages.yml
@@ -175,17 +181,30 @@ extends:
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
+              - ${{ if eq(environment, 'manual-approval') }}:
+                - environment: ${{ environment }}
+                  stage_name: ${{ replace(environment, '-', '_') }}
+                  depends_on:
+                    - internal_qa
+                    - internal_qa_sandbox
               - ${{ if ne(environment, 'internal-dev-sandbox') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
                     depends_on: []
                   ${{ if not(startsWith(environment, 'internal-')) }}:
-                    depends_on:
-                      - internal_qa
-                      - internal_qa_sandbox
+                    ${{ if parameters.requires_approval }}:
+                      depends_on:
+                        - manual_approval
+                    ${{ if not(parameters.requires_approval) }}:
+                      depends_on:
+                        - internal_qa
+                        - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
+              # - ${{ if eq(environment, 'manual-approval') }}:
+              #   - ${{ if parameters.requires_approval }}:
+              #     - environment: 
             - ${{ if parameters.deploy_review_sandbox }}:
               - environment: internal-dev-sandbox
                 stage_name: internal_dev_sandbox
