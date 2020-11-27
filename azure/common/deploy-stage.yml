@@ -52,6 +52,8 @@ parameters:
     default: false
   - name: enable_monitoring
     type: boolean
+  - name: enable_status
+    type: boolean
   - name: _expose_blacklist
     type: object
     default:
@@ -175,6 +177,7 @@ stages:
                     post_deploy: ${{ parameters.post_deploy }}
                     ping: ${{ parameters.ping }}
                     enable_monitoring: ${{ parameters.enable_monitoring }}
+                    enable_status: ${{ parameters.enable_status }}
                     portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
                     make_spec_visible: ${{ parameters.make_spec_visible }}
                     friendly_api_name: ${{ parameters.friendly_api_name }}
