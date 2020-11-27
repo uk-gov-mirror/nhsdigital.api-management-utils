@@ -181,10 +181,10 @@ steps:
       export VISIBLE="${{ parameters.make_spec_visible }}"
       export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
 
+      make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
       if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
           make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
       fi
-      make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
     displayName: 'Deploy Proxy, Product and Spec'
 
   - ${{ if parameters.enable_monitoring }}:
