@@ -129,9 +129,15 @@ steps:
         mv -f ~/.aws/config.tmp ~/.aws/config
         chmod 400 ~/.aws/config
 
+         if [[ $SERVICE_ARTIFACT_NAME == v* ]]; then
+            export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+         else
+            export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
+         fi
+
         # deploy ecs proxies
         # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SOURCE_COMMIT_ID="$(Build.SourceVersion)" RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
       fi
     displayName: Deploy ECS proxies
