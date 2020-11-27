@@ -9,6 +9,7 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     pr_number: "{{ lookup('env','pr_number') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
+    SERVICE_BASE_PATH: "{{ lookup('env', 'SERVICE_BASE_PATH' )}}"
     apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ service_id }}"
 
@@ -29,6 +30,11 @@
       fail:
         msg: "APIGEE_ENVIRONMENT not set"
       when: not APIGEE_ENVIRONMENT
+
+    - name: check SERVICE_BASE_PATH
+      fail:
+        msg: "SERVICE_BASE_PATH not set"
+      when: not SERVICE_BASE_PATH
 
     - name: include vars
       include_vars:

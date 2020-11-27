@@ -135,7 +135,7 @@ steps:
 
         # deploy ecs proxies
         # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
       fi
     displayName: Deploy ECS proxies
@@ -176,6 +176,7 @@ steps:
       export PRODUCT_DESCRIPTION="${{ parameters.product_description }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export RELEASE_RELEASEID="$(Build.BuildId)"
       export PING="${{ parameters.ping }}"
       if [[ -n "${{ parameters.spec_file }}" ]]; then
         export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
