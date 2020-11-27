@@ -11,16 +11,6 @@
 - name: parse ecs_service
   set_fact:
     ecs_service: "{{ docker_service | as_ecs_service }}"
-    release_info: >-
-      {{
-        {
-          "build_label": build_label,
-          "apigee_base_uri": "https://" + APIGEE_HOSTNAME + "/" + SERVICE_BASE_PATH,
-          "version": lookup('env', 'DEPLOYED_VERSION'),
-          "releaseId": lookup('env', 'RELEASE_RELEASEID'),
-          "commitId": lookup('env', 'SOURCE_COMMIT_ID')
-        }
-      }}
 
 - name: set output dir ( allows override with  temp_out_dir )
   set_fact:

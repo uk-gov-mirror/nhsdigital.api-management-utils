@@ -10,9 +10,6 @@
     pr_number: "{{ lookup('env','pr_number') }}"
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
     SERVICE_BASE_PATH: "{{ lookup('env', 'SERVICE_BASE_PATH' )}}"
-    DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
-    RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
-    SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
     apigee_uri: "https://{{ APIGEE_HOSTNAME }}"
     aws_profile: "deploy-{{ APIGEE_ENVIRONMENT | lower }}-{{ service_id }}"
 
