@@ -80,7 +80,7 @@ parameters:
     displayName: Steps to run after templating
     type: stepList
     default: []
-  - name: requires_approval
+  - name: prod_requires_approval
     displayName: Requires manual approval
     type: boolean
     default: true
@@ -198,7 +198,7 @@ extends:
                 depends_on: []
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            - ${{ if parameters.requires_approval }}:
+            - ${{ if parameters.prod_requires_approval }}:
               - environment: manual-approval
                 stage_name: manual_approval
                 depends_on:
@@ -208,10 +208,10 @@ extends:
                     ${{ var }}: ${{ parameters[var] }}
             - environment: prod
               stage_name: prod
-              ${{ if parameters.requires_approval }}:
+              ${{ if parameters.prod_requires_approval }}:
                 depends_on:
                   - manual_approval
-              ${{ if not(parameters.requires_approval) }}:
+              ${{ if not(parameters.prod_requires_approval) }}:
                 depends_on:
                   - internal_qa
                   - internal_qa_sandbox
