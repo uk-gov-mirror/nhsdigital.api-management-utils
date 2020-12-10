@@ -148,14 +148,14 @@ extends:
         # If apigee_deployments was specified, accept it regardless of which pipeline we are in
         ${{ if gt(length(parameters.apigee_deployments), 0) }}:
           apigee_deployments:
-            - ${{ if parameters.prod_requires_approval }}:
-              - environment: manual-approval
-                stage_name: manual_approval
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
-                ${{ each var in parameters._scoped_pipeline_vars }}:
-                    ${{ var }}: ${{ parameters[var] }}
+            # - ${{ if parameters.prod_requires_approval }}:
+            #   - environment: manual-approval
+            #     stage_name: manual_approval
+            #     depends_on:
+            #       - internal_qa
+            #       - internal_qa_sandbox
+            #     ${{ each var in parameters._scoped_pipeline_vars }}:
+            #         ${{ var }}: ${{ parameters[var] }}
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:
               - environment: ${{ apigee_deployment.environment }}
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
@@ -208,28 +208,28 @@ extends:
                       - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-              - ${{ if parameters.deploy_review_sandbox }}:
-                - environment: internal-dev-sandbox
-                  stage_name: internal_dev_sandbox
-                  depends_on: []
-                  ${{ each var in parameters._scoped_pipeline_vars }}:
-                      ${{ var }}: ${{ parameters[var] }}
-              - ${{ if parameters.prod_requires_approval }}:
-                - environment: manual-approval
-                  stage_name: manual_approval
-                  depends_on:
-                    - internal_qa
-                    - internal_qa_sandbox
-                  ${{ each var in parameters._scoped_pipeline_vars }}:
-                      ${{ var }}: ${{ parameters[var] }}
-              - environment: prod
-                stage_name: prod
-                ${{ if parameters.prod_requires_approval }}:
-                  depends_on:
-                    - manual_approval
-                ${{ if not(parameters.prod_requires_approval) }}:
-                  depends_on:
-                    - internal_qa
-                    - internal_qa_sandbox
+            - ${{ if parameters.deploy_review_sandbox }}:
+              - environment: internal-dev-sandbox
+                stage_name: internal_dev_sandbox
+                depends_on: []
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
+            - ${{ if parameters.prod_requires_approval }}:
+              - environment: manual-approval
+                stage_name: manual_approval
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                    ${{ var }}: ${{ parameters[var] }}
+            - environment: prod
+              stage_name: prod
+              ${{ if parameters.prod_requires_approval }}:
+                depends_on:
+                  - manual_approval
+              ${{ if not(parameters.prod_requires_approval) }}:
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                  ${{ var }}: ${{ parameters[var] }}
