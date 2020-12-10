@@ -208,28 +208,28 @@ extends:
                       - internal_qa_sandbox
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            - ${{ if parameters.deploy_review_sandbox }}:
-              - environment: internal-dev-sandbox
-                stage_name: internal_dev_sandbox
-                depends_on: []
+              - ${{ if parameters.deploy_review_sandbox }}:
+                - environment: internal-dev-sandbox
+                  stage_name: internal_dev_sandbox
+                  depends_on: []
+                  ${{ each var in parameters._scoped_pipeline_vars }}:
+                      ${{ var }}: ${{ parameters[var] }}
+              - ${{ if parameters.prod_requires_approval }}:
+                - environment: manual-approval
+                  stage_name: manual_approval
+                  depends_on:
+                    - internal_qa
+                    - internal_qa_sandbox
+                  ${{ each var in parameters._scoped_pipeline_vars }}:
+                      ${{ var }}: ${{ parameters[var] }}
+              - environment: prod
+                stage_name: prod
+                ${{ if parameters.prod_requires_approval }}:
+                  depends_on:
+                    - manual_approval
+                ${{ if not(parameters.prod_requires_approval) }}:
+                  depends_on:
+                    - internal_qa
+                    - internal_qa_sandbox
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            - ${{ if parameters.prod_requires_approval }}:
-              - environment: manual-approval
-                stage_name: manual_approval
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
-                ${{ each var in parameters._scoped_pipeline_vars }}:
-                    ${{ var }}: ${{ parameters[var] }}
-            - environment: prod
-              stage_name: prod
-              ${{ if parameters.prod_requires_approval }}:
-                depends_on:
-                  - manual_approval
-              ${{ if not(parameters.prod_requires_approval) }}:
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
-              ${{ each var in parameters._scoped_pipeline_vars }}:
-                  ${{ var }}: ${{ parameters[var] }}
