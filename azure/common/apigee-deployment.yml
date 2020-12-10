@@ -118,7 +118,6 @@ parameters:
         environments:
         - internal-dev
         - internal-dev-sandbox
-        - manual-approval
       - name_suffix: '-Release'
         deploy_template: release.yml
         environments:
@@ -179,18 +178,26 @@ extends:
                   ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
                     depends_on: []
                   ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
-                    # ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
-                    #   depends_on:
-                    #     - manual_approval
-                    # ${{ if ne(apigee_deployment.environment, 'prod') }}:
+                    ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                      depends_on:
+                        - internal_qa
+                        - internal_qa_sandbox
+                        - manual_approval
+                    ${{ if and(eq(apigee_deployment.environment, 'prod'), not(parameters.prod_requires_approval)) }}:
+                      depends_on:
+                        - internal_qa
+                        - internal_qa_sandbox
+                    ${{ if ne(apigee_deployment.environment, 'prod') }}:
                       depends_on:
                         - internal_qa
                         - internal_qa_sandbox
                 ${{ if apigee_deployment.depends_on }}:
-                  # ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
-                  #   depends_on:
-                  #     - manual_approval
-                  # ${{ if ne(apigee_deployment.environment, 'prod') }}:
+                  ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                    depends_on:
+                      - internal_qa
+                      - internal_qa_sandbox
+                      - manual_approval
+                  ${{ if ne(apigee_deployment.environment, 'prod') }}:
                     depends_on: ${{ apigee_deployment.depends_on }}
 
         # otherwise set the default parameters for this pipeline
@@ -222,14 +229,14 @@ extends:
                   - internal_qa_sandbox
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            # - environment: prod
-            #   stage_name: prod
-            #   ${{ if parameters.prod_requires_approval }}:
-            #     depends_on:
-            #       - manual_approval
-            #   ${{ if not(parameters.prod_requires_approval) }}:
-            #     depends_on:
-            #       - internal_qa
-            #       - internal_qa_sandbox
-            #   ${{ each var in parameters._scoped_pipeline_vars }}:
-            #       ${{ var }}: ${{ parameters[var] }}
+            - environment: prod
+              stage_name: prod
+              ${{ if parameters.prod_requires_approval }}:
+                depends_on:
+                  - manual_approval
+              ${{ if not(parameters.prod_requires_approval) }}:
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
+              ${{ each var in parameters._scoped_pipeline_vars }}:
+                  ${{ var }}: ${{ parameters[var] }}
