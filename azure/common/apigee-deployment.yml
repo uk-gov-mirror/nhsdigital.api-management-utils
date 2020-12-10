@@ -173,14 +173,15 @@ extends:
                   ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
                     ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
                       depends_on:
-                      - manual_approval
+                        - internal_qa
+                        - internal_qa_sandbox
+                        - manual_approval
                     ${{ if ne(apigee_deployment.environment, 'prod') }}:
                       depends_on:
                         - internal_qa
                         - internal_qa_sandbox
-                  ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
-                    ${{parameters.apigee_deployments }}: 
-                      - manual-approval
+            # - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+            #     environment: manual-approval
 
         # otherwise set the default parameters for this pipeline
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
