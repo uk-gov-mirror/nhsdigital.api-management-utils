@@ -180,7 +180,7 @@ extends:
                         - internal_qa_sandbox
                 ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
                   ${{parameters.apigee_deployments }}: 
-                    - manual_approval
+                    - manual-approval
 
         # otherwise set the default parameters for this pipeline
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
