@@ -148,6 +148,14 @@ extends:
         # If apigee_deployments was specified, accept it regardless of which pipeline we are in
         ${{ if gt(length(parameters.apigee_deployments), 0) }}:
           apigee_deployments:
+            - ${{ if parameters.prod_requires_approval }}:
+              - environment: manual-approval
+                stage_name: manual_approval
+                depends_on:
+                  - internal_qa
+                  - internal_qa_sandbox
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                    ${{ var }}: ${{ parameters[var] }}
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:
               - environment: ${{ apigee_deployment.environment }}
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
@@ -171,11 +179,19 @@ extends:
                   ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
                     depends_on: []
                   ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
-                    depends_on:
-                      - internal_qa
-                      - internal_qa_sandbox
+                    ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                      depends_on:
+                        - manual_approval
+                    ${{ if ne(apigee_deployment.environment, 'prod') }}:
+                      depends_on:
+                        - internal_qa
+                        - internal_qa_sandbox
                 ${{ if apigee_deployment.depends_on }}:
-                  depends_on: ${{ apigee_deployment.depends_on }}
+                  ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                    depends_on:
+                      - manual_approval
+                  ${{ if ne(apigee_deployment.environment, 'prod') }}:
+                    depends_on: ${{ apigee_deployment.depends_on }}
 
         # otherwise set the default parameters for this pipeline
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
