@@ -22,6 +22,11 @@ steps:
     displayName: 'Set SERVICE_ARTIFACT_NAME'
 
   - bash: |
+      echo "##vso[task.setvariable variable=SERVICE_DIR]$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)"
+      echo "##vso[task.setvariable variable=UTILS_DIR]$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: Set SERVICE_DIR and UTILS_DIR for deploy-service
+
+  - bash: |
       if [ -n "$(System.PullRequest.SourceBranch)" ]; then
         export SOURCE_BRANCH="$(System.PullRequest.SourceBranch)"
       else

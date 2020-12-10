@@ -8,32 +8,24 @@
   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
   changed_when: no
 
-# NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
-- name: upload proxy bundle
-  shell:
-    cmd: >
-      curl -s -o - -w "|%{http_code}" -X POST -q -H "Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}" -F "file=@/{{ tempdir.path }}/proxy.zip" "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
-    warn: false
-  register: "proxy_upload_response"
-  no_log: true
-  changed_when: yes
-
-- name: set apigee response
-  set_fact:
-    apigee_response: "{{ proxy_upload_response.stdout.split('|')[:-1] | join('|') | from_json }}"
-
-- name: set apigee response code
-  set_fact:
-    apigee_response_code: "{{ proxy_upload_response.stdout.split('|')[-1] }}"
-
-- name: check proxy upload success
-  fail:
-    msg: "Proxy upload failed with a {{ apigee_response_code }} return code and responsed with: '{{ apigee_response.message }}'"
-  when: apigee_response_code[0] != "2"
+- name: upload the flow to apigee
+  uri:
+    url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
+    method: POST
+    status_code: 201
+    headers:
+      authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body_format: form-multipart
+    body:
+      file:
+        filename: "/{{ tempdir.path }}/proxy.zip"
+        mime_type: application/octet-stream
+    return_content: yes
+  register: apigee_response
 
 - name: get revision number of upload
   set_fact:
-    revision: "{{ (apigee_response).revision }}"
+    revision: "{{ apigee_response.json.revision }}"
 
 - name: update proxy deployment
   uri:

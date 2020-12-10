@@ -51,6 +51,8 @@ parameters:
   - name: friendly_api_name
   - name: enable_monitoring
     type: boolean
+  - name: enable_status_monitoring 
+    type: boolean
 
 stages:
   - ${{ if eq(parameters.environment, 'manual-approval') }}:
