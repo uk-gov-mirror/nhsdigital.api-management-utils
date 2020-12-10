@@ -83,7 +83,7 @@ parameters:
   - name: prod_requires_approval
     displayName: Requires manual approval
     type: boolean
-    default: true
+    default: false
   - name: _scoped_pipeline_vars
     type: object
     displayName: All the pipeline parameters which support per-environment scoping.
