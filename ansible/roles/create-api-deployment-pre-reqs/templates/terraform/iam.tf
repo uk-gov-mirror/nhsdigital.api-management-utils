@@ -98,6 +98,30 @@ resource "aws_iam_user_policy_attachment" "deploy-user" {
   policy_arn = aws_iam_policy.deploy-user.arn
 }
 
+resource "aws_iam_role" "deploy-user" {
+  name = "deploy-${local.env_service_id}"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS: "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/agents-ecs-task"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "deploy-user" {
+  role       = aws_iam_role.deploy-user.name
+  policy_arn = aws_iam_policy.deploy-user.arn
+}
+
 data "aws_iam_policy_document" "deploy-user" {
 
 

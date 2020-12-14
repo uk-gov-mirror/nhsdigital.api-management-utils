@@ -1,0 +1,26 @@
+
+- name: check if role exists
+  command: "{{ aws_cmd }} iam get-role --role-name {{ build_role_name }} --query Role"
+  register: get_role
+  changed_when: no
+  failed_when: get_role.rc !=0 and 'NoSuchEntity' not in get_role.stderr
+
+- name: list role policies
+  command: "{{ aws_cmd }}  iam list-role-policies --role-name {{ build_role_name }} --query PolicyNames"
+  register: list_role_policies
+  changed_when: no
+  when: get_role.rc == 0
+
+- name: parse policies json
+  set_fact:
+    role_policies: "{{ list_role_policies.stdout | from_json }}"
+  when: get_role.rc == 0
+
+- name: delete role policy
+  command: "{{ aws_cmd }} iam delete-role-policy --role-name {{ build_role_name }} --policy-name {{ item }}"
+  with_items: "{{ role_policies }}"
+  when: get_role.rc == 0
+
+- name: delete iam role
+  command: "{{ aws_cmd }} iam delete-role --role-name {{ build_role_name }} --query Role"
+  when: get_role.rc == 0

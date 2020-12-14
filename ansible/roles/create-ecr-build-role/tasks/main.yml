@@ -1,0 +1,85 @@
+- name: check service_id max length
+  fail:
+    msg: "service_id is too long"
+  when: (service_id | length) > 40
+
+- name: check service_id for spaces
+  fail:
+    msg: "service_id contains spaces"
+  when: "' ' in service_id"
+
+- name: check if role exists
+  command: "{{ aws_cmd }} iam get-role --role-name {{ build_role_name }} --query Role"
+  register: get_role
+  changed_when: no
+  failed_when: get_role.rc !=0 and 'NoSuchEntity' not in get_role.stderr
+
+- name: create role
+  block:
+    - name: create temporary file
+      tempfile:
+        state: file
+        suffix: temp
+      register: assume_role_policy_json
+
+    - name: write policy json
+      copy:
+        content: "{{ assume_role_policy | to_json }}"
+        dest: "{{ assume_role_policy_json.path }}"
+
+    - name: create iam role
+      command: >-
+        {{ aws_cmd }} iam create-role --role-name {{ build_role_name }}
+        --assume-role-policy-document file://{{ assume_role_policy_json.path }}
+        --query Role
+      register: create_role
+      when: get_role.rc == 255
+
+  always:
+    - name: remove temp file
+      file:
+        path: "{{ assume_role_policy_json.path }}"
+        state: absent
+      when: assume_role_policy_json.path is defined
+
+- name: parse role json
+  set_fact:
+    iam_role: "{{ (create_role.stdout if get_role.rc == 255 else get_role.stdout)  | from_json }}"
+
+- name: get build role policy
+  command: >
+    {{ aws_cmd }} iam get-role-policy --role-name {{ build_role_name }}
+    --policy-name {{ aws_ecs_policy_name }} --query PolicyDocument
+  register: get_role_policy
+  changed_when: no
+  failed_when: get_role_policy.rc !=0 and 'NoSuchEntity' not in get_role_policy.stderr
+
+- name: check if policy needs updating
+  set_fact:
+    needs_update: "{{ get_role_policy.rc == 255 or (get_role_policy.stdout | from_json) != aws_ecs_policy }}"
+
+- name: update role policy
+  block:
+    - name: create temporary file
+      tempfile:
+        state: file
+        suffix: temp
+      register: policy_json
+
+    - name: write policy json
+      copy:
+        content: "{{ aws_ecs_policy | to_json }}"
+        dest: "{{ policy_json.path }}"
+
+    - name: put build role policy
+      command: >
+        {{ aws_cmd }} iam put-role-policy --role-name {{ build_role_name }}
+        --policy-name {{ aws_ecs_policy_name }} --policy-document file://{{ policy_json.path }}
+
+  when: needs_update
+  always:
+    - name: remove temp file
+      file:
+        path: "{{ policy_json.path }}"
+        state: absent
+      when: policy_json.path is defined
