@@ -35,7 +35,7 @@ parameters:
 steps:
   - bash: |
       ls -R
-      if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml]]; then
+      if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml || -f ecs-proxies-deploy.yml ||  -f ecs-proxies-deploy-sandbox.yml ]]; then
         echo "##vso[task.setvariable variable=build_containers]true"
       else 
         echo "##vso[task.setvariable variable=build_containers]false"
