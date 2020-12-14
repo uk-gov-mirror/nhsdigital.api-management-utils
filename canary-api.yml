@@ -1,0 +1,15 @@
+openapi: "3.0.0"
+x-nhsd-api-platform:
+  meta:
+    service_name: canary-api
+    short_service_name: canary
+    service_base_path: canary-api
+    product_display_name: Canary API
+    product_description: The Canary API is used for testing internal processes for API Management releases
+    pipeline_name_prefix: Canary-API
+
+info:
+  version: 1.0.0
+  title: Canary API
+  license:
+    name: MIT
