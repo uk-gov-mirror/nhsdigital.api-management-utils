@@ -75,7 +75,7 @@ stages:
       - deployment: deploy
         environment: ${{ parameters.environment }}
         pool:
-          vmImage: 'ubuntu-18.04'
+          name: 'AWS-ECS'
         strategy:
           runOnce:
             deploy:

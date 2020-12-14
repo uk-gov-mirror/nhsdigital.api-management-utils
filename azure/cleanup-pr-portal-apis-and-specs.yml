@@ -16,7 +16,7 @@ jobs:
     displayName: Cleanup PR specs
     timeoutInMinutes: 240
     pool:
-      vmImage: "ubuntu-20.04"
+      name: 'AWS-ECS'
     steps:
       - checkout: self
 

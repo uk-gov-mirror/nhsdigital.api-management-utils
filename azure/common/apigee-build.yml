@@ -30,7 +30,7 @@ jobs:
     displayName: Build & Test
     timeoutInMinutes: 30
     pool:
-      vmImage: 'ubuntu-18.04'
+      name: 'AWS-ECS'
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
@@ -111,20 +111,20 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
-      - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
-        displayName: Install apt dependencies
-
-      - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
-        displayName: Add apt-key
-
-      - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
-        displayName: Setup node deb sources
-
-      - bash: "sudo apt-get install -y nodejs"
-        displayName: Install node
-
-      - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-        displayName: Install python dependencies
+#       - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
+#         displayName: Install apt dependencies
+#
+#       - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
+#         displayName: Add apt-key
+#
+#       - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+#         displayName: Setup node deb sources
+#
+#       - bash: "sudo apt-get install -y nodejs"
+#         displayName: Install node
+#
+#       - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
+#         displayName: Install python dependencies
 
       - bash: |
           n=0
@@ -180,7 +180,7 @@ jobs:
           export pr_number="$(System.PullRequest.PullRequestNumber)"
           export service_name="${{ parameters.service_name }}"
           export service_id="${{ parameters.short_service_name }}"
-              make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
+          make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
         displayName: output build env vars for artifact
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
