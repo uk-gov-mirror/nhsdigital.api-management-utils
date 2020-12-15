@@ -218,6 +218,11 @@ jobs:
            role: "$(BUILD_ROLE)"
          condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
+      - bash: |
+          set -e
+          aws sts get-caller-identity
+          exit -1
+
 #       - bash: |
 #           set -e
 #           source "${{ parameters.service_name }}/dist/.build_env_vars"
