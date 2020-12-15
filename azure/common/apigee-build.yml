@@ -42,6 +42,16 @@ jobs:
 #         inputs:
 #           secureFile: ptl_aws_config
 #
+
+      - bash: |
+          mkdir -p ~/.aws
+          echo '[default]' > ~/.aws/config
+          echo 'region = eu-west-2' >> ~/.aws/config
+          echo 'output = json' >> ~/.aws/config
+          chmod 400 ~/.aws/config
+          cp ~/.aws/config ~/.aws/config.default
+        displayName: clean aws config
+
       - ${{ if parameters.notify }}:
 #         - bash: |
 #             mkdir -p ~/.aws
