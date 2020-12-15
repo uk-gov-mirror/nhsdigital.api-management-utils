@@ -37,17 +37,17 @@ jobs:
     steps:
         # This is here as azure insists on running this before other steps in the job
         # even though it is only needed if ecs-proxies-containers.yml is present
-      - task: DownloadSecureFile@1
-        name: aws_config
-        inputs:
-          secureFile: ptl_aws_config
-    
+#       - task: DownloadSecureFile@1
+#         name: aws_config
+#         inputs:
+#           secureFile: ptl_aws_config
+#
       - ${{ if parameters.notify }}:
-        - bash: |
-            mkdir -p ~/.aws
-            mv $(aws_config.secureFilePath) ~/.aws/config
-            chmod 400 ~/.aws/config
-          displayName: "Get AWS config"
+#         - bash: |
+#             mkdir -p ~/.aws
+#             mv $(aws_config.secureFilePath) ~/.aws/config
+#             chmod 400 ~/.aws/config
+#           displayName: "Get AWS config"
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
@@ -198,10 +198,17 @@ jobs:
 
           ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 
-          aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/build-${service_id}" --role-session-name build-assume-role  > /tmp/.creds.json
-          echo export AWS_ACCESS_KEY_ID="$(jq -r .Credentials.AccessKeyId /tmp/.creds.json)" > /tmp/.aws.env
-          echo export AWS_SECRET_ACCESS_KEY="$(jq -r .Credentials.SecretAccessKey /tmp/.creds.json)" >> /tmp/.aws.env
-          echo export AWS_SESSION_TOKEN="$(jq -r .Credentials.SessionToken /tmp/.creds.json)" >> /tmp/.aws.env
+          tmp_file="$(Agent.TempDirectory)/tmp.creds.json"
+          aws_env_file="$(Agent.TempDirectory)/.aws.build-user.env"
+          aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/build-${service_id}" --role-session-name build-assume-role > ${tmp_file}
+
+          echo export AWS_ACCESS_KEY_ID="$(jq -r .Credentials.AccessKeyId ${tmp_file})" > ${aws_env_file}
+          echo export AWS_SECRET_ACCESS_KEY="$(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> /tmp/.aws.env
+          echo export AWS_SESSION_TOKEN="$(jq -r .Credentials.SessionToken ${tmp_file}" >> /tmp/.aws.env
+
+          rm ${tmp_file}
+
+          exit -1
 
         displayName: "assume build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
