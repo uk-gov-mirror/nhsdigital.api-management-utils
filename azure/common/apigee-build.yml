@@ -55,20 +55,9 @@ jobs:
         displayName: clean aws config
 
       - ${{ if parameters.notify }}:
-        - bash: |
-            set -e
-            ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-            ASSUME_ROLE="auto-ops"
-
-            cp ~/.aws/config.default ~/.aws/config
-            tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
-            aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
-
-            echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
-            echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
-            echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
-
-            rm ${tmp_file}
+        - template: ../components/aws-assume-role.yml
+          parameters:
+            role: "auto-ops"
           displayName: "assume role auto-ops"
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
@@ -213,10 +202,11 @@ jobs:
         displayName: "ensure build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
-       - template: ../components/assume-role.yml
-         parameters:
-           role: "$(BUILD_ROLE)"
-         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+      - template: ../components/aws-assume-role.yml
+        parameters:
+          role: "$(BUILD_ROLE)"
+          do_assume_role: $(and(succeeded(), eq(variables['build_containers'], 'true')))"
+
 
       - bash: |
           set -e
