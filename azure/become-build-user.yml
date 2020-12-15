@@ -10,25 +10,21 @@ parameters:
 steps:
 
   - bash: |
+      tfenv use 0.12.29
+    displayName: use terraform
+
+  - bash: |
       source "${{ parameters.env_vars_dir }}/.build_env_vars"
       account=ptl make --no-print-directory -C ${{ parameters.utils_dir }}/ansible create-ecr-build-role
     displayName: "ensure build role"
 
   - bash: |
-      set -e
-      source "${{ parameters.env_vars_dir }}/.build_env_vars"
+      source "${{ parameters.service_name }}/dist/.build_env_vars"
+      account=ptl make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-ecr-build-role
+      echo "##vso[task.setvariable variable=BUILD_ROLE;issecret=false]"build-${service_id}""
+    displayName: "ensure build role"
+    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
-      ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-      ASSUME_ROLE="build-${service_id}"
-
-      cp ~/.aws/config.default ~/.aws/config
-      tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
-      aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
-
-      echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
-      echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
-      echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
-
-      rm ${tmp_file}
-
-    displayName: "assume build role"
+  - template: ./components/aws-assume-role.yml
+    parameters:
+      role: "$(BUILD_ROLE)"

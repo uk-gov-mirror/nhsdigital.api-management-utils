@@ -2,26 +2,19 @@
 parameters:
   - name: 'role'
     type: string
-  - name: 'do_assume_role'
-    type: boolean
-    default: true
+  - name: 'profile'
+    type: string
+    default: ''
 
 steps:
-    - bash: |
-        set -e
-        mkdir -p ~/.aws
-        rm -f ~/.aws/config || true
-        echo '[default]' > ~/.aws/config
-        echo 'region = eu-west-2' >> ~/.aws/config
-        echo 'output = json' >> ~/.aws/config
-        chmod 600 ~/.aws/config
-        cp ~/.aws/config ~/.aws/config.default
-      displayName: clean aws config
+    - template: ./aws-clean-config.yml
 
     - bash: |
         set -e
 
         aws_role="${{ parameters.role }}"
+        echo "assume role: ${aws_role}"
+
         if [[ "${aws_role}" != aws:aws:iam:* ]]; then
             account_id="$(aws sts get-caller-identity --query Account --output text)"
             aws_role="arn:aws:iam::${account_id}:role/${aws_role}"
@@ -35,3 +28,11 @@ steps:
         echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
         echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
       displayName: assume role
+      condition: and(succeeded(), ne('${{ parameters.role }}', ''))
+
+    - bash: |
+        set -e
+        echo as profile ${{ parameters.profile }}
+        sed -i 's#[default]#[${{ parameters.profile }}]#g' ~/.aws/config
+      displayName: rename profile
+      condition: and(succeeded(), ne('${{ parameters.role }}', ''), ne('${{ parameters.profile }}', ''))

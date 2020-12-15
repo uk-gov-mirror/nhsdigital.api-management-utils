@@ -2,6 +2,9 @@
 
 aws_region: "eu-west-2"
 service_name: "{{ service_id | lower }}"
-aws_cmd: "aws --profile={{ lookup('env', 'AWS_PROFILE') }} --region={{ aws_region }}"
+aws_profile_p1: "{{ aws_profile | default(lookup('env', 'AWS_PROFILE')) }}"
+aws_profile_resolved: "{{ aws_profile_p1 }}"
+#aws_profile_resolved: "{{ aws_profile_p1 if aws_profile_p1 != '' else 'apm_' + account }}"
+aws_cmd: "aws --profile={{ aws_profile_resolved }} --region={{ aws_region }}"
 env_apigee_org: "{{ lookup('env','API_ORG') }}"
 namespace:

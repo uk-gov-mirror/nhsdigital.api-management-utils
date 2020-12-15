@@ -35,24 +35,8 @@ jobs:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
     steps:
-        # This is here as azure insists on running this before other steps in the job
-        # even though it is only needed if ecs-proxies-containers.yml is present
-#       - task: DownloadSecureFile@1
-#         name: aws_config
-#         inputs:
-#           secureFile: ptl_aws_config
-#
 
-      - bash: |
-          set -e
-          mkdir -p ~/.aws
-          rm -f ~/.aws/config || true
-          echo '[default]' > ~/.aws/config
-          echo 'region = eu-west-2' >> ~/.aws/config
-          echo 'output = json' >> ~/.aws/config
-          chmod 600 ~/.aws/config
-          cp ~/.aws/config ~/.aws/config.default
-        displayName: clean aws config
+      - template: ../components/aws-clean-config.yml
 
       - ${{ if parameters.notify }}:
         - template: ../components/aws-assume-role.yml
@@ -121,21 +105,6 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
-#       - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
-#         displayName: Install apt dependencies
-#
-#       - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
-#         displayName: Add apt-key
-#
-#       - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
-#         displayName: Setup node deb sources
-#
-#       - bash: "sudo apt-get install -y nodejs"
-#         displayName: Install node
-#
-#       - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-#         displayName: Install python dependencies
-
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -177,12 +146,11 @@ jobs:
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
-
-#     - name: Cache poetry packages
-#       uses: actions/cache@v1
-#       with:
-#           path: ~/.cache/pypoetry
-#           key: ${{ runner.os }}-build-cache-poetry-packages-${{ hashFiles('**/poetry.lock') }}
+      - task: Cache@2
+        inputs:
+          key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
+          path: "${{ parameters.service_name }}/utils/.venv"
+        displayName: cache utils dependencies
 
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
@@ -202,41 +170,25 @@ jobs:
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
+          tfenv use 0.12.29
+        displayName: use terraforn
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+
+      - bash: |
           source "${{ parameters.service_name }}/dist/.build_env_vars"
           account=ptl make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-ecr-build-role
-          echo "##vso[task.setvariable variable=BUILD_ROLE;issecret=false]"build-${service_id}""
+          echo "##vso[task.setvariable variable=BUILD_ROLE]build-${service_id}"
         displayName: "ensure build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
-      - ${{ if eq(variables['build_containers'], 'true') }}:
-          - template: ../components/aws-assume-role.yml
-            parameters:
-              role: "$(BUILD_ROLE)"
+      - template: ../components/aws-assume-role.yml
+        parameters:
+          role: "$(BUILD_ROLE)"
 
       - bash: |
           set -e
           aws sts get-caller-identity
-          exit -1
-
-#       - bash: |
-#           set -e
-#           source "${{ parameters.service_name }}/dist/.build_env_vars"
-#
-#           ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-#           ASSUME_ROLE="build-${service_id}"
-#
-#           cp ~/.aws/config.default ~/.aws/config
-#           tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
-#           aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
-#
-#           echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
-#           echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
-#           echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
-#
-#           rm ${tmp_file}
-#
-#         displayName: "assume build role"
-#         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
           source "${{ parameters.service_name }}/dist/.build_env_vars"

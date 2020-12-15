@@ -92,26 +92,14 @@ stages:
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
 
-                - task: DownloadSecureFile@1
-                  name: aws_config
-                  inputs:
-                    secureFile: ptl_aws_config
-
-                - bash: |
-                    set -euo pipefail
-                    mkdir -p ~/.aws
-                    mv $(aws_config.secureFilePath) ~/.aws/config
-                    chmod 400 ~/.aws/config
-                    ls -al ~/.aws/config
-                  displayName: "Get AWS config"
+                - template: ../components/aws-assume-role.yml
+                  parameters:
+                    role: "auto-ops"
 
                 - task: UsePythonVersion@0
                   displayName: 'Use Python 3.8'
                   inputs:
                     versionSpec: 3.8
-
-                - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-                  displayName: Install python dependencies
 
                 - template: "../components/set-facts.yml"
                   parameters:
