@@ -44,17 +44,19 @@ jobs:
 #
 
       - bash: |
+          set -e
           mkdir -p ~/.aws
+          rm -f ~/.aws/config || true
           echo '[default]' > ~/.aws/config
           echo 'region = eu-west-2' >> ~/.aws/config
           echo 'output = json' >> ~/.aws/config
-          chmod 400 ~/.aws/config
+          chmod 600 ~/.aws/config
           cp ~/.aws/config ~/.aws/config.default
         displayName: clean aws config
 
       - ${{ if parameters.notify }}:
         - bash: |
-
+            set -e
             ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
             ASSUME_ROLE="auto-ops"
 
@@ -211,7 +213,7 @@ jobs:
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
-
+          set -e
           source "${{ parameters.service_name }}/dist/.build_env_vars"
 
           ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
