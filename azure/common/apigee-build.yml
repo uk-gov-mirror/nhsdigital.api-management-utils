@@ -58,7 +58,6 @@ jobs:
         - template: ../components/aws-assume-role.yml
           parameters:
             role: "auto-ops"
-          displayName: "assume role auto-ops"
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
@@ -178,6 +177,13 @@ jobs:
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
+
+#     - name: Cache poetry packages
+#       uses: actions/cache@v1
+#       with:
+#           path: ~/.cache/pypoetry
+#           key: ${{ runner.os }}-build-cache-poetry-packages-${{ hashFiles('**/poetry.lock') }}
+
       - bash: "make install"
         workingDirectory: "${{ parameters.service_name }}/utils"
         displayName: "Install utils pre-requisites"
@@ -202,11 +208,10 @@ jobs:
         displayName: "ensure build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
-      - template: ../components/aws-assume-role.yml
-        parameters:
-          role: "$(BUILD_ROLE)"
-          do_assume_role: $(and(succeeded(), eq(variables['build_containers'], 'true')))"
-
+      - ${{ if eq(variables['build_containers'], 'true') }}:
+          - template: ../components/aws-assume-role.yml
+            parameters:
+              role: "$(BUILD_ROLE)"
 
       - bash: |
           set -e
