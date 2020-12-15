@@ -4,6 +4,7 @@
     aws_profile: "{{ aws_profile }}"
     aws_region: "{{ aws_region }}"
     aws_cmd: "{{ aws_cmd }}"
+    aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
     apigee_environment: "{{ (APIGEE_ENVIRONMENT | default('')) }}"
     apigee_shortenv: "{{ (APIGEE_ENVIRONMENT | default('')) | regex_findall('(?:^|-)([a-z])') | join('') }}"
 

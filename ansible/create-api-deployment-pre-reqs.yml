@@ -8,7 +8,6 @@
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     pr_number: "{{ lookup('env','pr_number') }}"
     account:  "{{ lookup('env','account') }}"
-    aws_profile: "apm_{{ account }}"
 
   pre_tasks:
 

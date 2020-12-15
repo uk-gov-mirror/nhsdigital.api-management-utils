@@ -5,7 +5,6 @@
 
   vars:
     account:  "ptl"
-    aws_profile: "apm_{{ account }}"
     APIGEE_ENVIRONMENT: "internal-dev"
 
   roles:

@@ -60,7 +60,7 @@ jobs:
             ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
             ASSUME_ROLE="auto-ops"
 
-            mv ~/.aws/config.default ~/.aws/config
+            cp ~/.aws/config.default ~/.aws/config
             tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
             aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
 
@@ -219,7 +219,7 @@ jobs:
           ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
           ASSUME_ROLE="build-${service_id}"
 
-          mv ~/.aws/config.default ~/.aws/config
+          cp ~/.aws/config.default ~/.aws/config
           tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
           aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
 
@@ -228,8 +228,6 @@ jobs:
           echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
 
           rm ${tmp_file}
-
-          exit -1
 
         displayName: "assume build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))

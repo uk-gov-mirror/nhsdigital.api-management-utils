@@ -2,6 +2,6 @@
 
 aws_region: "eu-west-2"
 service_name: "{{ service_id | lower }}"
-aws_cmd: "aws --profile={{ aws_profile }} --region={{ aws_region }}"
+aws_cmd: "aws --profile={{ lookup('env', 'AWS_PROFILE') }} --region={{ aws_region }}"
 env_apigee_org: "{{ lookup('env','API_ORG') }}"
 namespace:
