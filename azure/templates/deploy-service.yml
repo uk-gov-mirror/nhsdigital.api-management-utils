@@ -117,11 +117,11 @@ steps:
           proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-all.yml"
         fi
       fi
-      build_role=""
+      deploy_role=""
 
       if [[ ! -z "${proxy_vars_file}" ]]; then
         source $(SERVICE_DIR)/.build_env_vars
-        build_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
+        deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
 
         # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
         export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
@@ -135,7 +135,7 @@ steps:
       fi
 
       echo "##vso[task.setvariable variable=PROXY_VARS_FILE]${proxy_vars_file}"
-      echo "##vso[task.setvariable variable=DEPLOY_ROLE]${build_role}"
+      echo "##vso[task.setvariable variable=DEPLOY_ROLE]${deploy_role}"
 
     displayName: Create ECS Prerequisites
     condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
