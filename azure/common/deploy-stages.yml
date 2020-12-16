@@ -16,6 +16,7 @@ parameters:
   - name: ping
     type: boolean
   - name: deploy_template
+  - name: prod_requires_approval
 
 
 stages:
@@ -24,11 +25,11 @@ stages:
       parameters:
         ${{ insert }}: ${{ apigee_deployment }}
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_template', 'apigee_deployments', 'deploy_review_sandbox') }}:
+          ${{ if notIn(param.key, 'deploy_template', 'apigee_deployments', 'deploy_review_sandbox', 'prod_requires_approval') }}:
             ${{ param.key }}: ${{ param.value }}
 
         # Compute the apigee organization & org level part of the AWS secret/config path
-        ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-dev-sandbox', 'internal-qa', 'internal-qa-sandbox', 'ref') }}:
+        ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-dev-sandbox', 'internal-qa', 'internal-qa-sandbox', 'ref', 'manual-approval') }}:
           apigee_organization: nonprod
           aws_org_account: ptl
         ${{ if in(apigee_deployment.environment, 'dev', 'int', 'sandbox', 'prod') }}:

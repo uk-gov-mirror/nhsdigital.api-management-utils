@@ -1,0 +1,17 @@
+parameters:
+  - name: stage_name
+
+stages:
+  - stage: ${{ parameters.stage_name }}
+    jobs:
+      - deployment: deploy
+        displayName: Manual Approval Required
+        pool:
+          vmImage: "Ubuntu-16.04"
+        environment: "manual-approval"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - bash: |
+                    echo Approved
