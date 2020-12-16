@@ -42,6 +42,7 @@ jobs:
         - template: ../components/aws-assume-role.yml
           parameters:
             role: "auto-ops"
+            profile: "apm_ptl"
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
@@ -184,6 +185,7 @@ jobs:
       - template: ../components/aws-assume-role.yml
         parameters:
           role: "$(BUILD_ROLE)"
+          profile: "$(BUILD_ROLE)"
 
       - bash: |
           set -e

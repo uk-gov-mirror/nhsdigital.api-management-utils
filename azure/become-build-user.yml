@@ -28,3 +28,4 @@ steps:
   - template: ./components/aws-assume-role.yml
     parameters:
       role: "$(BUILD_ROLE)"
+      profile: "$(BUILD_ROLE)"

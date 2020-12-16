@@ -20,34 +20,19 @@ jobs:
     steps:
       - checkout: self
 
-      - bash: |
-          set -e
-          mkdir -p ~/.aws
-          rm -f ~/.aws/config || true
-          echo '[default]' > ~/.aws/config
-          echo 'region = eu-west-2' >> ~/.aws/config
-          echo 'output = json' >> ~/.aws/config
-          chmod 600 ~/.aws/config
-          cp ~/.aws/config ~/.aws/config.default
-        displayName: clean aws config
-
-      - bash: |
-          set -e
-          ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-          ASSUME_ROLE="auto-ops"
-
-          cp ~/.aws/config.default ~/.aws/config
-          tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
-          aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
-
-          echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
-          echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
-          echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
+      -  template: ../components/aws-assume-role.yml
+         parameters:
+           role: "auto-ops"
+           profile: "apm_ptl"
 
       - template: build-prereqs.yml
         parameters:
           utils_dir: './'
 
       - bash: |
+          # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
+          export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
+          export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
+          export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
           make -C ansible remove-old-ecs-pr-deploys
         displayName: "cleanup older pr deploys"

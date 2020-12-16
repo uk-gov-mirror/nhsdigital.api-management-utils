@@ -16,6 +16,16 @@ steps:
         echo "assume role: ${aws_role}"
 
         if [[ "${aws_role}" != aws:aws:iam:* ]]; then
+            # iam synchronisation issues can take a few to make the role appear
+            for i in {1..15}; do
+              if aws iam get-role --role-name ${aws_role} > /dev/null; then
+                echo role exists
+                break
+              fi
+              echo waiting for role ...
+              sleep 2
+            done
+
             account_id="$(aws sts get-caller-identity --query Account --output text)"
             aws_role="arn:aws:iam::${account_id}:role/${aws_role}"
         fi
@@ -27,12 +37,14 @@ steps:
         echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
         echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
         echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
+
+        rm ${tmp_file}
+
+        profile="${{ parameters.profile }}"
+        if [[ ! -z "${profile}" ]]; then
+          echo as profile ${profile}
+          sed -i "s#\[default\]#\[profile ${profile}\]#" ~/.aws/config
+        fi
+
       displayName: assume role
       condition: and(succeeded(), ne('${{ parameters.role }}', ''))
-
-    - bash: |
-        set -e
-        echo as profile ${{ parameters.profile }}
-        sed -i 's#[default]#[${{ parameters.profile }}]#g' ~/.aws/config
-      displayName: rename profile
-      condition: and(succeeded(), ne('${{ parameters.role }}', ''), ne('${{ parameters.profile }}', ''))

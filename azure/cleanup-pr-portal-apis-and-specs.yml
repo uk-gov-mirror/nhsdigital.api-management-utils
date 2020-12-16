@@ -20,11 +20,10 @@ jobs:
     steps:
       - checkout: self
 
-      - template: ../components/aws-clean-config.yml
-
-     -  template: ../components/aws-assume-role.yml
+      - template: ../components/aws-assume-role.yml
         parameters:
-         role: "auto-ops"
+          role: "auto-ops"
+        profile: "apm_ptl"
 
       - template: build-prereqs.yml
         parameters:
