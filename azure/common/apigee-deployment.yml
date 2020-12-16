@@ -188,7 +188,7 @@ extends:
                         - internal_qa
                         - internal_qa_sandbox
                         - manual_approval
-                    ${{ if and(eq(apigee_deployment.environment, 'prod'), eq(parameters.prod_requires_approval, false)) }}:
+                    ${{ if and(eq(apigee_deployment.environment, 'prod'), not(parameters.prod_requires_approval)) }}:
                       depends_on:
                         - internal_qa
                         - internal_qa_sandbox
@@ -202,6 +202,8 @@ extends:
                       - ${{ each depend_on in apigee_deployment.depends_on }}:
                         - ${{ depend_on }}
                       - manual_approval
+                  ${{ if and(eq(apigee_deployment.environment, 'prod'), not(parameters.prod_requires_approval) }}:
+                    depends_on: ${{ apigee_deployment.depends_on }}
                   ${{ if ne(apigee_deployment.environment, 'prod') }}:
                     depends_on: ${{ apigee_deployment.depends_on }}
 
