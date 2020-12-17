@@ -104,7 +104,7 @@
     set_fact:
       default_product:
         name: "" # SERVICE_NAME is appended inside loop, so leave blank here
-        displayName: "{{ ('-pr-' in SERVICE_NAME) | ternary(SERVICE_NAME, PRODUCT_DISPLAY_NAME) }}" # Environment name appended later
+        displayName: "{{ PRODUCT_DISPLAY_NAME }}" # Environment name appended later
         description: "{{ PRODUCT_DESCRIPTION }}"
         approvalType: "{{ approval_type }}"
         proxies: "{{ proxies }}"
