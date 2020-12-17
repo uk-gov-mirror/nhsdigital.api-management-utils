@@ -120,9 +120,6 @@
           - "{{ APIGEE_ENVIRONMENT }}"
         scopes: []
 
-  - debug:
-      msg: "{{ default_product }}"
-
   - name: List product files
     set_fact:
       # we are in dist/utils/ansible
