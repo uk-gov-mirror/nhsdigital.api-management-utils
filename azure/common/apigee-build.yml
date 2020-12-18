@@ -146,12 +146,12 @@ jobs:
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-
-      - task: Cache@2
-        inputs:
-          key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
-          path: "${{ parameters.service_name }}/utils/.venv"
-        displayName: cache utils dependencies
+#
+#       - task: Cache@2
+#         inputs:
+#           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
+#           path: "${{ parameters.service_name }}/utils/.venv"
+#         displayName: cache utils dependencies
 
       - bash: |
             make install
