@@ -1,0 +1,22 @@
+---
+- name: validate manifest
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    DIST_DIR: "{{ lookup('env', 'DIST_DIR') }}"
+
+  tasks:
+    - name: set full path to manifest file
+      set_fact:
+        manifest_file: "{{ (DIST_DIR, 'manifest.yml') | path_join }}"
+
+    - name: load manifest
+      set_fact:
+        manifest: "{{ lookup('file', manifest_file ) | from_yaml }}"
+
+    - name: validate manifest
+      nhsd.apigee.validate_manifest:
+        meta: "{{ manifest['meta'] }}"
+        apigee: "{{ manifest['apigee'] }}"
+        dist_dir: "{{ DIST_DIR }}"

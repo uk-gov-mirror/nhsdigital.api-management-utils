@@ -22,6 +22,8 @@ parameters:
   - name: short_service_name
   - name: fully_qualified_service_name
   - name: service_base_path
+  - name: pr_label
+    default: ''
   - name: secret_file_ids
     type: object
   - name: secret_ids
@@ -171,6 +173,7 @@ stages:
                     make_spec_visible: ${{ parameters.make_spec_visible }}
                     friendly_api_name: ${{ parameters.friendly_api_name }}
                     spec_file: ${{ parameters.spec_file }}
+                    pr_label: ${{ parameters.pr_label }}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

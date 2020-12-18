@@ -142,7 +142,7 @@ jobs:
             echo "##vso[task.setvariable variable=build_containers]false"
           fi
         workingDirectory: ${{ parameters.service_name }}
-        displayName: "Check for ECS proxy definitions"
+        displayName: "Check for ECS proxy"
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
@@ -157,8 +157,7 @@ jobs:
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
-        displayName: "Install utils pre-requisites"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+        displayName: "Install utils "
 
       - bash: |
           export out_dir="$(realpath ${{ parameters.service_name }}/dist)"
@@ -221,6 +220,19 @@ jobs:
           fi
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy products into artifact"
+
+      - bash: |
+          set -euo pipefail
+          export DIST_DIR=`pwd`/dist
+          if [ -f manifest.yml ]; then
+             rsync -a manifest.yml dist
+             make -C utils/ansible validate-manifest
+          elif [ -f manifest_template.yml ]; then
+             rsync -a manifest_template.yml dist
+             make -C utils/ansible template-manifest
+          fi
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Validate manifest (template) and copy to artifact"
 
       - bash: |
           cd ${{ parameters.service_name }}/utils

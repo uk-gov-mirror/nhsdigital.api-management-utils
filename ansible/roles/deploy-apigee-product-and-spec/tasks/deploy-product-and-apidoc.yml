@@ -30,7 +30,7 @@
                                      SERVICE_NAME)
         }}
       qualified_display_name: >-
-        {{ product.displayName }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)
+        {{ ('-pr-' in SERVICE_NAME) | ternary(qualified_product_name, product.displayName) }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)
     set_fact:
       product: >-
         {{ product | combine({'displayName': qualified_display_name,

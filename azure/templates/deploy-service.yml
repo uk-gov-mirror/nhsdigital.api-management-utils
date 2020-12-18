@@ -8,6 +8,7 @@ parameters:
   - name: apigee_environment
   - name: apigee_organization
   - name: service_base_path
+  - name: pr_label
   - name: jinja_templates
     type: object
   - name: enable_monitoring
@@ -207,16 +208,24 @@ steps:
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
       export RELEASE_RELEASEID="$(Build.BuildId)"
       export PING="${{ parameters.ping }}"
-      if [[ -n "${{ parameters.spec_file }}" ]]; then
-        export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
-      fi
-      export FRIENDLY_NAME="$(FRIENDLY_NAME)"
-      export VISIBLE="${{ parameters.make_spec_visible }}"
-      export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
 
       make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
-      if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
-          make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
+
+      if [ -f $(SERVICE_DIR)/manifest.yml ]; then
+          export DIST_DIR=$(SERVICE_DIR)
+          export SERVICE_NAME="${{ parameters.service_name }}"
+          export PULL_REQUEST="${{ parameters.pr_label }}"
+          make --no-print-directory -C $(UTILS_DIR)/ansible deploy-manifest
+      else
+          if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+              if [[ -n "${{ parameters.spec_file }}" ]]; then
+                  export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
+              fi
+              export FRIENDLY_NAME="$(FRIENDLY_NAME)"
+              export VISIBLE="${{ parameters.make_spec_visible }}"
+              export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
+              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
+          fi
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
