@@ -1,0 +1,42 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install poetry
+        run: pip install poetry
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: ~/.virtualenvs
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Set Poetry config
+        run: |
+          poetry config --local virtualenvs.in-project false
+          poetry config --local virtualenvs.path ~/.virtualenvs
+
+      - name: Install
+        run: poetry install
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Test ansible collection
+        env:
+          PYTHONPATH: collections
+        working-directory: ansible
+        run: poetry run pytest
