@@ -9,7 +9,7 @@ class ApigeeSpec(pydantic.BaseModel):
     content: typing.Optional[typing.Dict] = None
 
     @pydantic.validator("content", always=True)
-    def load_content2(cls, content, values):
+    def load_content(cls, content, values):
         path = values.get("path")
         if not path:  # When path does not validate.
             return None

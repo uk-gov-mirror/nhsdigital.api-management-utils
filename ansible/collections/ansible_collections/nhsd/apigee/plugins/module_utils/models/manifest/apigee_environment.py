@@ -11,8 +11,18 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.apigee.product 
 )
 
 
-class ApigeeEnvironment(pydantic.BaseModel):
-    name: str
+class ManifestApigeeEnvironment(pydantic.BaseModel):
+    name: typing.Literal[
+        "internal-dev",
+        "internal-dev-sandbox",
+        "internal-qa",
+        "internal-qa-sandbox",
+        "ref",
+        "dev",
+        "sandbox",
+        "int",
+        "prod",
+    ]
     products: typing.List[ApigeeProduct]
     specs: typing.List[ApigeeSpec]
     portals: typing.List[ApigeeApidoc]
