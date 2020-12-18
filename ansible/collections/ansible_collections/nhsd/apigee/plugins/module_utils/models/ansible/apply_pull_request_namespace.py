@@ -1,6 +1,6 @@
 import pydantic
 
-from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.apigee_manifest import ApigeeManifest
+from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.apigee import ManifestApigee
 
 
 class ApplyPullRequestNamespace(pydantic.BaseModel):
@@ -24,25 +24,25 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
 
     :param pull_request: A string like 'pr-1234' for pull request
         number 1234.
-    :param service_name: The 'service-name' item your manifest.yml.
+    :param meta: The 'meta' item your manifest.yml.
     :param apigee: The 'apigee' item from your manifest.yml
     """
 
     pull_request: pydantic.constr(regex=r"^pr-[0-9]+$")  # i.e. 'pr-1234'
     service_name: str
-    apigee: ApigeeManifest
+    apigee: ManifestApigee
 
     @pydantic.validator("apigee")
     def apply_namespace(cls, apigee, values):
-        service_name = values.get("service_name")
+        api_name = values["meta"].api.name
 
         apigee.environments = [
             env for env in apigee.environments if env.name.startswith("internal-dev")
         ]
 
         # here we want:
-        # my-service-internal-dev         -> my-service-pr-1234
-        # my-service-internal-dev-sandbox -> my-service-pr-1234-sandbox
+        # canary-api-internal-dev         -> canary-api-pr-1234
+        # canary-api-internal-dev-sandbox -> canary-api-pr-1234-sandbox
         old = "internal-dev"
         new = values["pull_request"]
         for env in apigee.environments:
@@ -50,7 +50,7 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
                 product.name = product.name.replace(old, new, 1)
                 product.proxies = [
                     proxy.replace(old, new, 1)
-                    if proxy.startswith(service_name)
+                    if proxy.startswith(api_name)
                     else proxy
                     for proxy in product.proxies
                 ]

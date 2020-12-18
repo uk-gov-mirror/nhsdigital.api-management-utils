@@ -28,10 +28,9 @@
 
     - name: validate templated manifest
       nhsd.apigee.validate_manifest:
-        apigee: "{{ manifest.apigee }}"
-        version: "{{ manifest.version }}"
-        service_name: "{{ manifest['service-name'] }}"
-        pipeline_service_name: "{{ SERVICE_NAME }}"
+        meta: "{{ manifest['meta'] }}"
+        apigee: "{{ manifest['apigee'] }}"
+        service_name: "{{ SERVICE_NAME }}"
         dist_dir: "{{ DIST_DIR }}"
 
     - name: write template to file

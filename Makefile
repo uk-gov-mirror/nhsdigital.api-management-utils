@@ -1,5 +1,4 @@
 SHELL := /bin/bash
-poetry=source $$HOME/.poetry/env;poetry
 
 ########################################################################################################################
 ##
@@ -21,10 +20,10 @@ ansible-lint:
 	poetry run ansible-lint -c ansible-lint.yml -p ansible/*.yml || test $$? -eq 2
 
 lint:
-	$(poetry) run flake8 **/*.py
+	poetry run flake8 **/*.py
 
 install:
-	$(poetry) install
+	poetry install
 
 #########################################################################################################################
 ###

@@ -20,10 +20,10 @@ class ApigeeProductAttribute(pydantic.BaseModel):
         return value
 
 
-def assert_attribute(name, attributes):
-    if len([a for a in attributes if a.name == name]) != 1:
+def assert_required_name_in_attributes(required_name, attributes):
+    if len([a for a in attributes if a.name == required_name]) != 1:
         raise AssertionError(
-            f"All products must contain exactly 1 attribute named '{name}'"
+            f"All products must contain exactly 1 attribute with name: '{required_name}'"
         )
 
 
@@ -42,6 +42,6 @@ class ApigeeProduct(pydantic.BaseModel):
 
     @pydantic.validator("attributes")
     def validate_attributes(cls, attributes):
-        assert_attribute("access", attributes)
-        assert_attribute("ratelimit", attributes)
+        assert_required_name_in_attributes("access", attributes)
+        assert_required_name_in_attributes("ratelimit", attributes)
         return attributes

@@ -7,7 +7,7 @@
     APIGEE_ORGANIZATIONS: [nhsd-nonprod, nhsd-prod]
     APIGEE_ENVIRONMENTS:
       nhsd-nonprod: [internal-dev, internal-dev-sandbox, internal-qa, internal-qa-sandbox, ref]
-      nhsd-prod: [dev, int, sandbox, prod]
+      nhsd-prod: [dev, sandbox, int, prod]
 
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
@@ -40,17 +40,16 @@
 
     - name: validate manifest
       nhsd.apigee.validate_manifest:
-        service_name: "{{ manifest['service-name'] }}"
-        apigee: "{{ manifest.apigee }}"
-        version: "{{ manifest.version }}"
-        pipeline_service_name: "{{ SERVICE_NAME }}"
+        meta: "{{ manifest['meta'] }}"
+        apigee: "{{ manifest['apigee'] }}"
+        service_name: "{{ SERVICE_NAME }}"
         dist_dir: "{{ DIST_DIR }}"
       register: valid_manifest
 
     - name: apply pr namespace
       nhsd.apigee.apply_pull_request_namespace:
-        apigee: "{{ valid_manifest.apigee }}"
-        service_name: "{{ manifest['service-name'] }}"
+        meta: "{{ manifest['meta'] }}"
+        apigee: "{{ valid_manifest['apigee'] }}"
         pull_request: "{{ PULL_REQUEST }}"
       register: pr_manifest
       when: PULL_REQUEST != ""
