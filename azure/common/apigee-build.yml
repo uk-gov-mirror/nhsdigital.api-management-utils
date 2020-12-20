@@ -36,6 +36,16 @@ jobs:
         ${{ var.key }}: ${{ var.value }}
     steps:
 
+      - bash: |
+          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          container="$(hostname)"
+          echo instance-id: "${instance_id}"
+          echo container: "${container}"
+          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+          echo sudo su - ubuntu
+          echo docker exec -it ${container} bash
+        displayName: print aws info
+
       - template: ../components/aws-clean-config.yml
 
       - ${{ if parameters.notify }}:
@@ -189,13 +199,7 @@ jobs:
           profile: "$(BUILD_ROLE)"
 
       - bash: |
-          set -e
-          aws sts get-caller-identity
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
-
-      - bash: |
           source "${{ parameters.service_name }}/dist/.build_env_vars"
-          source /tmp/.aws.env
           CONTAINER_VARS_FILE="$(realpath ${{ parameters.service_name }}/ecs-proxies-containers.yml)" \
           make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible build-ecs-proxies
         displayName: "Build and push ECS proxies"

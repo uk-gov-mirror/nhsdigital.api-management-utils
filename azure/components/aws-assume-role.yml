@@ -39,6 +39,18 @@ steps:
 
         cp ~/.aws/config.default ~/.aws/config
         tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
+
+        # add some backoff to allow for eventual consistency of IAM
+        for i in {2..4};
+        do
+            if aws sts assume-role --role-arn "${aws_role}" --role-session-name build-assume-role > ${tmp_file}; then
+                echo assumed role
+                break
+            fi
+            let "sleep_for=$i*10";
+            sleep $sleep_for
+        done
+
         aws sts assume-role --role-arn "${aws_role}" --role-session-name build-assume-role > ${tmp_file}
 
         echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
