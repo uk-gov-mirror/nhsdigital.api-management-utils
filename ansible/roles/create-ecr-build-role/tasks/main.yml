@@ -35,6 +35,13 @@
       register: create_role
       when: get_role.rc == 255
 
+    - name: update assume role policy
+      command: >-
+        {{ aws_cmd }} iam update-assume-role-policy --role-name {{ build_role_name }}
+        --assume-role-policy-document file://{{ assume_role_policy_json.path }}
+      register: create_role
+      when: get_role.rc == 0
+
   always:
     - name: remove temp file
       file:

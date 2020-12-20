@@ -7,7 +7,7 @@ assume_role_policy:
     - Sid: ""
       Effect: Allow
       Principal:
-        AWS: "arn:aws:iam::{{ aws_account_id }}:role/agents-ecs-task"
+        AWS: "arn:aws:iam::{{ aws_account_id }}:role/build-agent"
       Action: "sts:AssumeRole"
 aws_ecs_policy:
   Version: "2012-10-17"

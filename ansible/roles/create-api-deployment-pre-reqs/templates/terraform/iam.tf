@@ -107,7 +107,7 @@ resource "aws_iam_role" "deploy-user" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/agents-ecs-task"
+        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/build-agent"
       },
       "Effect": "Allow",
       "Sid": ""
