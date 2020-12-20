@@ -30,5 +30,3 @@
   roles:
     - setup-facts
     - create-api-deployment-pre-reqs
-#     - create-api-deployment-user-access-key
-#     - create-api-deployment-dns-entry

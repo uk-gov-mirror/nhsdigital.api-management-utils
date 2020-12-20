@@ -11,6 +11,7 @@ steps:
 
   - bash: |
       set -e
+      set -o pipefail
       source "{{ parameters.env_vars_dir }}/.build_env_vars"
 
       ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"

@@ -38,12 +38,9 @@ jobs:
 
       - bash: |
           instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
-          container="$(hostname)"
           echo instance-id: "${instance_id}"
-          echo container: "${container}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
           echo sudo su - ubuntu
-          echo docker exec -it ${container} bash
         displayName: print aws info
 
       - template: ../components/aws-clean-config.yml
