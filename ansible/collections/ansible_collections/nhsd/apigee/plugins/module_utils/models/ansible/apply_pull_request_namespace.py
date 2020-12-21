@@ -1,6 +1,7 @@
 import pydantic
 
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.apigee import ManifestApigee
+from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.meta import ManifestMeta
 
 
 class ApplyPullRequestNamespace(pydantic.BaseModel):
@@ -29,7 +30,7 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
     """
 
     pull_request: pydantic.constr(regex=r"^pr-[0-9]+$")  # i.e. 'pr-1234'
-    service_name: str
+    meta: ManifestMeta
     apigee: ManifestApigee
 
     @pydantic.validator("apigee")

@@ -27,6 +27,10 @@
         msg: Invalid APIGEE_ENVIRONMENT
       when: APIGEE_ENVIRONMENT not in APIGEE_ENVIRONMENTS[APIGEE_ORGANIZATION]
 
+      # NOTE: Once the manifest handles proxies this can be removed!
+      # it must remain (for now) to handle the frequent case where
+      # multile Azure pipeline stages deploy to the same Apigee
+      # environment.
     - name: ensure SERVICE_NAME
       fail:
         msg: Invalid SERVICE_NAME
