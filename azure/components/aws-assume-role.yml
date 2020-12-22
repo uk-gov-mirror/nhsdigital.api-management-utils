@@ -51,8 +51,6 @@ steps:
             sleep $sleep_for
         done
 
-        aws sts assume-role --role-arn "${aws_role}" --role-session-name build-assume-role > ${tmp_file}
-
         echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
         echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
         echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config

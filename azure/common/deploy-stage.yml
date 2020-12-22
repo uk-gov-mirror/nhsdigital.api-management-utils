@@ -78,6 +78,8 @@ stages:
         environment: ${{ parameters.environment }}
         pool:
           name: 'AWS-ECS'
+        workspace:
+          clean: all
         strategy:
           runOnce:
             deploy:

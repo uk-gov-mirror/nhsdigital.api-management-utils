@@ -31,6 +31,8 @@ jobs:
     timeoutInMinutes: 30
     pool:
       name: 'AWS-ECS'
+    workspace:
+      clean: all
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
