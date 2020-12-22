@@ -86,6 +86,10 @@ stages:
               steps:
                 - download: none
 
+                - bash: |
+                    ls "$(Pipeline.Workspace)/s"
+                  displayName: "check workspace is clean"
+
                 - task: DownloadPipelineArtifact@2
                   inputs:
                     source: "specific"
