@@ -39,6 +39,13 @@ jobs:
     steps:
 
       - bash: |
+          if [ ! -z "$(ls -A \"$(Pipeline.Workspace)/s/${{ parameters.service_name }}\") 2>/dev/null" ]; then
+            echo "workspace directory is not empty!"
+            exit 1
+          fi
+        displayName: "check workspace is clean"
+
+      - bash: |
           instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
           echo instance-id: "${instance_id}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
