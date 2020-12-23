@@ -40,13 +40,12 @@ class ValidateManifest(pydantic.BaseModel):
 
     @pydantic.validator("service_name")
     def check_service_name(cls, service_name, values):
-        if service_name == "":
-            return service_name
-        api_name = values["meta"].api.name
-        if service_name != api_name and not service_name.startswith(api_name + "-"):
-            raise ValueError(
-                f"pipeline defined SERVICE_NAME ('{service_name}') does not begin with manifest defined meta.api.name ('{api_name}')"
-            )
+        if service_name:
+            api_name = values["meta"].api.name
+            if not re.match(f"{api_name}(-[a-z]+)*", service_name):
+                raise ValueError(
+                    f"pipeline defined SERVICE_NAME ('{service_name}') does not begin with manifest defined meta.api.name ('{api_name}')"
+                )
 
     @pydantic.validator("apigee", pre=True)
     def prepend_dist_dir_to_spec_paths(cls, apigee, values):

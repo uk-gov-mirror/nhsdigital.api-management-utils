@@ -18,13 +18,13 @@ guard-%:
 
 
 
-template-manifest: guard-SERVICE_NAME guard-DIST_DIR
+template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook -i local template-manifest.yml
 
 validate-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook -i local validate-manifest.yml
 
-deploy-manifest: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN
+deploy-manifest: guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN
 	@poetry run ansible-playbook -i local deploy-manifest.yml
 
 build-ecs-proxies: guard-build_label guard-service_id guard-CONTAINER_VARS_FILE
