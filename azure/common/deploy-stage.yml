@@ -87,7 +87,7 @@ stages:
                 - download: none
 
                 - bash: |
-                    if [ ! -z "$(ls -A \"$(Pipeline.Workspace)/s/${{ parameters.service_name }}\") 2>/dev/null" ]; then
+                    if [ ! -z "$(ls -A \"$(Pipeline.Workspace)/s/${{ parameters.service_name }}\" 2>/dev/null)" ]; then
                       echo "workspace directory is not empty!"
                       exit 1
                     fi
