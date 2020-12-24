@@ -1,4 +1,14 @@
 
+- name: fail for prod environment
+  fail:
+    msg: "this is deprecated and shouldn't ever be executed for a production api"
+  when: apigee_environment == 'prod'
+
+- name: fail for prod account
+  fail:
+    msg: "this is deprecated and shouldn't ever be executed for a production api"
+  when: account == 'prod'
+
 - name: print workspace
   debug: msg="workspace - {{ workspace }}"
 
