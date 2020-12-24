@@ -18,18 +18,12 @@ jobs:
       - name: Install poetry
         run: pip install poetry
 
-      - name: Cache Poetry virtualenv
+      - name: Cache poetry packages
         uses: actions/cache@v1
         id: cache
         with:
-          path: ~/.virtualenvs
-          key: poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: poetry-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Set Poetry config
-        run: |
-          poetry config --local virtualenvs.in-project false
-          poetry config --local virtualenvs.path ~/.virtualenvs
+          path: ~/.venv
+          key: ${{ runner.os }}-utils-venv-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install
         run: poetry install
