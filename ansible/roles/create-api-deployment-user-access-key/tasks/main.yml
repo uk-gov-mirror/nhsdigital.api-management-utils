@@ -1,4 +1,14 @@
 
+- name: fail for prod environment
+  fail:
+    msg: "this is deprecated and shouldn't ever be executed for a production api"
+  when: APIGEE_ENVIRONMENT == 'prod'
+
+- name: fail for prod account
+  fail:
+    msg: "this is deprecated and shouldn't ever be executed for a production api"
+  when: account == 'prod'
+
 - name: check if user exists
   command: "{{ aws_cmd }} iam get-user --user-name {{ deploy_user_name }} --query User"
   register: get_user
