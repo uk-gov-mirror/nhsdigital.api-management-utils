@@ -142,14 +142,6 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
 
-                - bash: |
-                    export mm_api_key="$(status-endpoint-api-key)"
-                    if [ -z "${mm_api_key}" ]; then
-                        echo not set
-                        exit -1
-                    fi
-                  displayName: Set COMMIT_SHA
-
                 - ${{ if parameters.notify }}:
                   - bash: |
                       export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
