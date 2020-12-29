@@ -131,6 +131,7 @@ stages:
                       - ${{ parameters.aws_org_account }}/azure-devops/apigee-${{ parameters.apigee_organization }}/APIGEE_PASSWORD
                       - ${{ parameters.aws_org_account }}/azure-devops/MONITORING_API_KEY
                       - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
+                      - ptl/monitoring/status-endpoint-api-key
                       - ${{ each secret_id in parameters.secret_ids }}:
                           - ${{ secret_id }}
                     config_ids:
@@ -140,6 +141,14 @@ stages:
                       - /ptl/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+
+                - bash: |
+                    export mm_api_key="$(status-endpoint-api-key)"
+                    if [ -z "${mm_api_key}" ]; then
+                        echo not set
+                        exit -1
+                    fi
+                  displayName: Set COMMIT_SHA
 
                 - ${{ if parameters.notify }}:
                   - bash: |
