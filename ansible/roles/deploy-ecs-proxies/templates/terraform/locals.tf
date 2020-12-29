@@ -27,11 +27,12 @@ locals {
       splunk-index = "requests_apm_${var.account}"
       splunk-sourcetype = "apm-json-docker"
       splunk-source = "apm:ecs:${var.workspace}:${container.name}"
+      splunk-insecureskipverify = "true" # this is ok because we're talking to the internal endpoint ...
     },
     secretOptions= [
       {
         name = "splunk-url"
-        valueFrom = "/${var.account}/platform-common/splunk/hec_url"
+        valueFrom = "/${var.account}/platform-common/splunk/internal_hec_url"
       },
       {
         name = "splunk-token"
