@@ -4,8 +4,8 @@ parameters:
 
 steps:
 - bash: |
-    # Install requirements 
-    sudo apt-get install oathtool gnupg2 jq -y
+    # Install requirements
+    set -e
     
     # Save code to variable
     export MFA_CODE=`oathtool --totp -b '${{ parameters.apigee_otp_key }}'`

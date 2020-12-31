@@ -9,7 +9,6 @@
     account:  "{{ lookup('env','account') }}"
     aws_profile: "apm_{{ account }}"
 
-
   pre_tasks:
 
     - name: check account

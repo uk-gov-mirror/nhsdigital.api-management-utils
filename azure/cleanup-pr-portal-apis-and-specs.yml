@@ -16,20 +16,14 @@ jobs:
     displayName: Cleanup PR specs
     timeoutInMinutes: 240
     pool:
-      vmImage: "ubuntu-20.04"
+      name: 'AWS-ECS'
     steps:
       - checkout: self
 
-      - task: DownloadSecureFile@1
-        name: aws_config
-        inputs:
-          secureFile: ptl_aws_config
-
-      - bash: |
-          mkdir -p ~/.aws
-          mv $(aws_config.secureFilePath) ~/.aws/config
-          chmod 400 ~/.aws/config
-        displayName: "Get AWS config"
+      - template: ../components/aws-assume-role.yml
+        parameters:
+          role: "auto-ops"
+        profile: "apm_ptl"
 
       - template: build-prereqs.yml
         parameters:

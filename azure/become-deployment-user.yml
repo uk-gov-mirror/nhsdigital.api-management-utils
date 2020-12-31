@@ -9,24 +9,23 @@ parameters:
 
 steps:
 
-  - task: DownloadSecureFile@1
-    name: aws_config
-    inputs:
-      secureFile: ptl_aws_config
-
   - bash: |
-      mkdir -p ~/.aws
-      mv $(aws_config.secureFilePath) ~/.aws/config
-      chmod 400 ~/.aws/config
-      ls -al ~/.aws/config
-    displayName: "Get AWS config"
+      set -e
+      set -o pipefail
+      source "{{ parameters.env_vars_dir }}/.build_env_vars"
 
-  - bash: |
-      source "${{ parameters.env_vars_dir }}/.build_env_vars"
-      cd ${{ parameters.utils_dir }}
-      poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${APIGEE_ENVIRONMENT}-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-      mv -f ~/.aws/config.tmp ~/.aws/config
-      chmod 400 ~/.aws/config
-    displayName: "Become deployment user"
+      ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+      ASSUME_ROLE="deploy-${APIGEE_ENVIRONMENT}-${service_id}"
 
+      cp ~/.aws/config.default ~/.aws/config
+      tmp_file="$(Agent.TempDirectory)/.aws.tmp.creds.json"
+      aws sts assume-role --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ASSUME_ROLE}" --role-session-name build-assume-role > ${tmp_file}
+
+      echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
+      echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
+      echo "aws_session_token = $(jq -r .Credentials.SessionToken ${tmp_file})" >> ~/.aws/config
+
+      rm ${tmp_file}
+
+    displayName: "assume deployment role"
 
