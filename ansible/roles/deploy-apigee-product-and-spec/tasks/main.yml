@@ -69,6 +69,7 @@
       when: existing_spec is not defined and (SPEC_FILE)
       retries: 2
       delay: 15
+      until: new_spec.status == 200
 
     - name: if no SPEC_FILE, and remote spec, delete it
       uri:
@@ -78,8 +79,10 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       when: existing_spec is defined and not (SPEC_FILE)
+      register: _resp
       retries: 2
       delay: 15
+      until: _resp.status == 200
 
     - name: set spec
       set_fact:
@@ -100,8 +103,10 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       when: (SPEC_FILE)
+      register: _resp
       retries: 2
       delay: 15
+      until: _resp.status == 200
 
 
 - name: Loop over products

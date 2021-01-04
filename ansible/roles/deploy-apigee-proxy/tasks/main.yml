@@ -22,6 +22,9 @@
         mime_type: application/octet-stream
     return_content: yes
   register: apigee_response
+  retries: 2
+  delay: 15
+  until: apigee_response.status == 201
 
 - name: get revision number of upload
   set_fact:
@@ -38,8 +41,10 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
+  register: _resp
   retries: 3
   delay: 30
+  until: _resp.status == 200
 
 - name: ping deployed proxy
   uri:

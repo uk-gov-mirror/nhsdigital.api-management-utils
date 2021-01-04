@@ -9,6 +9,7 @@
   changed_when: no
   retries: 5
   delay: 10
+  until: current_repos.rc == 0  
 
 - name: set variables
   set_fact:
