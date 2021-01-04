@@ -37,9 +37,9 @@ steps:
   - bash: |
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
-        echo "##vso[task.setvariable variable=build_containers]true"
+        echo "##vso[task.setvariable variable=deploy_containers]true"
       else 
-        echo "##vso[task.setvariable variable=build_containers]false"
+        echo "##vso[task.setvariable variable=deploy_containers]false"
       fi
     workingDirectory: "$(SERVICE_DIR)"
     displayName: "Check for ECS proxy definitions"
@@ -55,11 +55,9 @@ steps:
     displayName: "Install utils pre-requisites"
 
   - bash: |
-      brew install tfenv
-      tfenv install 0.12.29
       tfenv use 0.12.29
     displayName: setup terraform
-    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+    condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
 
   - bash: |
       echo "Deploying ${{ parameters.service_name }} artifact $(SERVICE_ARTIFACT_NAME) as ${{ parameters.fully_qualified_service_name }} to ${{ parameters.service_base_path }} on $(ENV_URL)"
@@ -103,10 +101,10 @@ steps:
     displayName: Template proxies
 
   - ${{ each post_template_step in parameters.post_template }}:
-    - ${{ post_template_step}}
+    - ${{ post_template_step }}
 
   - ${{ each pre_deploy_step in parameters.pre_deploy }}:
-    - ${{ pre_deploy_step}}
+    - ${{ pre_deploy_step }}
 
   - bash: |
       set -e
@@ -120,31 +118,58 @@ steps:
           proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-all.yml"
         fi
       fi
-      if [ ! -z "${proxy_vars_file}" ]; then
-        # ensure deployment pre-reqs
-        source $(SERVICE_DIR)/.build_env_vars
+      deploy_role=""
 
-        account=ptl SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+      if [[ ! -z "${proxy_vars_file}" ]]; then
+        source $(SERVICE_DIR)/.build_env_vars
+        deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
+
+        # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
+        export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
+        export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
+        export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
+
+        account=ptl SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+        APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(UTILS_DIR)/ansible create-api-deployment-pre-reqs
 
-        # become deployment user
-        aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${{ parameters.apigee_environment }}-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-        mv -f ~/.aws/config.tmp ~/.aws/config
-        chmod 400 ~/.aws/config
-
-         if [[ $SERVICE_ARTIFACT_NAME == v* ]]; then
-            export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
-         else
-            export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
-         fi
-
-        # deploy ecs proxies
-        # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SOURCE_COMMIT_ID="$(Build.SourceVersion)" RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
-        make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
       fi
+
+      echo "##vso[task.setvariable variable=PROXY_VARS_FILE]${proxy_vars_file}"
+      echo "##vso[task.setvariable variable=DEPLOY_ROLE]${deploy_role}"
+
+    displayName: Create ECS Prerequisites
+    condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
+
+  - template: ../components/aws-assume-role.yml
+    parameters:
+      role: "$(DEPLOY_ROLE)"
+      profile: "$(DEPLOY_ROLE)"
+
+  - bash: |
+      set -e
+      proxy_vars_file="$(PROXY_VARS_FILE)"
+
+      source $(SERVICE_DIR)/.build_env_vars
+
+      if [[ $SERVICE_ARTIFACT_NAME == v* ]]; then
+        export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      else
+        export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
+      fi
+
+      # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
+      export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
+      export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
+      export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
+
+      account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SOURCE_COMMIT_ID="$(Build.SourceVersion)" \
+      RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+      APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+      make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
+
     displayName: Deploy ECS proxies
-    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+    condition: and(succeeded(), ne(variables['DEPLOY_ROLE'], ''))
 
   - bash: |
       declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" \
@@ -229,4 +254,4 @@ steps:
         body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
-    - ${{ post_deploy_step}}
+    - ${{ post_deploy_step }}

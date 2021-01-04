@@ -16,4 +16,4 @@
 
   roles:
     - setup-facts
-    - remove-ecr-build-user
+    - remove-ecr-build-role

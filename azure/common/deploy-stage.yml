@@ -77,12 +77,21 @@ stages:
       - deployment: deploy
         environment: ${{ parameters.environment }}
         pool:
-          vmImage: 'ubuntu-18.04'
+          name: 'AWS-ECS'
+        workspace:
+          clean: all
         strategy:
           runOnce:
             deploy:
               steps:
                 - download: none
+
+                - bash: |
+                    if [ ! -z "$(ls -A \"$(Pipeline.Workspace)/s/${{ parameters.service_name }}\" 2>/dev/null)" ]; then
+                      echo "workspace directory is not empty!"
+                      exit 1
+                    fi
+                  displayName: "check workspace is clean"
 
                 - task: DownloadPipelineArtifact@2
                   inputs:
@@ -94,26 +103,22 @@ stages:
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
 
-                - task: DownloadSecureFile@1
-                  name: aws_config
-                  inputs:
-                    secureFile: ptl_aws_config
-
                 - bash: |
-                    set -euo pipefail
-                    mkdir -p ~/.aws
-                    mv $(aws_config.secureFilePath) ~/.aws/config
-                    chmod 400 ~/.aws/config
-                    ls -al ~/.aws/config
-                  displayName: "Get AWS config"
+                    instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+                    echo instance-id: "${instance_id}"
+                    echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+                    echo sudo su - ubuntu
+                  displayName: print aws info
+
+                - template: ../components/aws-assume-role.yml
+                  parameters:
+                    role: "auto-ops"
+                    profile: "apm_ptl"
 
                 - task: UsePythonVersion@0
                   displayName: 'Use Python 3.8'
                   inputs:
                     versionSpec: 3.8
-
-                - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-                  displayName: Install python dependencies
 
                 - template: "../components/set-facts.yml"
                   parameters:
@@ -126,6 +131,7 @@ stages:
                       - ${{ parameters.aws_org_account }}/azure-devops/apigee-${{ parameters.apigee_organization }}/APIGEE_PASSWORD
                       - ${{ parameters.aws_org_account }}/azure-devops/MONITORING_API_KEY
                       - ptl/access-tokens/github/repo-status-update/GITHUB_ACCESS_TOKEN
+                      - ptl/monitoring/status-endpoint-api-key
                       - ${{ each secret_id in parameters.secret_ids }}:
                           - ${{ secret_id }}
                     config_ids:
