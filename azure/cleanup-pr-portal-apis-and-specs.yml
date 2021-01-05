@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout: self
 
-      - template: ../components/aws-assume-role.yml
+      - template: ./components/aws-assume-role.yml
         parameters:
           role: "auto-ops"
         profile: "apm_ptl"
