@@ -47,7 +47,10 @@ class ActionModule(ApigeeAction):
 
         existing_resources = [
             existing_resource
-            for existing_resource in task_vars["APIGEE_SPEC_RESOURCES"]
+            for existing_resource in (
+                task_vars.get("APIGEE_SPEC_RESOURCES")
+                or result["ansible_facts"]["APIGEE_SPEC_RESOURCES"]
+            )
             if existing_resource["name"] == args.spec.name
         ]
 
@@ -73,6 +76,7 @@ class ActionModule(ApigeeAction):
             if response_dict.get("failed"):
                 return response_dict
 
+            spec_resource = response_dict["response"]["body"]
             result["changed"] = True
 
             # Add new spec to locally copy of all spec_resources
@@ -100,13 +104,17 @@ class ActionModule(ApigeeAction):
         new_spec_content = args.spec.content
 
         delta = self.delta(spec_content, new_spec_content)
+        result["changed"] = True if delta else False
 
         if diff_mode:
-            result["diff"] = {
-                "before": spec_content,
-                "after": new_spec_content,
-                "delta": delta,
-            }
+            result["diff"] = [
+                {
+                    "before_header": args.spec.name,
+                    "before": spec_content,
+                    "after_header": args.spec.name,
+                    "after": new_spec_content,
+                }
+            ]
 
         if not delta or check_mode:
             result["spec_content"] = args.spec.content
@@ -119,7 +127,6 @@ class ActionModule(ApigeeAction):
             return new_spec_content_request
         self.put(spec_content_url + "/snapshot", args.access_token)
 
-        result["changed"] = True
         result["spec_content"] = new_spec_content_request["response"]["body"]
 
         return result
