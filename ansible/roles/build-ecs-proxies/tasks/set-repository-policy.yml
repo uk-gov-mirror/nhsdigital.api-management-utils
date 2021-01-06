@@ -2,6 +2,9 @@
   set_fact:
     new_policy
 
+- name: debug cross_account_policy
+  debug: var=cross_account_policy
+
 - name: get current repository policy
   command: "{{ aws_cmd }} ecr get-repository-policy --repository-name {{ item }} --query policyText --output text"
   register: get_current_policy
