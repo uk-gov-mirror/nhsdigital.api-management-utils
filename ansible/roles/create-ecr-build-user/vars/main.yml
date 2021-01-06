@@ -53,6 +53,7 @@ aws_ecs_policy:
         - "ssm:GetParameters"
         - "ssm:GetParametersByPath"
       Resource:
+        - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/account-ids/*"
         - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/platform-common/*"
         - "arn:aws:ssm:{{ aws_region }}:{{ aws_account_id }}:parameter/{{ account }}/api-deployment/{{ service_id }}/*"
     - Sid: ssmput

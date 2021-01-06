@@ -3,18 +3,4 @@ build_label: "{{ lookup('env', 'build_label') }}"
 containers: "{{ docker_containers | json_query('[].name') | unique | sort }}"
 repo_names: "{{ containers | map('regex_replace', '^(.*)$', service_id + '_\\1') | list }}"
 base_dir: "{{ playbook_dir }}/../.."
-cross_account_policy:
-  Version: "2012-10-17"
-  Statement:
-    - Sid: "allow-pull-cross-account"
-      Effect: "Allow"
-      Principal:
-        AWS: "arn:aws:iam::{{ lookup('aws_ssm', '/account-ids/prod', aws_profile=aws_profile ) }}:role/auto-ops"
-      Action:
-        - "ecr:ListImages"
-        - "ecr:GetRepositoryPolicy"
-        - "ecr:GetDownloadUrlForLayer"
-        - "ecr:DescribeRepositories"
-        - "ecr:DescribeImages"
-        - "ecr:BatchGetImage"
-        - "ecr:BatchCheckLayerAvailability"
+
