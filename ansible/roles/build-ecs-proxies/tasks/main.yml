@@ -21,9 +21,30 @@
     images_map: "{{ images_map | combine({item['name']: item}) }}"
   with_items: '{{ docker_containers }}'
 
+- name: get prod account id
+  command: >-
+    {{ aws_cmd }} ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text
+  register: get_prod_account_id
+  changed_when: no
+
 - name: set variables
   set_fact:
     new_repos: "{{ repo_names | difference(current_repos) }}"
+    cross_account_policy:
+      Version: "2012-10-17"
+      Statement:
+        - Sid: "allow-pull-cross-account"
+          Effect: "Allow"
+          Principal:
+            AWS: "arn:aws:iam::{{ get_prod_account_id.stdout }}:role/auto-ops"
+          Action:
+            - "ecr:ListImages"
+            - "ecr:GetRepositoryPolicy"
+            - "ecr:GetDownloadUrlForLayer"
+            - "ecr:DescribeRepositories"
+            - "ecr:DescribeImages"
+            - "ecr:BatchGetImage"
+            - "ecr:BatchCheckLayerAvailability"
 
 - name: create new repos
   command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_id }}"
