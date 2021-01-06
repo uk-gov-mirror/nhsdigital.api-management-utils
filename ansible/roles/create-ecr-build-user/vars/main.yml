@@ -33,6 +33,7 @@ aws_ecs_policy:
         - "ecr:PutImage"
         - "ecr:PutImageScanningConfiguration"
         - "ecr:PutImageTagMutability"
+        - "ecr:SetRepositoryPolicy"
         - "ecr:StartImageScan"
         - "ecr:StartLifecyclePolicyPreview"
         - "ecr:UploadLayerPart"
