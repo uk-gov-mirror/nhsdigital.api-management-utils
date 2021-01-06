@@ -94,21 +94,41 @@ class ActionModule(ApigeeAction):
 
         result["apidoc"] = apidoc.dict()
 
-        # Can only compare with keys actually provided in user provided apidoc
-        keys_to_ignore = [k for k in current_apidoc if k not in result["apidoc"]]
+        # ignore apigee filesystem junk
+        keys_to_ignore = [
+            "apiId",
+            "id",
+            "categoryIds",
+            "enrollment",
+            "imageUrl",
+            "modified",
+            "productExists",
+            "siteId",
+            "snapshotExists",
+            "snapshotModified",
+            "snapshotOutdated",
+            "snapshotSourceMissing",
+            "snapshotState",
+            "specModified",
+            "specTitle",
+        ]
 
         delta = self.delta(
             current_apidoc,
             result["apidoc"],
             keys_to_ignore=keys_to_ignore,
         )
+        result["changed"] = bool(delta)
 
         if diff_mode:
-            result["diff"] = {
-                "before": current_apidoc,
-                "after": apidoc.dict(),
-                "delta": delta,
-            }
+            result["diff"] = [
+                {
+                    "before_header": current_apidoc["specId"],
+                    "before": self.exclude_keys(current_apidoc, keys_to_ignore),
+                    "after_header": apidoc.specId,
+                    "after": self.exclude_keys(apidoc.dict(), keys_to_ignore),
+                }
+            ]
 
         if not delta or check_mode:
             return result
@@ -119,9 +139,8 @@ class ActionModule(ApigeeAction):
         if apidoc_request.get("failed"):
             return apidoc_request
 
-        result["changed"] = True
         result["apidoc"] = apidoc_request["response"]["body"]["data"]
         if diff_mode:
-            result["diff"]["after"] = result["apidoc"]
+            result["diff"][0]["after"] = self.exclude_keys(result["apidoc"], keys_to_ignore)
 
         return result
