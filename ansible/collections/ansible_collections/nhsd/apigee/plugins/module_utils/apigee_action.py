@@ -6,6 +6,10 @@ import requests
 
 
 class ApigeeAction(ansible.plugins.action.ActionBase):
+
+    def exclude_keys(self, dict_, keys_to_ignore):
+        return {k: v for k, v in dict_.items() if k not in keys_to_ignore}
+
     def validate_args(self, Validator: pydantic.BaseModel):
         """
         Returns two-length tuple of validated_args and errors dicts.
