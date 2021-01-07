@@ -3,43 +3,43 @@
   # by Apigee.  We just pull them all and find the unique IDs of the
   # spec & apidoc we are interested in later.
   block:
-  - name: list portals
-    uri:
-      url: "{{ portals_list_uri }}"
-      headers:
-        Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-      return_content: yes
-    register: portals
+    - name: list portals
+      uri:
+        url: "{{ portals_list_uri }}"
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        return_content: yes
+      register: portals
 
-  - name: set portal_id
-    set_fact:
-      portal_id: "{{ portals.json.data[0].id }}"
+    - name: set portal_id
+      set_fact:
+        portal_id: "{{ portals.json.data[0].id }}"
 
-  - name: list specs
-    uri:
-      url: "{{ specs_list_uri }}"
-      headers:
-        Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-      return_content: yes
-    register: specs
+    - name: list specs
+      uri:
+        url: "{{ specs_list_uri }}"
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        return_content: yes
+      register: specs
 
-  - name: set folder_id
-    set_fact:
-      folder_id: "{{ specs.json.id }}"
+    - name: set folder_id
+      set_fact:
+        folder_id: "{{ specs.json.id }}"
 
-  - name: get all apidocs
-    uri:
-      url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
-      method: GET
-      headers:
-        Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-      status_code: 200
-      return_content: yes
-    register: apidocs
+    - name: get all apidocs
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+        return_content: yes
+      register: apidocs
 
-  - name: set apidocs
-    set_fact:
-      apidocs: "{{ apidocs.json.data }}"
+    - name: set apidocs
+      set_fact:
+        apidocs: "{{ apidocs.json.data }}"
 
 
 
@@ -67,6 +67,9 @@
         return_content: yes
       register: new_spec
       when: existing_spec is not defined and (SPEC_FILE)
+      retries: 2
+      delay: 15
+      until: new_spec.status == 200
 
     - name: if no SPEC_FILE, and remote spec, delete it
       uri:
@@ -76,6 +79,10 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       when: existing_spec is defined and not (SPEC_FILE)
+      register: _resp
+      retries: 2
+      delay: 15
+      until: _resp.status == 200
 
     - name: set spec
       set_fact:
@@ -96,87 +103,91 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       when: (SPEC_FILE)
+      register: _resp
+      retries: 2
+      delay: 15
+      until: _resp.status == 200
 
 
 - name: Loop over products
   block:
-  - name: Set default_product
-    set_fact:
-      default_product:
-        name: "" # SERVICE_NAME is appended inside loop, so leave blank here
-        displayName: "{{ PRODUCT_DISPLAY_NAME }}" # Environment name appended later
-        description: "{{ PRODUCT_DESCRIPTION }}"
-        approvalType: "{{ approval_type }}"
-        proxies: "{{ proxies }}"
-        attributes:
-          - name: access
-            value: public
-          - name: ratelimit
-            value: 5ps
-        quota: 300
-        quotaInterval: 1
-        quotaTimeUnit: minute
-        environments:
-          - "{{ APIGEE_ENVIRONMENT }}"
-        scopes: []
+    - name: Set default_product
+      set_fact:
+        default_product:
+          name: "" # SERVICE_NAME is appended inside loop, so leave blank here
+          displayName: "{{ PRODUCT_DISPLAY_NAME }}" # Environment name appended later
+          description: "{{ PRODUCT_DESCRIPTION }}"
+          approvalType: "{{ approval_type }}"
+          proxies: "{{ proxies }}"
+          attributes:
+            - name: access
+              value: public
+            - name: ratelimit
+              value: 5ps
+          quota: 300
+          quotaInterval: 1
+          quotaTimeUnit: minute
+          environments:
+            - "{{ APIGEE_ENVIRONMENT }}"
+          scopes: []
 
-  - name: List product files
-    set_fact:
-      # we are in dist/utils/ansible
-      # want to look in dist/products
-      api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
-    ignore_errors: yes # folder may not exist in older APIs
+    - name: List product files
+      set_fact:
+        # we are in dist/utils/ansible
+        # want to look in dist/products
+        api_product_files: "{{ lookup('fileglob', '../../products/*.yml').split(',') }}"
+      ignore_errors: yes # folder may not exist in older APIs
 
-  - name: Read product files
-    set_fact:
-      api_products: >-
-        {{ (api_products | default([])) + [lookup('file', filename) | from_yaml] }}
-    loop: "{{ api_product_files | default([]) }} "
-    loop_control:
-      loop_var: filename
+    - name: Read product files
+      set_fact:
+        api_products: >-
+          {{ (api_products | default([])) + [lookup('file', filename) | from_yaml] }}
+      loop: "{{ api_product_files | default([]) }} "
+      loop_control:
+        loop_var: filename
 
-  - name: Assert that producer defined products define 'name'
-    assert:
-      that:
-        - product.name is defined # Each needs a unique name
-                                  # (SERVICE_NAME appended inside
-                                  # loop)
-      fail_msg: >-
-        User defined API products must have a 'name' field
-      success_msg: User defined products successfully validated.
-    loop: "{{ api_products | default([]) }}"
-    loop_control:
-      loop_var: product
+    - name: Assert that producer defined products define 'name'
+      assert:
+        that:
+          - product.name is defined # Each needs a unique name
+                                    # (SERVICE_NAME appended inside
+                                    # loop)
+        fail_msg: >-
+          User defined API products must have a 'name' field
+        success_msg: User defined products successfully validated.
+      loop: "{{ api_products | default([]) }}"
+      loop_control:
+        loop_var: product
 
-  - name: filter products not meant for this environment
-    set_fact:
-      api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT) | list }}"
+    - name: filter products not meant for this environment
+      set_fact:
+        api_products: "{{ api_products | default([]) | selectattr('environments', 'contains', APIGEE_ENVIRONMENT) | list }}"
 
-  # Uses python to filter nested environments
-  - name: filter environments to only include current environment
-    filter_api_products:
-      products: "{{ api_products }}"
-      environment: "{{ APIGEE_ENVIRONMENT }}"
-    register: filter_products_result
+    # Uses python to filter nested environments
+    - name: filter environments to only include current environment
+      filter_api_products:
+        products: "{{ api_products }}"
+        environment: "{{ APIGEE_ENVIRONMENT }}"
+      register: filter_products_result
 
-  - name: set api_products as filtered products
-    set_fact:
-      api_products: "{{ filter_products_result.meta.products }}"
+    - name: set api_products as filtered products
+      set_fact:
+        api_products: "{{ filter_products_result.meta.products }}"
 
-  - name: use default_product if api_products is empty
-    set_fact:
-      api_products: "{{ [default_product] }}"
-    when: (api_products | default([]) | length) < 1
+    - name: use default_product if api_products is empty
+      set_fact:
+        api_products: "{{ [default_product] }}"
+      when: (api_products | default([]) | length) < 1
 
-  - name: assert all product names are unique
-    assert:
-      that:
-        - "{{ api_products | map(attribute='name') | unique | count == api_products | count }}"
-      fail_msg: User defined API products do not have unique names
-      success_msg: API Product names are unique
+    - name: assert all product names are unique
+      assert:
+        that:
+          - "{{ api_products | map(attribute='name') | unique | count == api_products | count }}"
+        fail_msg: User defined API products do not have unique names
+        success_msg: API Product names are unique
 
-  - name: deploy products
-    include_tasks: deploy-product-and-apidoc.yml
-    loop: "{{ api_products }}"
-    loop_control:
-      loop_var: _product
+    - name: deploy products
+      include_tasks: deploy-product-and-apidoc.yml
+      loop: "{{ api_products }}"
+      loop_control:
+        loop_var: _product

@@ -9,6 +9,7 @@
   changed_when: no
   retries: 5
   delay: 10
+  until: current_repos.rc == 0  
 
 - name: set variables
   set_fact:
@@ -20,18 +21,39 @@
     images_map: "{{ images_map | combine({item['name']: item}) }}"
   with_items: '{{ docker_containers }}'
 
+- name: get prod account id
+  command: >-
+    {{ aws_cmd }} ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text
+  register: get_prod_account_id
+  changed_when: no
+
 - name: set variables
   set_fact:
     new_repos: "{{ repo_names | difference(current_repos) }}"
+    cross_account_policy:
+      Version: "2012-10-17"
+      Statement:
+        - Sid: "allow-pull-cross-account"
+          Effect: "Allow"
+          Principal:
+            AWS: "arn:aws:iam::{{ get_prod_account_id.stdout }}:role/auto-ops"
+          Action:
+            - "ecr:ListImages"
+            - "ecr:GetRepositoryPolicy"
+            - "ecr:GetDownloadUrlForLayer"
+            - "ecr:DescribeRepositories"
+            - "ecr:DescribeImages"
+            - "ecr:BatchGetImage"
+            - "ecr:BatchCheckLayerAvailability"
 
 - name: create new repos
   command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_id }}"
   with_items: "{{ new_repos }}"
   when: new_repos
 
-#- name: grant cross accout policy
-#  command: "{{ aws_cmd }} ecr set-repository-policy --repository-name {{ item }} --policy-text '{{ cross_account_policy }}'"
-#  with_items: "{{ new_repos }}"
+- name: set repository policy
+  include: set-repository-policy.yml
+  with_items: "{{ containers }}"
 
 - name: ecr login
   shell: "eval $({{ aws_cmd }} ecr get-login --no-include-email)"

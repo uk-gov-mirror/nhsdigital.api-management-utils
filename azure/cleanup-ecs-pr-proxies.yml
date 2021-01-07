@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout: self
 
-      -  template: ../components/aws-assume-role.yml
+      -  template: ./components/aws-assume-role.yml
          parameters:
            role: "auto-ops"
            profile: "apm_ptl"
@@ -34,5 +34,6 @@ jobs:
           export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
           export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
           export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
+
           make -C ansible remove-old-ecs-pr-deploys
         displayName: "cleanup older pr deploys"
