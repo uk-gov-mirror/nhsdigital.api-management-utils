@@ -84,18 +84,9 @@ resource "aws_iam_role_policy_attachment" "attach_AmazonECSTaskExecutionRolePoli
 }
 
 
-resource "aws_iam_user" "deploy-user" {
-  name = "deploy-${local.env_service_id}"
-}
-
 resource "aws_iam_policy" "deploy-user" {
   name   = "deploy-${local.env_service_id}"
   policy = data.aws_iam_policy_document.deploy-user.json
-}
-
-resource "aws_iam_user_policy_attachment" "deploy-user" {
-  user       = aws_iam_user.deploy-user.name
-  policy_arn = aws_iam_policy.deploy-user.arn
 }
 
 resource "aws_iam_role" "deploy-user" {
