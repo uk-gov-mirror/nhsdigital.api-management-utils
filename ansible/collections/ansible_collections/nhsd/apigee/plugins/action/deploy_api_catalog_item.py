@@ -16,7 +16,7 @@ class ActionModule(ApigeeAction):
             return errors
 
         result = {"changed": False, "ansible_facts": {}}
-        apidoc = args.portal
+        apidoc = args.api_catalog_item
 
         # This will fail if apigee_apidoc is called before apigee_spec
         # as APIGEE_SPEC_RESOURCES will not exist!

@@ -41,7 +41,10 @@ class ValidateManifest(pydantic.BaseModel):
     @pydantic.validator("service_name")
     def check_service_name(cls, service_name, values):
         if service_name:
-            api_name = values["meta"].api.name
+            meta = values.get("meta")
+            if not meta:
+                return
+            api_name = meta.api.name
             if not re.match(f"{api_name}(-[a-z]+)*", service_name):
                 raise ValueError(
                     f"pipeline defined SERVICE_NAME ('{service_name}') does not begin with manifest defined meta.api.name ('{api_name}')"
@@ -60,7 +63,10 @@ class ValidateManifest(pydantic.BaseModel):
 
     @pydantic.validator("apigee")
     def check_namespacing(cls, apigee, values):
-        api_name = values["meta"].api.name
+        meta = values.get("meta")
+        if not meta:
+            return
+        api_name = meta.api.name
 
         for env in apigee.environments:
             if env is None:
