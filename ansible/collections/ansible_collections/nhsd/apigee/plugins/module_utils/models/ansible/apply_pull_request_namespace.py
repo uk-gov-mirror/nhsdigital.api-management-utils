@@ -58,10 +58,10 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
 
             for spec in env.specs:
                 spec.name = spec.name.replace(old, new, 1)
-            for portal in env.portals:
-                portal.edgeAPIProductName = portal.edgeAPIProductName.replace(
+            for entry in env.api_catalog:
+                entry.edgeAPIProductName = entry.edgeAPIProductName.replace(
                     old, new, 1
                 )
-                portal.specId = portal.specId.replace(old, new, 1)
+                entry.specId = entry.specId.replace(old, new, 1)
 
         return apigee

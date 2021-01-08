@@ -3,6 +3,6 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.apigee.apidoc i
 
 
 class DeployApidoc(pydantic.BaseModel):
-    portal: ApigeeApidoc
+    catalog_item: ApigeeApidoc
     organization: str
     access_token: str
