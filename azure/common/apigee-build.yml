@@ -162,7 +162,8 @@ jobs:
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-#
+
+# don't use cache in  aws build agents safely, currently
 #       - task: Cache@2
 #         inputs:
 #           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock

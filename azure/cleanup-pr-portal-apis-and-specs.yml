@@ -23,7 +23,7 @@ jobs:
       - template: ./components/aws-assume-role.yml
         parameters:
           role: "auto-ops"
-        profile: "apm_ptl"
+          profile: "apm_ptl"
 
       - template: build-prereqs.yml
         parameters:
