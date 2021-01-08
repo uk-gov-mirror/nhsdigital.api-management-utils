@@ -16,8 +16,6 @@ guard-%:
 	fi
 
 
-
-
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook -i local template-manifest.yml
 
@@ -54,17 +52,11 @@ destroy-ecs-proxies: guard-service_id guard-APIGEE_ENVIRONMENT
 destroy-api-deployment-dns-entry: guard-service_id guard-APIGEE_ENVIRONMENT
 	@poetry run ansible-playbook -i local destroy-api-deployment-dns-entry.yml
 
-create-api-deployment-user-access-key: guard-account guard-service_id guard-APIGEE_ENVIRONMENT
-	@poetry run ansible-playbook -i local create-api-deployment-user-access-key.yml
-
 remove-api-deployment-user-access-key: guard-account guard-service_id guard-APIGEE_ENVIRONMENT
 	@poetry run ansible-playbook -i local remove-api-deployment-user-access-key.yml
 
 remove-ecs-proxy-pre-reqs: guard-account guard-service_id guard-APIGEE_ENVIRONMENT
 	@poetry run ansible-playbook -i local remove-ecs-proxy-pre-reqs.yml
-
-create-ecr-build-user: guard-account guard-service_id
-	@poetry run ansible-playbook -i local create-ecr-build-user.yml
 
 create-ecr-build-role: guard-account guard-service_id
 	@poetry run ansible-playbook -i local create-ecr-build-role.yml
