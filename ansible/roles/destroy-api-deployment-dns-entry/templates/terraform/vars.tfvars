@@ -1,1 +1,0 @@
-profile = "{{ aws_profile }}"
