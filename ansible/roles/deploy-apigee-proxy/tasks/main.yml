@@ -8,6 +8,15 @@
   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
   changed_when: no
 
+- name: check zip file
+  stat:
+    path: "/{{ tempdir.path }}/proxy.zip"
+  register: zipstat
+
+- fail: 
+    msg: "{{ tempdir.path }}/proxy.zip does not exist"
+  when: not zipstat.stat.exists
+
 - name: upload the flow to apigee
   uri:
     url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
@@ -22,9 +31,6 @@
         mime_type: application/octet-stream
     return_content: yes
   register: apigee_response
-  retries: 2
-  delay: 15
-  until: apigee_response.status == 201
 
 - name: get revision number of upload
   set_fact:
@@ -44,7 +50,7 @@
   register: _resp
   retries: 3
   delay: 30
-  until: _resp.status == 200
+  until: not _resp.failed and _resp.status == 200
 
 - name: ping deployed proxy
   uri:
