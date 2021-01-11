@@ -8,6 +8,15 @@
   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
   changed_when: no
 
+- name: check zip file
+  stat:
+    path: "/{{ tempdir.path }}/proxy.zip"
+  register: zipstat
+
+- fail: 
+    msg: "{{ zipstat.path }} does not exist"
+  when: not zipstat.stat.exists
+
 - name: upload the flow to apigee
   uri:
     url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
