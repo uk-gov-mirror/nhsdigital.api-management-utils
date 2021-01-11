@@ -24,13 +24,7 @@
   register: apigee_response
   retries: 2
   delay: 15
-  until: apigee_response.status == 201
-  ignore_errors: yes
-
-- name: check proxy upload success	
-  fail:	
-    msg: "Proxy upload failed with a {{ apigee_response.status }} return code and responsed with: '{{ apigee_response.message }}'"	
-  when: apigee_response.status[0] != "2"
+  until: (apigee_response.status|default(-1)) == 201
 
 - name: get revision number of upload
   set_fact:
