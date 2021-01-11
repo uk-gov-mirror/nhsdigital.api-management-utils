@@ -31,8 +31,8 @@
         mime_type: application/octet-stream
     return_content: yes
   register: apigee_response
-  retries: 4
-  delay: 15
+  # retries: 4
+  # delay: 15
   until: (apigee_response.status|default(-1)) == 201
 
 - name: get revision number of upload
