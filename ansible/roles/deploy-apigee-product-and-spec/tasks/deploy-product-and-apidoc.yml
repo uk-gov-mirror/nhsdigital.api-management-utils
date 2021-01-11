@@ -61,9 +61,9 @@
         body: "{{ product }}"
         status_code: [200, 201]
       register: create_or_update_product
-      retries: 2
+      retries: 4
       delay: 15
-      until: create_or_update_product.status in (200, 201)
+      until: not create_or_update_product.failed and create_or_update_product.status in (200, 201)
 
 # Now API Product exists, we need to put it in the portal.  Portal is
 # populated by (what we are calling) apidoc objects. An `apidoc`
@@ -106,9 +106,9 @@
         status_code: 200
       register: create_apidoc
       when: apidoc | length == 0
-      retries: 2
+      retries: 4
       delay: 15
-      until: create_apidoc.status == 200
+      until: not create_apidoc.failed and create_apidoc.status == 200
 
     - name: update remote apidoc
       uri:
@@ -121,9 +121,9 @@
         status_code: 200
       register: update_apidoc
       when: apidoc | length > 0
-      retries: 2
+      retries: 4
       delay: 15
-      until: update_apidoc.status == 200
+      until: not update_apidoc.failed and update_apidoc.status == 200
 
     - name: update local apidoc
       set_fact:
@@ -137,6 +137,6 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       register: snapshot
-      retries: 2
+      retries: 4
       delay: 15
-      until: snapshot.status == 200
+      until: not snapshot.failed and snapshot.status == 200

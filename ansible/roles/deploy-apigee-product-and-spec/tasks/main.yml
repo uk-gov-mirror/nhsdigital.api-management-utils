@@ -67,9 +67,9 @@
         return_content: yes
       register: new_spec
       when: existing_spec is not defined and (SPEC_FILE)
-      retries: 2
+      retries: 4
       delay: 15
-      until: new_spec.status == 200
+      until: not new_spec.failed and new_spec.status == 200
 
     - name: if no SPEC_FILE, and remote spec, delete it
       uri:
@@ -80,9 +80,9 @@
         status_code: 200
       when: existing_spec is defined and not (SPEC_FILE)
       register: _resp
-      retries: 2
+      retries: 4
       delay: 15
-      until: _resp.status == 200
+      until: not _resp.failed and _resp.status == 200
 
     - name: set spec
       set_fact:
@@ -104,9 +104,9 @@
         status_code: 200
       when: (SPEC_FILE)
       register: _resp
-      retries: 2
+      retries: 4
       delay: 15
-      until: _resp.status == 200
+      until: not _resp.failed and _resp.status == 200
 
 
 - name: Loop over products
