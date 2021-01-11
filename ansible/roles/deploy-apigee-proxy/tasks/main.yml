@@ -31,8 +31,6 @@
         mime_type: application/octet-stream
     return_content: yes
   register: apigee_response
-  retries: 0
-  until: (apigee_response.status|default(-1)) == 201
 
 - name: get revision number of upload
   set_fact:
@@ -52,7 +50,7 @@
   register: _resp
   retries: 3
   delay: 30
-  until: _resp.status == 200
+  until: not _resp.failed and _resp.status == 200
 
 - name: ping deployed proxy
   uri:
