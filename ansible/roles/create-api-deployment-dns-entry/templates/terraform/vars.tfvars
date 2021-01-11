@@ -1,6 +1,0 @@
-account            = "{{ account }}"
-profile            = "{{ aws_profile }}"
-workspace          = "{{ workspace }}"
-state_bucket       = "nhsd-apm-management-{{ account }}-terraform"
-namespaced_name    = "{{ namespaced_name }}"
-apigee_environment = "{{ apigee_environment }}"
