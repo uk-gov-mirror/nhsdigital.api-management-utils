@@ -1,7 +1,7 @@
 from ansible_collections.nhsd.apigee.plugins.module_utils.apigee_action import (
     ApigeeAction,
 )
-from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_apidoc import (
+from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_api_catalog_item import (
     DeployApidoc,
 )
 
