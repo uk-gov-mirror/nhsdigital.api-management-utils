@@ -61,7 +61,7 @@
         body: "{{ product }}"
         status_code: [200, 201]
       register: create_or_update_product
-      retries: 2
+      retries: 4
       delay: 15
       until: create_or_update_product.status in (200, 201)
 
@@ -106,7 +106,7 @@
         status_code: 200
       register: create_apidoc
       when: apidoc | length == 0
-      retries: 2
+      retries: 4
       delay: 15
       until: create_apidoc.status == 200
 
@@ -121,7 +121,7 @@
         status_code: 200
       register: update_apidoc
       when: apidoc | length > 0
-      retries: 2
+      retries: 4
       delay: 15
       until: update_apidoc.status == 200
 
@@ -137,6 +137,6 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
       register: snapshot
-      retries: 2
+      retries: 4
       delay: 15
       until: snapshot.status == 200
