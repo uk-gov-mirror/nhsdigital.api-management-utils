@@ -74,12 +74,14 @@ class ActionModule(ApigeeAction):
             method = "POST"
             url = APIGEE_APIDOC_URL
             current_apidoc = {}
-            status_code = [200]
         else:
-            current_apidoc = existing_apidocs[0]
+            apidoc_id = existing_apidocs[0]['id']
+            url = APIGEE_APIDOC_URL + f"/{apidoc_id}"
+            refresh_current_apidoc = self.get(url, args.access_token)
+            if refresh_current_apidoc.get("failed"):
+                return current_apidoc
+            current_apidoc = refresh_current_apidoc["response"]["body"]["data"]
             method = "PUT"
-            status_code = [200]
-            url = APIGEE_APIDOC_URL + f"/{current_apidoc['id']}"
 
         if apidoc.specId:
             # Look up matching specContent
@@ -94,7 +96,6 @@ class ActionModule(ApigeeAction):
 
         result["apidoc"] = apidoc.dict()
 
-        # ignore apigee filesystem junk
         keys_to_ignore = [
             "apiId",
             "id",
@@ -134,7 +135,7 @@ class ActionModule(ApigeeAction):
             return result
 
         apidoc_request = self.request(
-            method, url, args.access_token, json=apidoc.dict(), status_code=status_code
+            method, url, args.access_token, json=apidoc.dict()
         )
         if apidoc_request.get("failed"):
             return apidoc_request
