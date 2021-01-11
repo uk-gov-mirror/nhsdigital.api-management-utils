@@ -54,12 +54,7 @@
 - debug: msg="age_hours, {{ age_hours }}"
 - debug: msg="should remove,  {{ should_remove }}"
 
-- name: remove ecs dns entry
-  include_role:
-    name: destroy-api-deployment-dns-entry
-  when: should_remove
-
-- name: remove ecs service
+- name: "remove ecs service {{ apigee_environment }} - {{ service_id }} - pr - {{ pr_number }}"
   include_role:
     name: destroy-ecs-proxies
   when: should_remove
