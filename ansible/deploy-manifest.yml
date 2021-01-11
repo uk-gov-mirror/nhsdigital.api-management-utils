@@ -68,12 +68,10 @@
 
     - name: deploy apigee products
       nhsd.apigee.deploy_product:
-        product: "{{ product }}"
+        product: "{{ item }}"
         organization: "{{ APIGEE_ORGANIZATION }}"
         access_token: "{{ APIGEE_ACCESS_TOKEN }}"
       loop: "{{ apigee_environment.products }}"
-      loop_control:
-        loop_var: product
       # Since proxies are uploaded and deployed per-Azure pipeline
       # stage, this prevents a race condition on the first deployment,
       # since products can only be created if they reference proxies
@@ -83,21 +81,17 @@
 
     - name: deploy apigee specs
       nhsd.apigee.deploy_spec:
-        spec: "{{ spec }}"
+        spec: "{{ item }}"
         organization: "{{ APIGEE_ORGANIZATION }}"
         access_token: "{{ APIGEE_ACCESS_TOKEN }}"
       loop: "{{ apigee_environment.specs }}"
-      loop_control:
-        loop_var: spec
 
-    - name: deploy portal apidocs
-      nhsd.apigee.deploy_apidoc:
-        portal: "{{ portal }}"
+    - name: deploy api catalog
+      nhsd.apigee.deploy_api_catalog_item:
+        api_catalog_item: "{{ item }}"
         organization: "{{ APIGEE_ORGANIZATION }}"
         access_token: "{{ APIGEE_ACCESS_TOKEN }}"
-      loop: "{{ apigee_environment.portals }}"
-      loop_control:
-        loop_var: portal
+      loop: "{{ apigee_environment.api_catalog }}"
       # See comment on product loop control. (I believe APIDocs
       # actually can reference products that don't exist. But this is
       # cleaner.)
