@@ -14,7 +14,7 @@
   register: zipstat
 
 - fail: 
-    msg: "{{ zipstat.path }} does not exist"
+    msg: "{{ tempdir.path }}/proxy.zip does not exist"
   when: not zipstat.stat.exists
 
 - name: upload the flow to apigee
