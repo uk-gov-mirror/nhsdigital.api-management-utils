@@ -96,12 +96,3 @@
       # actually can reference products that don't exist. But this is
       # cleaner.)
       when: item.edgeAPIProductName | regex_search('^' + SERVICE_NAME + '-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT))
-
-      # As of 11/01/2021 apigee seems to be returning 500s when doing
-      # a PUT to update particular APIDOC object. However, a
-      # subsequent re-run of this command finds that the object was
-      # indeed updated on the original 500-throwing request. Adding 1
-      # retry gives a 100% success rate.
-      register: deploy_api_catalog_output
-      retries: 1
-      until: deploy_api_catalog_output is not failed
