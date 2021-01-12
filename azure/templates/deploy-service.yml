@@ -224,7 +224,7 @@ steps:
               export FRIENDLY_NAME="$(FRIENDLY_NAME)"
               export VISIBLE="${{ parameters.make_spec_visible }}"
               export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
-              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec -c local
+              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
           fi
       fi
     displayName: 'Deploy Proxy, Product and Spec'

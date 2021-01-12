@@ -2,11 +2,11 @@
   block:
     - name: Increment the retry count
       set_fact:
-        retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+        snapshot_retry_count: "{{ 0 if snapshot_retry_count is undefined else snapshot_retry_count | int + 1 }}"
 
     - debug:
-        msg: "Retry count: {{ retry_count }}"
-      when: retry_count | int > 0
+        msg: "Retry count: {{ snapshot_retry_count }}"
+      when: snapshot_retry_count | int > 0
 
     - name: Update remote snapshot
       uri:
@@ -35,15 +35,23 @@
       set_fact:
         existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
 
+    - name: get epoch date
+      command: date -u +%s
+      register: epoch_date
+
     - name: assert snapshot has been updated
       assert:
         that:
-          - "{{ (existing_apidocs[0].snapshotModified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
+          - "{{ (epoch_date.stdout_lines[0] | int) - (existing_apidocs[0].snapshotModified / 1000) < 30 }}"
+        fail_msg:
+          - "reason: Failed updating snapshot" 
+          - "status: {{ snapshot.status }}"
+          - "error: {{ snapshot.msg }}"
 
   rescue:
     - fail:
         msg: Maximum retries of create api docs been reached tasks reached
-      when: retry_count | int == 4
+      when: snapshot_retry_count | int == 4
 
     - name: Sleep for 15 seconds
       wait_for:

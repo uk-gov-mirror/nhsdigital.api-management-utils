@@ -2,11 +2,11 @@
   block:
     - name: Increment the retry count
       set_fact:
-        retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+        create_retry_count: "{{ 0 if create_retry_count is undefined else create_retry_count | int + 1 }}"
 
     - debug:
-        msg: "Retry count: {{ retry_count }}"
-      when: retry_count | int > 0
+        msg: "Retry count: {{ create_retry_count }}"
+      when: create_retry_count | int > 0
 
     - name: send create remote apidoc request
       uri:
@@ -17,6 +17,7 @@
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
+      register: create_apidoc
 
     - name: get all apidocs
       uri:
@@ -40,11 +41,15 @@
       assert:
         that:
           - "{{ existing_apidocs | length == 1 }}"
+        fail_msg:
+          - "reason: Failed updating apidoc" 
+          - "status: {{ create_apidoc.status }}"
+          - "error: {{ create_apidoc.msg }}"
 
   rescue:
     - fail:
         msg: Maximum retries of create api docs been reached tasks reached
-      when: retry_count | int == 4
+      when: create_retry_count | int == 4
 
     - name: Sleep for 15 seconds
       wait_for:
