@@ -24,8 +24,6 @@ resource "aws_lb_listener_rule" "service" {
     type             = "forward"
   }
 
-
-
   condition {
     http_header {
       http_header_name = "X-APIM-Service"
