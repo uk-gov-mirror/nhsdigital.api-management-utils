@@ -132,6 +132,9 @@
         that:
           - "{{ existing_apidocs | length == 1 }}"
       when: apidoc | length == 0
+#      retries: 4
+#      delay: 15
+#      until: not create_apidoc.failed and create_apidoc.status == 200
 
     - name: update remote apidoc
       uri:
