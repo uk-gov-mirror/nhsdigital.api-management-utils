@@ -103,12 +103,35 @@
         body_format: json
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
-      register: create_apidoc
+        status_code: 500
       when: apidoc | length == 0
-      # retries: 4
-      # delay: 15
-      # until: not create_apidoc.failed and create_apidoc.status == 200
+
+    - name: get all apidocs
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+        return_content: yes
+      register: apidocs
+      when: apidoc | length == 0
+
+    - name: set apidocs
+      set_fact:
+        apidocs: "{{ apidocs.json.data }}"
+      when: apidoc | length == 0
+
+    - name: get existing apidocs
+      set_fact:
+        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name)  | list }}"
+      when: apidoc | length == 0
+    
+    - name: assert apidoc has been created!
+      assert:
+        that:
+          - "{{ existing_apidocs | length == 1 }}"
+      when: apidoc | length == 0
 
     - name: update remote apidoc
       uri:
@@ -118,16 +141,39 @@
         body_format: json
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
-      register: update_apidoc
+        status_code: 500
       when: apidoc | length > 0
-      retries: 4
-      delay: 15
-      until: not update_apidoc.failed and update_apidoc.status == 200
+
+    - name: get all apidocs, when update
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+        return_content: yes
+      register: apidocs
+      when: apidoc | length > 0
+
+    - name: set apidocs, when update
+      set_fact:
+        apidocs: "{{ apidocs.json.data }}"
+      when: apidoc | length > 0
+
+    - name: get existing apidocs, when update
+      set_fact:
+        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+      when: apidoc | length > 0
+
+    - name: assert only apidoc has been updated
+      assert:
+        that:
+          - "{{ (existing_apidocs[0].modified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
+      when: apidoc | length > 0
 
     - name: update local apidoc
       set_fact:
-        apidoc: "{{ create_apidoc.json.data | default(update_apidoc.json.data) }} "
+        apidoc: "{{ existing_apidocs[0] | default(update_apidoc.json.data) }} "
 
     - name: Update remote snapshot
       uri:
@@ -135,8 +181,32 @@
         method: "{{ (SPEC_FILE) | ternary('PUT', 'DELETE') }}"
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
+        status_code: 500
       register: snapshot
-      retries: 4
-      delay: 15
-      until: not snapshot.failed and snapshot.status == 200
+
+    - name: get all apidocs, on snapshot update
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+        return_content: yes
+      register: apidocs
+      when: apidoc | length > 0
+
+    - name: set apidocs, on snapshot update
+      set_fact:
+        apidocs: "{{ apidocs.json.data }}"
+      when: apidoc | length > 0
+
+    - name: get existing apidocs, on snapshot update
+      set_fact:
+        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+      when: apidoc | length > 0
+
+    - name: assert snapshot has been updated
+      assert:
+        that:
+          - "{{ (existing_apidocs[0].snapshotModified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
+      when: apidoc | length > 0
