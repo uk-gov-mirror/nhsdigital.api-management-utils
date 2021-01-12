@@ -1,9 +1,12 @@
+import json
 from ansible_collections.nhsd.apigee.plugins.module_utils.apigee_action import (
     ApigeeAction,
 )
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_api_catalog_item import (
     DeployApidoc,
 )
+from ansible_collections.nhsd.apigee.plugins.module_utils import constants
+from ansible_collections.nhsd.apigee.plugins.module_utils import utils
 
 
 class ActionModule(ApigeeAction):
@@ -20,81 +23,67 @@ class ActionModule(ApigeeAction):
 
         # This will fail if apigee_apidoc is called before apigee_spec
         # as APIGEE_SPEC_RESOURCES will not exist!
-        if apidoc.specId != "":
-            spec_resources = [
-                spec
-                for spec in task_vars["APIGEE_SPEC_RESOURCES"]
-                if spec["name"] == apidoc.specId
-            ]
-            if len(spec_resources) != 1:
+        if apidoc.specId:
+            try:
+                specs = utils.select_unique(task_vars["APIGEE_SPEC_RESOURCES"], "name", apidoc.specId, valid_lengths = [1])
+            except ValueError as e:
                 return {
                     "failed": True,
                     "msg": f"Unable to find unique spec resource named {apidoc.specId}",
-                    "spec_resources": spec_resources,
+                    "matching_resources": json.loads(str(e))
                 }
-            apidoc.specContent = str(spec_resources[0]["id"])  # avoid AnsibleUnsafeText type
+            if check_mode:
+                # Then we never PUT this on the remote, so our entry has no 'id'
+                apidoc.specContent = ""
+            else:
+                apidoc.specContent = specs[0]["id"]
 
-        PORTALS_BASE_URL = "https://apigee.com/portals/api/sites"
-        if not task_vars.get("APIGEE_PORTAL_ID"):
-            portal_id_request = self.get(
-                f"{PORTALS_BASE_URL}?orgname={args.organization}",
-                args.access_token
+        task_vars = utils.get_all_apidocs(
+            args.organization, args.access_token, task_vars=task_vars
+        )
+        if task_vars.get("failed"):
+            return task_vars
+
+        try:
+            existing_apidocs = utils.select_unique(
+                task_vars["APIGEE_APIDOCS"],
+                "edgeAPIProductName",
+                apidoc.edgeAPIProductName,
             )
-            if portal_id_request.get("failed"):
-                return portal_id_request
-
-            task_vars["APIGEE_PORTAL_ID"] = portal_id_request["response"]["body"]["data"][0]["id"]
-            result["ansible_facts"]["APIGEE_PORTAL_ID"] = task_vars["APIGEE_PORTAL_ID"]
-
-        APIGEE_PORTAL_ID = task_vars["APIGEE_PORTAL_ID"]
-        APIGEE_APIDOC_URL = f"{PORTALS_BASE_URL}/{APIGEE_PORTAL_ID}/apidocs"
-        # Ensure we have the fact APIGEE_APIDOCS
-        if not task_vars.get("APIGEE_APIDOCS"):
-            apidocs_request = self.get(APIGEE_APIDOC_URL, args.access_token)
-            if apidocs_request.get("failed"):
-                return apidocs_request
-
-            task_vars["APIGEE_APIDOCS"] = apidocs_request["response"]["body"]["data"]
-            result["ansible_facts"]["APIGEE_APIDOCS"] = task_vars["APIGEE_APIDOCS"]
-
-        existing_apidocs = [
-            existing_apidoc
-            for existing_apidoc in task_vars["APIGEE_APIDOCS"]
-            if existing_apidoc["edgeAPIProductName"] == apidoc.edgeAPIProductName
-        ]
-
-        if len(existing_apidocs) > 1:
+        except ValueError as e:
             return {
                 "failed": True,
-                "msg": f"Found more than one apidoc with name {apidoc.name}, this should not happen",
-                "existing_apidocs": existing_apidocs,
+                "msg": f"Unable to find unique apidoc with edgeAPIProductName = {apidoc.specId}",
+                "matching_apidocs": json.loads(str(e))
             }
 
-        if len(existing_apidocs) == 0:
-            method = "POST"
-            url = APIGEE_APIDOC_URL
-            current_apidoc = {}
-        else:
-            apidoc_id = existing_apidocs[0]['id']
-            url = APIGEE_APIDOC_URL + f"/{apidoc_id}"
-            refresh_current_apidoc = self.get(url, args.access_token)
-            if refresh_current_apidoc.get("failed"):
-                return current_apidoc
-            current_apidoc = refresh_current_apidoc["response"]["body"]["data"]
+        if len(existing_apidocs) == 1:
+            apidoc_id = existing_apidocs[0]["id"]
+            url = constants.portal_uri(args.organization) + f"/{apidoc_id}"
             method = "PUT"
+        else:
+            method = "POST"
+            url = constants.portal_uri(args.organization)
+            current_apidoc = {}
 
         if apidoc.specId:
             # Look up matching specContent
-            specs = task_vars["APIGEE_SPEC_RESOURCES"]
-            matching_specs = [spec for spec in specs if spec['name'] == apidoc.specId]
-            if len(matching_specs) != 1:
+            try:
+                specs = utils.select_unique(
+                    task_vars["APIGEE_SPEC_RESOURCES"],
+                    "name",
+                    apidoc.specId,
+                    valid_lengths=[1],
+                )
+            except ValueError as e:
                 return {
                     "failed": True,
-                    "msg": f"Unable to find spec named {apidoc.specId}, this should not happen"
+                    "msg": f"Unable to find spec named {apidoc.specId}",
+                    "matching_specs": json.loads(str(e)),
                 }
-            apidoc.specContent = matching_specs[0]['id']
-
-        result["apidoc"] = apidoc.dict()
+            apidoc.specContent = specs[0].get("id")
+            if apidoc.specContent is None and not check_mode:
+                raise RuntimeError(f"Could not get spec id from apidoc: {json.dumps(apidoc.dict())}")
 
         keys_to_ignore = [
             "apiId",
@@ -114,34 +103,69 @@ class ActionModule(ApigeeAction):
             "specTitle",
         ]
 
-        delta = self.delta(
-            current_apidoc,
-            result["apidoc"],
-            keys_to_ignore=keys_to_ignore,
+        delta = utils.delta(
+            current_apidoc, apidoc.dict(), keys_to_ignore=keys_to_ignore,
         )
         result["changed"] = bool(delta)
 
         if diff_mode:
             result["diff"] = [
                 {
-                    "before_header": current_apidoc["specId"],
-                    "before": self.exclude_keys(current_apidoc, keys_to_ignore),
+                    "before_header": current_apidoc.get("specId", ""),
+                    "before": utils.exclude_keys(current_apidoc, keys_to_ignore),
                     "after_header": apidoc.specId,
-                    "after": self.exclude_keys(apidoc.dict(), keys_to_ignore),
+                    "after": utils.exclude_keys(apidoc.dict(), keys_to_ignore),
                 }
             ]
 
         if not delta or check_mode:
             return result
 
-        apidoc_request = self.request(
-            method, url, args.access_token, json=apidoc.dict()
+        apidoc_request = utils.request(
+            method,
+            url,
+            args.access_token,
+            json=apidoc.dict(),
+            status_code=[200, 500]  # Allow 500 due to broken Apigee API.
         )
         if apidoc_request.get("failed"):
             return apidoc_request
 
-        result["apidoc"] = apidoc_request["response"]["body"]["data"]
+        # Since we can't trust the return code...  we re-interrogate
+        # the apidocs
+        if method == "POST":
+            # we were creating a new apidoc so we have no idea of the
+            # apidoc id.  Therefore we need to get them all.
+            apidocs = utils.get_all_apidocs(
+                args.organization, args.access_token, refresh=True
+            )
+            if apidocs.get("failed"):
+                return apidocs
+            try:
+                apidocs = utils.select_unique(
+                    apidocs["APIGEE_APIDOCS"],
+                    "edgeAPIProductName",
+                    apidoc.edgeAPIProductName,
+                    valid_lengths=[1],
+                )
+            except ValueError as e:
+                return {
+                    "failed": True,
+                    "msg": f"Unable to find unique apidoc with edgeAPIProductName {apidoc.edgeAPIProductName}",
+                    "matching_apidocs": json.loads(str(e)),
+                }
+            result["apidoc"] = apidocs[0]
+
+        else:  # method == "PUT"
+            apidoc_request = utils.get(url, args.access_token)
+            if apidoc_request.get("failed"):
+                return apidoc_request
+            result["apidoc"] = apidoc_request["response"]["body"]["data"]
+            task_vars["API"]
+
         if diff_mode:
-            result["diff"][0]["after"] = self.exclude_keys(result["apidoc"], keys_to_ignore)
+            result["diff"][0]["after"] = utils.exclude_keys(
+                result["apidoc"], keys_to_ignore
+            )
 
         return result
