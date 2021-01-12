@@ -192,9 +192,9 @@ stages:
                     spec_file: ${{ parameters.spec_file }}
                     pr_label: ${{ parameters.pr_label }}
                     ${{ if eq(parameters.environment, 'prod') }}:
-                      aws_account: ptl
-                    ${{ if ne(parameters.environment, 'prod') }}:
                       aws_account: prod
+                    ${{ if ne(parameters.environment, 'prod') }}:
+                      aws_account: ptl
 
 
                 - ${{ if parameters.notify }}:
