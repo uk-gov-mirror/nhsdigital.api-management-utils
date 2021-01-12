@@ -128,7 +128,10 @@ data "aws_iam_policy_document" "deploy-user" {
       "elasticloadbalancing:DescribeRules",
       "application-autoscaling:RegisterScalableTarget",
       "application-autoscaling:DescribeScalableTargets",
-      "application-autoscaling:DeregisterScalableTarget"
+      "application-autoscaling:DeregisterScalableTarget",
+      "application-autoscaling:PutScalingPolicy",
+      "application-autoscaling:DeleteScalingPolicy",
+      "application-autoscaling:DescribeScalingPolicies"
     ]
 
     # these actions can't be restricted by resource
