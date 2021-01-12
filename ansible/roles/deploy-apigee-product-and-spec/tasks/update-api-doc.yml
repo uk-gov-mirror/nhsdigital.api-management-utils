@@ -1,0 +1,62 @@
+- name: update remote apidoc
+  block:
+    - name: Increment the retry count
+      set_fact:
+        retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+
+    - debug:
+        msg: "Retry count: {{ retry_count }}"
+      when: retry_count | int > 0
+
+    - name: send update remote apidoc
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}"
+        method: PUT
+        body: "{{ request_body }}"
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+
+    - name: get all apidocs, when update
+      uri:
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+        status_code: 200
+        return_content: yes
+      register: apidocs
+
+    - name: set apidocs, when update
+      set_fact:
+        apidocs: "{{ apidocs.json.data }}"
+
+    - name: get existing apidocs, when update
+      set_fact:
+        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+
+    - name: get epoch date
+      command: date -u +%s
+      register: epoch_date
+
+    - name: assert only apidoc has been updated
+      assert:
+        that:
+          - "{{ (epoch_date.stdout_lines[0] | int) - (existing_apidocs[0].modified / 1000) < 30 }}"
+
+    - name: update local apidoc
+      set_fact:
+        apidoc: "{{ existing_apidocs[0] | default(update_apidoc.json.data) }}"
+
+  rescue:
+    - fail:
+        msg: Maximum retries of create api docs been reached tasks reached
+      when: retry_count | int == 4
+
+    - name: Sleep for 15 seconds
+      wait_for:
+        timeout: 15
+      delegate_to: localhost
+
+    - include: update-api-doc.yml
