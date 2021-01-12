@@ -168,7 +168,7 @@ steps:
       export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
       export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
-      account= ${{ parameters.aws_account }} \
+      account=${{ parameters.aws_account }} \
       PROXY_VARS_FILE="${proxy_vars_file}" \
       SOURCE_COMMIT_ID="$(Build.SourceVersion)" \
       RELEASE_RELEASEID="$(Build.BuildId)" \
