@@ -96,41 +96,7 @@
           specId: "{{ (spec) | ternary(product.name, '') }}"
 
     - name: create remote apidoc
-      uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
-        method: POST
-        body: "{{ request_body }}"
-        body_format: json
-        headers:
-          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 500
-      when: apidoc | length == 0
-
-    - name: get all apidocs
-      uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
-        return_content: yes
-      register: apidocs
-      when: apidoc | length == 0
-
-    - name: set apidocs
-      set_fact:
-        apidocs: "{{ apidocs.json.data }}"
-      when: apidoc | length == 0
-
-    - name: get existing apidocs
-      set_fact:
-        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name)  | list }}"
-      when: apidoc | length == 0
-    
-    - name: assert apidoc has been created!
-      assert:
-        that:
-          - "{{ existing_apidocs | length == 1 }}"
+      include: create-api-doc.yml
       when: apidoc | length == 0
 
     - name: update remote apidoc
@@ -141,7 +107,7 @@
         body_format: json
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 500
+        status_code: 200
       when: apidoc | length > 0
 
     - name: get all apidocs, when update
@@ -165,10 +131,14 @@
         existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
       when: apidoc | length > 0
 
+    - name: get epoch date
+      command: date -u +%s
+      register: epoch_date
+
     - name: assert only apidoc has been updated
       assert:
         that:
-          - "{{ (existing_apidocs[0].modified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
+          - "{{ (epoch_date.stdout_lines[0] | int) - (existing_apidocs[0].modified / 1000) < 30 }}"
       when: apidoc | length > 0
 
     - name: update local apidoc
