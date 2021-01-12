@@ -106,9 +106,9 @@
         status_code: 200
       register: create_apidoc
       when: apidoc | length == 0
-      retries: 4
-      delay: 15
-      until: not create_apidoc.failed and create_apidoc.status == 200
+#      retries: 4
+#      delay: 15
+#      until: not create_apidoc.failed and create_apidoc.status == 200
 
     - name: update remote apidoc
       uri:
