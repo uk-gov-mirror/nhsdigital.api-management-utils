@@ -9,6 +9,10 @@ parameters:
   - name: apigee_organization
   - name: service_base_path
   - name: pr_label
+  - name: aws_account
+    values:
+      - ptl
+      - prod
   - name: jinja_templates
     type: object
   - name: enable_monitoring
@@ -129,7 +133,8 @@ steps:
         export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
         export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
-        account=ptl SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+        account=${{ parameters.aws_account }} \
+        SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
         APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
         make --no-print-directory  -C $(UTILS_DIR)/ansible create-api-deployment-pre-reqs
 
@@ -163,8 +168,11 @@ steps:
       export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
       export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
-      account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SOURCE_COMMIT_ID="$(Build.SourceVersion)" \
-      RELEASE_RELEASEID="$(Build.BuildId)" SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+      account= ${{ parameters.aws_account }} \
+      PROXY_VARS_FILE="${proxy_vars_file}" \
+      SOURCE_COMMIT_ID="$(Build.SourceVersion)" \
+      RELEASE_RELEASEID="$(Build.BuildId)" \
+      SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
       APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
       make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
 
