@@ -16,7 +16,7 @@
         body_format: json
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
+        status_code: 200, 500
 
     - name: get all apidocs, when update
       uri:

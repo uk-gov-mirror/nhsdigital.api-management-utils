@@ -1,4 +1,4 @@
-- name: create remote apidoc
+- name: update snapshot
   block:
     - name: Increment the retry count
       set_fact:
@@ -8,17 +8,16 @@
         msg: "Retry count: {{ retry_count }}"
       when: retry_count | int > 0
 
-    - name: send create remote apidoc request
+    - name: Update remote snapshot
       uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
-        method: POST
-        body: "{{ request_body }}"
-        body_format: json
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}/snapshot"
+        method: "{{ (SPEC_FILE) | ternary('PUT', 'DELETE') }}"
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
+      register: snapshot
 
-    - name: get all apidocs
+    - name: get all apidocs, on snapshot update
       uri:
         url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
         method: GET
@@ -28,18 +27,18 @@
         return_content: yes
       register: apidocs
 
-    - name: set apidocs
+    - name: set apidocs, on snapshot update
       set_fact:
         apidocs: "{{ apidocs.json.data }}"
 
-    - name: get existing apidocs
+    - name: get existing apidocs, on snapshot update
       set_fact:
-        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name)  | list }}"
-    
-    - name: assert apidoc has been created!
+        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+
+    - name: assert snapshot has been updated
       assert:
         that:
-          - "{{ existing_apidocs | length == 1 }}"
+          - "{{ (existing_apidocs[0].snapshotModified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
 
   rescue:
     - fail:
@@ -51,4 +50,4 @@
         timeout: 15
       delegate_to: localhost
 
-    - include: create-api-doc.yml
+    - include: update-snapshot.yml

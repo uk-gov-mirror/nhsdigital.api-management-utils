@@ -98,46 +98,10 @@
     - name: create remote apidoc
       include: create-api-doc.yml
       when: apidoc | length == 0
-#      retries: 4
-#      delay: 15
-#      until: not create_apidoc.failed and create_apidoc.status == 200
 
     - name: update remote apidoc
       include: update-api-doc.yml
       when: apidoc | length > 0
 
-    - name: Update remote snapshot
-      uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}/snapshot"
-        method: "{{ (SPEC_FILE) | ternary('PUT', 'DELETE') }}"
-        headers:
-          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 500
-      register: snapshot
-
-    - name: get all apidocs, on snapshot update
-      uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
-        return_content: yes
-      register: apidocs
-      when: apidoc | length > 0
-
-    - name: set apidocs, on snapshot update
-      set_fact:
-        apidocs: "{{ apidocs.json.data }}"
-      when: apidoc | length > 0
-
-    - name: get existing apidocs, on snapshot update
-      set_fact:
-        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
-      when: apidoc | length > 0
-
-    - name: assert snapshot has been updated
-      assert:
-        that:
-          - "{{ (existing_apidocs[0].snapshotModified / 1000) - (ansible_date_time.epoch | int) < 30 }}"
-      when: apidoc | length > 0
+    - name: update remote snapshot
+      include: update-snapshot.yml
