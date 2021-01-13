@@ -4,6 +4,8 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.apigee_action import (
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_product import (
     DeployProduct,
 )
+from ansible_collections.nhsd.apigee.plugins.module_utils import utils
+
 
 APIGEE_BASE_URL = "https://api.enterprise.apigee.com/v1/"
 
@@ -23,7 +25,7 @@ class ActionModule(ApigeeAction):
 
         products_path = f"organizations/{organization}/apiproducts"
         current_path = products_path + f"/{product.name}"
-        current_response = self.get(APIGEE_BASE_URL + current_path, args.access_token, status_code=[200, 404])
+        current_response = utils.get(APIGEE_BASE_URL + current_path, args.access_token, status_code=[200, 404])
         if current_response.get("failed"):
             return current_response
 
@@ -52,7 +54,7 @@ class ActionModule(ApigeeAction):
             "createdBy",
             "lastModifiedBy",
         ]
-        delta = self.delta(
+        delta = utils.delta(
             before,
             after,
             keys_to_ignore=keys_to_ignore,
@@ -64,9 +66,9 @@ class ActionModule(ApigeeAction):
             result["diff"] = [
                 {
                     "before_header": before.get("name", ""),
-                    "before": self.exclude_keys(before, keys_to_ignore),
+                    "before": utils.exclude_keys(before, keys_to_ignore),
                     "after_header": after.get("name", ""),
-                    "after": self.exclude_keys(after, keys_to_ignore),
+                    "after": utils.exclude_keys(after, keys_to_ignore),
                 }
             ]
 
@@ -75,7 +77,7 @@ class ActionModule(ApigeeAction):
             return result
 
         # POST/PUT the product
-        new_response = self.request(
+        new_response = utils.request(
             update_method,
             APIGEE_BASE_URL + update_path,
             args.access_token,
@@ -87,7 +89,7 @@ class ActionModule(ApigeeAction):
 
         result["product"] = new_response["response"]["body"]
         if diff_mode:
-            result["diff"][0]["after"] = self.exclude_keys(
+            result["diff"][0]["after"] = utils.exclude_keys(
                 result["product"], keys_to_ignore
             )
 
