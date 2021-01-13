@@ -37,13 +37,13 @@
 
     - name: get epoch date
       command: date -u +%s
-      register: epoch_date
+      register: epoch_snapshot_date
 
     - debug:
-        msg: "{{ epoch_date }}"
+        msg: "{{ epoch_snapshot_date }}"
 
     - debug:
-        msg: "{{ epoch_date.stdout_lines[0] | int }}"
+        msg: "{{ existing_apidocs }}"
 
     - debug:
         msg: "{{ existing_apidocs[0].snapshotModified / 1000 }}"
