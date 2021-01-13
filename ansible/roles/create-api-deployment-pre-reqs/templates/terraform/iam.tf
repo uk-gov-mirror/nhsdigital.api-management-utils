@@ -181,7 +181,8 @@ data "aws_iam_policy_document" "deploy-user" {
 
     resources = concat(
       [
-        aws_iam_role.ecs-execution-role.arn
+        aws_iam_role.ecs-execution-role.arn,
+        "arn:aws:iam::${local.account_id}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
       ],
       [for ws in local.workspaces : "arn:aws:s3:::${var.state_bucket}/env:/${ws}/deployment/*"]
     )
