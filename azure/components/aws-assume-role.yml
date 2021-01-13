@@ -18,8 +18,12 @@ steps:
         set -e
 
         aws_role="$(ROLE)"
-        echo "assume role: '${aws_role}'"
+        if [[ "${{ parameters.profile }}" == "apm_prod" ]]; then
+           account_id="$(aws --profile=apm_ptl ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text)"
+           aws_role="arn:aws:iam::${account_id}:role/${aws_role}"
+        fi
 
+        echo "assume role: '${aws_role}'"
 
         if [[ "${aws_role}" != aws:aws:iam:* ]]; then
             # iam synchronisation issues can take a few to make the role appear
