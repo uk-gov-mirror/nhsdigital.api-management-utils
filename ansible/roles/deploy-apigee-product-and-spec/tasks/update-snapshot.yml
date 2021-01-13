@@ -8,6 +8,10 @@
         msg: "Retry count: {{ snapshot_retry_count }}"
       when: snapshot_retry_count | int > 0
 
+    - name: update local apidoc
+      set_fact:
+        apidoc: "{{ create_apidoc.json.data | default(update_apidoc.json.data) }}"
+
     - name: Update remote snapshot
       uri:
         url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}/snapshot"
