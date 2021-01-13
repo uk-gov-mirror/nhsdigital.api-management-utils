@@ -50,10 +50,6 @@
           - "status: {{ update_apidoc.status }}"
           - "error: {{ update_apidoc.msg }}"
 
-    - name: update local apidoc
-      set_fact:
-        apidoc: "{{ existing_apidocs[0] | default(update_apidoc.json.data) }}"
-
   rescue:
     - fail:
         msg: Maximum retries of create api docs been reached tasks reached
