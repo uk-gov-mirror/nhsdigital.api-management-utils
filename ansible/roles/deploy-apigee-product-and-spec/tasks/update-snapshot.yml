@@ -41,7 +41,7 @@
 
     - name: get epoch date
       command: date -u +%s
-      register: epoch_snapshot_date
+      register: epoch_date
 
     - name: assert snapshot has been updated
       assert:
