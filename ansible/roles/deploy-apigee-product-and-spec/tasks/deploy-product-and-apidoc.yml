@@ -105,4 +105,4 @@
 
     - name: update remote snapshot
       include: update-snapshot.yml
-      when: true
+      when: SPEC_FILE

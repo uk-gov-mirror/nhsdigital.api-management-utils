@@ -39,15 +39,6 @@
       command: date -u +%s
       register: epoch_snapshot_date
 
-    - debug:
-        msg: "{{ epoch_snapshot_date }}"
-
-    - debug:
-        msg: "{{ existing_apidocs }}"
-
-    - debug:
-        msg: "{{ existing_apidocs[0].snapshotModified / 1000 }}"
-
     - name: assert snapshot has been updated
       assert:
         that:
