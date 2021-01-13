@@ -112,7 +112,10 @@ stages:
 
                 - template: ../components/aws-assume-role.yml
                   parameters:
-                    role: "auto-ops"
+                    ${{ if ne(parameters.aws_account, 'prod') }}:
+                      role: "auto-ops"
+                    ${{ if eq(parameters.aws_account, 'prod') }}:
+                      role: "arn:aws:iam::484015324636:role/auto-ops"
                     profile: "apm_${{ parameters.aws_account }}"
 
                 - task: UsePythonVersion@0
