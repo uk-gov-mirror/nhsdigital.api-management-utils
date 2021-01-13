@@ -112,7 +112,7 @@ stages:
                 - template: ../components/aws-assume-role.yml
                   parameters:
                     role: "auto-ops"
-                    profile: "apm_${{parameters.aws_account}}"
+                    profile: "apm_${{ parameters.aws_account }}"
 
                 - task: UsePythonVersion@0
                   displayName: 'Use Python 3.8'
