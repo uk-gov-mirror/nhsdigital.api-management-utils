@@ -6,6 +6,7 @@ parameters:
     default: ''
   - name: 'aws_account'
     type: string
+    default: 'ptl'
 
 steps:
     - template: ./aws-clean-config.yml
