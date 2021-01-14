@@ -1,10 +1,11 @@
-
 parameters:
   - name: 'role'
     type: string
   - name: 'profile'
     type: string
     default: ''
+  - name: 'aws_account'
+    type: string
 
 steps:
     - template: ./aws-clean-config.yml
@@ -20,8 +21,15 @@ steps:
         aws_role="$(ROLE)"
         echo "assume role: '${aws_role}'"
 
+        aws_account="${{ parameters.aws_account }}"
+        if [[ "${aws_account}" == "prod" ]]; then
+            echo "account is prod"
+            account_id="$(aws ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text)"
+            aws_role="arn:aws:iam::${account_id}:role/${aws_role}"
+        fi
 
-        if [[ "${aws_role}" != aws:aws:iam:* ]]; then
+        if [[ "${aws_role}" != arn:aws:iam:* ]]; then
+            echo "check if role exists"
             # iam synchronisation issues can take a few to make the role appear
             for i in {1..15}; do
               if aws iam get-role --role-name ${aws_role} > /dev/null; then
@@ -50,6 +58,11 @@ steps:
             let "sleep_for=$i*10";
             sleep $sleep_for
         done
+
+        if [[ "${assumed_role}" != "yes" ]]; then
+            echo "assume role failed"
+            exit -1
+        fi
 
         echo "aws_access_key_id = $(jq -r .Credentials.AccessKeyId ${tmp_file})" >> ~/.aws/config
         echo "aws_secret_access_key = $(jq -r .Credentials.SecretAccessKey ${tmp_file})" >> ~/.aws/config
