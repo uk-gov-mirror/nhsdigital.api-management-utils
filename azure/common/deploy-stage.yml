@@ -142,6 +142,7 @@ stages:
                       - /${{ parameters.aws_account }}/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+                    aws_account: ${{ parameters.aws_account }}
 
                 - ${{ if parameters.notify }}:
                   - bash: |
