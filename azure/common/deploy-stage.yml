@@ -117,6 +117,7 @@ stages:
                     ${{ if eq(parameters.aws_account, 'prod') }}:
                       role: "arn:aws:iam::484015324636:role/auto-ops"
                     profile: "apm_${{ parameters.aws_account }}"
+                    account: "${{ parameters.aws_account }}"
 
                 - task: UsePythonVersion@0
                   displayName: 'Use Python 3.8'
