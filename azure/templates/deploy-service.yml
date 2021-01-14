@@ -150,6 +150,7 @@ steps:
     parameters:
       role: "$(DEPLOY_ROLE)"
       profile: "$(DEPLOY_ROLE)"
+      aws_account: "${{ parameters.aws_account }}"
 
   - bash: |
       set -e
