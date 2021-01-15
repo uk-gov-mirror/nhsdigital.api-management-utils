@@ -1,9 +1,11 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
-
-
+data "aws_ssm_parameter" "ptl_account_id" {
+  name = "/account-ids/ptl"
+}
 
 locals {
+  ptl_account_id = data.aws_ssm_parameter.ptl_account_id.value
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
   env_service_id = "${var.apigee_environment}-${var.service_id}"
@@ -49,7 +51,7 @@ locals {
         (
           container
           | combine(
-            {'image': '${local.account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + service_id + '_' + container.name + ':' + build_label }
+            {'image': '${local.ptl_account_id}.dkr.ecr.eu-west-2.amazonaws.com/' + service_id + '_' + container.name + ':' + build_label }
           )
         ) | to_json
     }},

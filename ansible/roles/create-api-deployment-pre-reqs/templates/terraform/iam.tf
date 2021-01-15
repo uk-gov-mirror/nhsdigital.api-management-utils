@@ -286,4 +286,15 @@ data "aws_iam_policy_document" "deploy-user" {
 
   }
 
+  statement {
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:GetParametersByPath",
+    ]
+
+    resources = [
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/account-ids/*",
+    ]
+  }
 }
