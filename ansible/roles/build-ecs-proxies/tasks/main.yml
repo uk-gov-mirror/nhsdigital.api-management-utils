@@ -21,6 +21,10 @@
     images_map: "{{ images_map | combine({item['name']: item}) }}"
   with_items: '{{ docker_containers }}'
 
+- name: set variables
+  set_fact:
+    new_repos: "{{ repo_names | difference(current_repos) }}"
+
 - name: create new repos
   command: "{{ aws_cmd }} ecr create-repository --repository-name {{ item }} --tags Key=api-service,Value={{ service_id }}"
   with_items: "{{ new_repos }}"
