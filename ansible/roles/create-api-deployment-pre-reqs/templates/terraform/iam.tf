@@ -294,7 +294,7 @@ data "aws_iam_policy_document" "deploy-user" {
     ]
 
     resources = [
-      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${var.account}/account-ids/*",
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/account-ids/*",
     ]
   }
 }
