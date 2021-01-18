@@ -19,6 +19,7 @@
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
+      register: snapshot
 
     - name: get updated apidoc, on snapshot update
       uri:
