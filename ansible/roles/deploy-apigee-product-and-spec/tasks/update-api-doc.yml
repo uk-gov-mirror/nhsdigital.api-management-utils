@@ -17,7 +17,6 @@
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
-      register: update_apidoc
 
     - name: get updated apidoc
       uri:
