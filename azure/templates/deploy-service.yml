@@ -217,6 +217,7 @@ steps:
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
       export RELEASE_RELEASEID="$(Build.BuildId)"
       export PING="${{ parameters.ping }}"
+      export ANSIBLE_FORCE_COLOR=yes
 
       make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
 
