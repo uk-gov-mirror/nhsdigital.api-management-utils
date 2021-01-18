@@ -18,16 +18,6 @@
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
       register: create_apidoc
-
-    - name: verify apidoc creation on a 200 response
-      uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ create_apidoc.json.data.id }}"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-        status_code: 200
-        return_content: yes
-      when: create_apidoc.status == 200
     
     - name: verify apidoc creation on a 500 response
       block:
@@ -57,7 +47,7 @@
               - "reason: Failed updating apidoc" 
               - "status: {{ create_apidoc.status }}"
               - "error: {{ create_apidoc.msg }}"
-      when: create_apidoc.status != 200
+      when: create_apidoc.status == 500
 
   rescue:
     - fail:

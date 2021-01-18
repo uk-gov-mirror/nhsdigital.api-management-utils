@@ -21,7 +21,7 @@
 
     - name: get updated apidoc
       uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ update_apidoc.json.data.id }}"
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}"
         method: GET
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
