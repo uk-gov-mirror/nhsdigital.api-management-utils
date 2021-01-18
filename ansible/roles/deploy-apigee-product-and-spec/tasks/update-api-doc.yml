@@ -19,32 +19,24 @@
         status_code: 200, 500
       register: update_apidoc
 
-    - name: get all apidocs, when update
+    - name: get updated apidoc
       uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ update_apidoc.json.data.id }}"
         method: GET
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
         return_content: yes
-      register: apidocs
-
-    - name: set apidocs, when update
-      set_fact:
-        apidocs: "{{ apidocs.json.data }}"
-
-    - name: get existing apidocs, when update
-      set_fact:
-        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+      register: updated_apidoc
 
     - name: get epoch date
       command: date -u +%s
       register: epoch_date
 
-    - name: assert only apidoc has been updated
+    - name: assert apidoc has been updated
       assert:
         that:
-          - "{{ (epoch_date.stdout_lines[0] | int) - (existing_apidocs[0].modified / 1000) < 30 }}"
+          - "{{ (epoch_date.stdout_lines[0] | int) - (updated_apidoc.json.data.modified / 1000) < 30 }}"
         fail_msg:
           - "reason: Failed updating apidoc" 
           - "status: {{ update_apidoc.status }}"
