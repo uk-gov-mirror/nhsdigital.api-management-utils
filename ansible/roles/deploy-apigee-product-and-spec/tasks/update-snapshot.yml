@@ -21,7 +21,7 @@
         status_code: 200, 500
       register: snapshot
 
-    - name: get updated apidoc
+    - name: get updated apidoc, on snapshot update
       uri:
         url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}"
         method: GET
