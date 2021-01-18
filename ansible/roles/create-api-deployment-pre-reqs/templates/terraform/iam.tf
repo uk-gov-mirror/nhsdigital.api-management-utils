@@ -11,7 +11,6 @@ data "aws_iam_policy_document" "ecs-tasks-assume-role" {
 
 data "aws_iam_policy_document" "ecs-execution-role" {
 
-
   statement {
     actions = [
       "ssm:GetParameter",
@@ -60,7 +59,6 @@ data "aws_iam_policy_document" "ecs-execution-role" {
 
 }
 
-
 resource "aws_iam_role" "ecs-execution-role" {
   name               = "ecs-x-${local.env_service_id}"
   assume_role_policy = data.aws_iam_policy_document.ecs-tasks-assume-role.json
@@ -77,12 +75,10 @@ resource "aws_iam_role_policy" "ecs-execution-role" {
   policy = data.aws_iam_policy_document.ecs-execution-role.json
 }
 
-
 resource "aws_iam_role_policy_attachment" "attach_AmazonECSTaskExecutionRolePolicy_to_monitoring-ecs-tasks" {
   role       = aws_iam_role.ecs-execution-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
-
 
 resource "aws_iam_policy" "deploy-user" {
   name   = "deploy-${local.env_service_id}"
@@ -120,7 +116,6 @@ resource "aws_iam_role_policy_attachment" "deploy-user" {
 }
 
 data "aws_iam_policy_document" "deploy-user" {
-
 
   statement {
 

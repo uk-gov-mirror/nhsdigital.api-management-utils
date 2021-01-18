@@ -106,16 +106,13 @@ stages:
                     instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
                     echo instance-id: "${instance_id}"
                     echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
-                    echo pwd: `pwd`
                     echo sudo su - ubuntu
+                    echo working directory: $(System.DefaultWorkingDirectory)
                   displayName: print aws info
 
                 - template: ../components/aws-assume-role.yml
                   parameters:
-                    ${{ if ne(parameters.aws_account, 'prod') }}:
-                      role: "auto-ops"
-                    ${{ if eq(parameters.aws_account, 'prod') }}:
-                      role: "arn:aws:iam::484015324636:role/auto-ops"
+                    role: "auto-ops"
                     profile: "apm_${{ parameters.aws_account }}"
                     aws_account: "${{ parameters.aws_account }}"
 
@@ -145,6 +142,7 @@ stages:
                       - /${{ parameters.aws_account }}/azure-devops/GITHUB_USER
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
+                    aws_account: ${{ parameters.aws_account }}
 
                 - ${{ if parameters.notify }}:
                   - bash: |

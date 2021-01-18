@@ -25,7 +25,7 @@ steps:
       export pr_number="$(System.PullRequest.PullRequestNumber)"
       export service_name="${{ parameters.service_name }}"
       export service_id="${{ parameters.service_id }}"
-
+      export ANSIBLE_FORCE_COLOR=yes
       make --no-print-directory -C ${{ parameters.utils_dir }}/ansible create-build-env-vars
 
     displayName: output build env vars for artifact
