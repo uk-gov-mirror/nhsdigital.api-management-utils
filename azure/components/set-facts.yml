@@ -10,6 +10,9 @@ parameters:
   - name: config_ids
     displayName: AWS SSM Config IDs
     type: object
+  - name: aws_account
+    type: string
+    default: 'ptl'
 
 steps:
   - bash: |
@@ -44,6 +47,7 @@ steps:
       secret_file_ids: ${{ parameters.secret_file_ids }}
       secret_ids: ${{ parameters.secret_ids }}
       config_ids: ${{ parameters.config_ids }}
+      aws_account: ${{ parameters.aws_account }}
 
   - template: ../components/get-mfa-code.yml
     parameters:

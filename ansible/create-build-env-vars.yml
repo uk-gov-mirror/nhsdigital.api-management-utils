@@ -51,3 +51,4 @@
           export pr_number="{{ pr_number }}"
           export commit_hash="{{ lookup('env','commit_hash') }}"
           export service_name="{{ service_name }}"
+          export ANSIBLE_FORCE_COLOR=yes

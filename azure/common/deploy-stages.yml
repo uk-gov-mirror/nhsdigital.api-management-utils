@@ -31,16 +31,14 @@ stages:
         # Compute the apigee organization & org level part of the AWS secret/config path
         ${{ if in(apigee_deployment.environment, 'internal-dev', 'internal-dev-sandbox', 'internal-qa', 'internal-qa-sandbox', 'ref', 'manual-approval') }}:
           apigee_organization: nonprod
-          aws_org_account: ptl
         ${{ if in(apigee_deployment.environment, 'dev', 'int', 'sandbox', 'prod') }}:
           apigee_organization: prod
-          aws_org_account: prod
 
         # Compute AWS environment level prefix for secrets/config
         ${{ if notIn(apigee_deployment.environment, 'prod') }}:
-          aws_env_account: ptl
+          aws_account: ptl
         ${{ if in(apigee_deployment.environment, 'prod') }}:
-          aws_env_account: prod
+          aws_account: prod
 
         # deploy_review_sandbox not for release pipeline, for now
         ${{ if eq(parameters.deploy_template, 'pr.yml')}}:
