@@ -12,7 +12,7 @@
       set_fact:
         apidoc: "{{ create_apidoc.json.data | default(update_apidoc.json.data) }}"
 
-    - name: Update remote snapshot
+    - name: update remote snapshot
       uri:
         url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}/snapshot"
         method: "{{ (SPEC_FILE) | ternary('PUT', 'DELETE') }}"
@@ -21,23 +21,15 @@
         status_code: 200, 500
       register: snapshot
 
-    - name: get all apidocs, on snapshot update
+    - name: get updated apidoc, on snapshot update
       uri:
-        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+        url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ apidoc.id }}"
         method: GET
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200
         return_content: yes
-      register: apidocs
-
-    - name: set apidocs, on snapshot update
-      set_fact:
-        apidocs: "{{ apidocs.json.data }}"
-
-    - name: get existing apidocs, on snapshot update
-      set_fact:
-        existing_apidocs: "{{ apidocs | selectattr('edgeAPIProductName', '==', product.name) | list }}"
+      register: updated_snapshot
 
     - name: get epoch date
       command: date -u +%s
@@ -46,7 +38,7 @@
     - name: assert snapshot has been updated
       assert:
         that:
-          - "{{ (epoch_date.stdout_lines[0] | int) - (existing_apidocs[0].snapshotModified / 1000) < 30 }}"
+          - "{{ (epoch_date.stdout_lines[0] | int) - (updated_snapshot.json.data.snapshotModified / 1000) < 30 }}"
         fail_msg:
           - "reason: Failed updating snapshot" 
           - "status: {{ snapshot.status }}"
