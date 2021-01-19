@@ -17,7 +17,6 @@
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
         status_code: 200, 500
-      register: update_apidoc
 
     - name: get updated apidoc
       uri:
@@ -39,8 +38,8 @@
           - "{{ (epoch_date.stdout_lines[0] | int) - (updated_apidoc.json.data.modified / 1000) < 30 }}"
         fail_msg:
           - "reason: Failed updating apidoc" 
-          - "status: {{ update_apidoc.status }}"
-          - "error: {{ update_apidoc.msg }}"
+          - "status: {{ updated_apidoc.status }}"
+          - "error: {{ updated_apidoc.msg }}"
 
   rescue:
     - fail:
