@@ -58,7 +58,8 @@ class ActionModule(ApigeeAction):
             }
 
         if len(existing_apidocs) == 1:
-            apidoc_id = existing_apidocs[0]["id"]
+            current_apidoc = existing_apidocs[0]
+            apidoc_id = current_apidoc["id"]
             url = constants.portal_uri(args.organization) + f"/{apidoc_id}"
             method = "PUT"
         else:
@@ -161,7 +162,6 @@ class ActionModule(ApigeeAction):
             if apidoc_request.get("failed"):
                 return apidoc_request
             result["apidoc"] = apidoc_request["response"]["body"]["data"]
-            task_vars["API"]
 
         if diff_mode:
             result["diff"][0]["after"] = utils.exclude_keys(
