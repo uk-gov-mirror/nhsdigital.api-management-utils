@@ -1,0 +1,29 @@
+- name: set full path to manifest file
+  set_fact:
+    manifest_template: "{{ (DIST_DIR, 'manifest_template.yml') | path_join }}"
+    manifest_file: "{{ (DIST_DIR, 'manifest.yml') | path_join }}"
+
+- name: load template streams
+  set_fact:
+    template_streams: "{{ lookup('file', manifest_template ).split('\n---\n') | list }}"
+
+- name: Set template vars
+  set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  loop: "{{ template_streams | first | from_yaml | dict2items }}"
+
+- name: template manifest
+  set_fact:
+    manifest: "{{ lookup('template', manifest_template) | from_yaml_all | list | last }}"
+
+- name: validate templated manifest
+  nhsd.apigee.validate_manifest:
+    meta: "{{ manifest['meta'] }}"
+    apigee: "{{ manifest['apigee'] }}"
+    service_name: "{{ SERVICE_NAME }}"
+    dist_dir: "{{ DIST_DIR }}"
+
+- name: write template to file
+  copy:
+    content: "{{ manifest | to_nice_yaml(indent=2) }}"
+    dest: "{{ manifest_file }}"

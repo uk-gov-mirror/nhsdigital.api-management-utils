@@ -1,0 +1,77 @@
+- name: ensure valid APIGEE_ORGANIZATION
+  fail:
+    msg: Invalid APIGEE_ORGANIZATION
+  when: APIGEE_ORGANIZATION not in APIGEE_ORGANIZATIONS
+
+- name: ensure valid APIGEE_ENVIRONMENT
+  fail:
+    msg: Invalid APIGEE_ENVIRONMENT
+  when: APIGEE_ENVIRONMENT not in APIGEE_ENVIRONMENTS[APIGEE_ORGANIZATION]
+
+  # NOTE: Once the manifest handles proxies this can be removed!
+  # it must remain (for now) to handle the frequent case where
+  # multile Azure pipeline stages deploy to the same Apigee
+  # environment.
+- name: ensure SERVICE_NAME
+  fail:
+    msg: Invalid SERVICE_NAME
+  when: not SERVICE_NAME
+  
+- name: load manifest
+  set_fact:
+    manifest: "{{ lookup('file', (DIST_DIR, 'manifest.yml') | path_join) | from_yaml }}"
+
+- name: validate manifest
+  nhsd.apigee.validate_manifest:
+    meta: "{{ manifest['meta'] }}"
+    apigee: "{{ manifest['apigee'] }}"
+    service_name: "{{ SERVICE_NAME }}"
+    dist_dir: "{{ DIST_DIR }}"
+  register: valid_manifest
+
+- name: apply pr namespace
+  nhsd.apigee.apply_pull_request_namespace:
+    meta: "{{ manifest['meta'] }}"
+    apigee: "{{ valid_manifest['apigee'] }}"
+    pull_request: "{{ PULL_REQUEST }}"
+  register: pr_manifest
+  when: PULL_REQUEST != ""
+
+- name: select regular or pr manifest 
+  set_fact:
+    apigee: "{{ pr_manifest['apigee'] | default(valid_manifest['apigee']) }}"
+
+- name: select environment
+  set_fact:
+    apigee_environment: "{{ apigee.environments | selectattr('name', '==', APIGEE_ENVIRONMENT) | list | first }}"
+
+- name: deploy apigee products
+  nhsd.apigee.deploy_product:
+    product: "{{ item }}"
+    organization: "{{ APIGEE_ORGANIZATION }}"
+    access_token: "{{ APIGEE_ACCESS_TOKEN }}"
+  loop: "{{ apigee_environment.products }}"
+  # Since proxies are uploaded and deployed per-Azure pipeline
+  # stage, this prevents a race condition on the first deployment,
+  # since products can only be created if they reference proxies
+  # that exist.  This safety check can be removed when the
+  # manifest manages proxies too.
+  when: item.name | regex_search('^' + SERVICE_NAME + '-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT))
+
+- name: deploy apigee specs
+  nhsd.apigee.deploy_spec:
+    spec: "{{ item }}"
+    organization: "{{ APIGEE_ORGANIZATION }}"
+    access_token: "{{ APIGEE_ACCESS_TOKEN }}"
+  loop: "{{ apigee_environment.specs }}"
+
+- name: deploy api catalog
+  nhsd.apigee.deploy_api_catalog_item:
+    api_catalog_item: "{{ item }}"
+    organization: "{{ APIGEE_ORGANIZATION }}"
+    access_token: "{{ APIGEE_ACCESS_TOKEN }}"
+  loop: "{{ apigee_environment.api_catalog }}"
+  # See comment on product loop control. (I believe APIDocs
+  # actually can reference products that don't exist. But this is
+  # cleaner.)
+  when: item.edgeAPIProductName | regex_search('^' + SERVICE_NAME + '-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT))
