@@ -5,6 +5,11 @@ class ManifestMetaApi(pydantic.BaseModel):
     name: pydantic.constr(regex=r"^[a-z]+(-[a-z]+)*$")
     id: pydantic.UUID4
 
+    def dict(self, **kwargs):
+        native = super().dict(**kwargs)
+        native.update({"id": str(native["id"])})
+        return native
+
 
 class ManifestMeta(pydantic.BaseModel):
     schema_version: pydantic.constr(regex=r"[0-9]+(\.[0-9]+){0,2}")
