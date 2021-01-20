@@ -19,6 +19,10 @@ pyyaml = "^5.3.1"
 jmespath = "^0.10.0"
 docker-py = "^1.10.6"
 awscli = "^1.18.80"
+pydantic = "^1.7.3"
+deepdiff = "^5.0.2"
+semver = "^2.13.0"
+gitpython = "^3.1.11"
 
 [tool.poetry.dev-dependencies]
 ansible-lint = "^4.2.0"

@@ -30,24 +30,36 @@ jobs:
     displayName: Build & Test
     timeoutInMinutes: 30
     pool:
-      vmImage: 'ubuntu-18.04'
+      name: 'AWS-ECS'
+    workspace:
+      clean: all
     variables:
       ${{ each var in parameters.variables }}:
         ${{ var.key }}: ${{ var.value }}
     steps:
-        # This is here as azure insists on running this before other steps in the job
-        # even though it is only needed if ecs-proxies-containers.yml is present
-      - task: DownloadSecureFile@1
-        name: aws_config
-        inputs:
-          secureFile: ptl_aws_config
-    
+
+      - bash: |
+          if [ ! -z "$(ls -A \"$(Pipeline.Workspace)/s/${{ parameters.service_name }}\" 2>/dev/null)" ]; then
+            echo "workspace directory is not empty!"
+            exit 1
+          fi
+        displayName: "check workspace is clean"
+
+      - bash: |
+          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          echo instance-id: "${instance_id}"
+          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+          echo sudo su - ubuntu
+          echo working directory: $(System.DefaultWorkingDirectory)
+        displayName: print aws info
+
+      - template: ../components/aws-clean-config.yml
+
       - ${{ if parameters.notify }}:
-        - bash: |
-            mkdir -p ~/.aws
-            mv $(aws_config.secureFilePath) ~/.aws/config
-            chmod 400 ~/.aws/config
-          displayName: "Get AWS config"
+        - template: ../components/aws-assume-role.yml
+          parameters:
+            role: "auto-ops"
+            profile: "apm_ptl"
 
         - template: ../components/get-aws-secrets-and-ssm-params.yml
           parameters:
@@ -111,21 +123,6 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
-      - bash: "sudo apt update && sudo apt-get install --yes default-jre default-jdk"
-        displayName: Install apt dependencies
-
-      - bash: "wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -"
-        displayName: Add apt-key
-
-      - bash: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
-        displayName: Setup node deb sources
-
-      - bash: "sudo apt-get install -y nodejs"
-        displayName: Install node
-
-      - bash: "python -m pip install --upgrade pip setuptools wheel && pip install poetry"
-        displayName: Install python dependencies
-
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -162,15 +159,23 @@ jobs:
             echo "##vso[task.setvariable variable=build_containers]false"
           fi
         workingDirectory: ${{ parameters.service_name }}
-        displayName: "Check for ECS proxy definitions"
+        displayName: "Check for ECS proxy"
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
-      - bash: "make install"
+# don't use cache in  aws build agents safely, currently
+#       - task: Cache@2
+#         inputs:
+#           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
+#           path: "${{ parameters.service_name }}/utils/.venv"
+#         displayName: cache utils dependencies
+
+      - bash: |
+            make install
+            sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
-        displayName: "Install utils pre-requisites"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+        displayName: "Install utils "
 
       - bash: |
           export out_dir="$(realpath ${{ parameters.service_name }}/dist)"
@@ -180,31 +185,27 @@ jobs:
           export pr_number="$(System.PullRequest.PullRequestNumber)"
           export service_name="${{ parameters.service_name }}"
           export service_id="${{ parameters.short_service_name }}"
-              make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
+          export ANSIBLE_FORCE_COLOR=yes
+          make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
         displayName: output build env vars for artifact
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
-          mkdir -p ~/.aws
-          mv $(aws_config.secureFilePath) ~/.aws/config
-          chmod 400 ~/.aws/config
-        displayName: "Get AWS config"
+          tfenv use 0.12.29
+        displayName: use terraforn
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
           source "${{ parameters.service_name }}/dist/.build_env_vars"
-          account=ptl make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-ecr-build-user
-        displayName: "Ensure build user"
+          account=ptl make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-ecr-build-role
+          echo "##vso[task.setvariable variable=BUILD_ROLE]build-${service_id}"
+        displayName: "ensure build role"
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
-      - bash: |
-          source "${{ parameters.service_name }}/dist/.build_env_vars"
-          cd ${{ parameters.service_name }}/utils
-          poetry run aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/build-${{ parameters.short_service_name }}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-          mv -f ~/.aws/config.tmp ~/.aws/config
-          chmod 400 ~/.aws/config
-        displayName: "Become build user"
-        condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+      - template: ../components/aws-assume-role.yml
+        parameters:
+          role: "$(BUILD_ROLE)"
+          profile: "$(BUILD_ROLE)"
 
       - bash: |
           source "${{ parameters.service_name }}/dist/.build_env_vars"
@@ -232,6 +233,20 @@ jobs:
           fi
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Copy products into artifact"
+
+      - bash: |
+          set -euo pipefail
+          export DIST_DIR=`pwd`/dist
+          export ANSIBLE_FORCE_COLOR=yes
+          if [ -f manifest.yml ]; then
+             rsync -a manifest.yml dist
+             make -C utils/ansible validate-manifest
+          elif [ -f manifest_template.yml ]; then
+             rsync -a manifest_template.yml dist
+             make -C utils/ansible template-manifest
+          fi
+        workingDirectory: "${{ parameters.service_name }}"
+        displayName: "Validate manifest (template) and copy to artifact"
 
       - bash: |
           cd ${{ parameters.service_name }}/utils

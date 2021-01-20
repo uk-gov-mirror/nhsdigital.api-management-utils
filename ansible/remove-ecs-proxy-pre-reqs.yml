@@ -9,7 +9,6 @@
     account:  "{{ lookup('env','account') }}"
     aws_profile: "apm_{{ account }}"
 
-
   pre_tasks:
 
     - name: check account
@@ -30,5 +29,4 @@
 
   roles:
     - setup-facts
-    - remove-api-deployment-user-access-key
     - destroy-api-deployment-pre-reqs

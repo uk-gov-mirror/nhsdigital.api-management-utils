@@ -10,9 +10,9 @@ parameters:
       - int
       - sandbox
       - prod
+      - manual-approval
   - name: apigee_organization
-  - name: aws_org_account
-  - name: aws_env_account
+  - name: aws_account
   - name: stage_name
   - name: service_name
   - name: short_service_name
@@ -54,12 +54,17 @@ parameters:
     type: boolean
 
 stages:
-  - template: ./deploy-stage.yml
-    parameters:
-      ${{ if eq('', parameters.fully_qualified_service_name) }}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.environment }}
-      ${{ if ne('', parameters.fully_qualified_service_name) }}:
-        fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-      ${{ each param in parameters }}:
-        ${{ if notIn(param.key, 'fully_qualified_service_name') }}:
-          ${{ param.key }}: ${{ param.value }}
+  - ${{ if eq(parameters.environment, 'manual-approval') }}:
+    - template: ./deploy-manual-approval.yml
+      parameters:
+        stage_name: ${{ parameters.stage_name }}
+  - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
+    - template: ./deploy-stage.yml
+      parameters:
+        ${{ if eq('', parameters.fully_qualified_service_name) }}:
+          fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.environment }}
+        ${{ if ne('', parameters.fully_qualified_service_name) }}:
+          fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+        ${{ each param in parameters }}:
+          ${{ if notIn(param.key, 'fully_qualified_service_name') }}:
+            ${{ param.key }}: ${{ param.value }}

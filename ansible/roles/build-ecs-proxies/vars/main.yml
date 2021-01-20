@@ -2,5 +2,5 @@
 build_label: "{{ lookup('env', 'build_label') }}"
 containers: "{{ docker_containers | json_query('[].name') | unique | sort }}"
 repo_names: "{{ containers | map('regex_replace', '^(.*)$', service_id + '_\\1') | list }}"
-
 base_dir: "{{ playbook_dir }}/../.."
+
