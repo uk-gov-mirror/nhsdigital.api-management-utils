@@ -23,27 +23,25 @@
 
 - name: validate manifest
   nhsd.apigee.validate_manifest:
-    meta: "{{ manifest['meta'] }}"
-    apigee: "{{ manifest['apigee'] }}"
     service_name: "{{ SERVICE_NAME }}"
     dist_dir: "{{ DIST_DIR }}"
-  register: valid_manifest
+    manifest: "{{ manifest }}"
+  register: validated_manifest
 
 - name: apply pr namespace
   nhsd.apigee.apply_pull_request_namespace:
-    meta: "{{ manifest['meta'] }}"
-    apigee: "{{ valid_manifest['apigee'] }}"
+    manifest: "{{ validated_manifest['manifest'] }}"
     pull_request: "{{ PULL_REQUEST }}"
   register: pr_manifest
   when: PULL_REQUEST != ""
 
 - name: select regular or pr manifest 
   set_fact:
-    apigee: "{{ pr_manifest['apigee'] | default(valid_manifest['apigee']) }}"
+    manifest: "{{ pr_manifest['manifest'] | default(validated_manifest['manifest']) }}"
 
 - name: select environment
   set_fact:
-    apigee_environment: "{{ apigee.environments | selectattr('name', '==', APIGEE_ENVIRONMENT) | list | first }}"
+    apigee_environment: "{{ manifest.apigee.environments | selectattr('name', '==', APIGEE_ENVIRONMENT) | list | first }}"
 
 - name: deploy apigee products
   nhsd.apigee.deploy_product:

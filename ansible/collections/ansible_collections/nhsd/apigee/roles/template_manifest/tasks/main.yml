@@ -18,8 +18,7 @@
 
 - name: validate templated manifest
   nhsd.apigee.validate_manifest:
-    meta: "{{ manifest['meta'] }}"
-    apigee: "{{ manifest['apigee'] }}"
+    manifest: "{{ manifest }}"
     service_name: "{{ SERVICE_NAME }}"
     dist_dir: "{{ DIST_DIR }}"
 

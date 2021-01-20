@@ -4,13 +4,15 @@ import pathlib
 import yaml
 import re
 
-from ansible_collections.nhsd.apigee.plugins.module_utils.models import manifest
-from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.manifest import Manifest
+from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.manifest import (
+    Manifest,
+    SCHEMA_VERSION,
+)
 
 
 DIR = pathlib.Path(__file__).parent.absolute()
 
-MAJOR, MINOR, PATCH = [int(x) for x in manifest.__version__.split(".")]
+MAJOR, MINOR, PATCH = [int(x) for x in SCHEMA_VERSION.split(".")]
 
 
 def test_schema_version():
@@ -20,14 +22,15 @@ def test_schema_version():
     """
 
     live_schema = Manifest.schema()
-    with open(str(DIR) + f'/schema_versions/v{manifest.__version__}.json') as f:
+    with open(str(DIR) + f'/schema_versions/v{SCHEMA_VERSION}.json') as f:
         recorded_schema = json.load(f)
     assert live_schema == recorded_schema
 
 
 def test_all_example_schemas_can_be_loaded(tmp_path):
     """
-    Validate all example manifests on the current major version of the manifest.__version__
+    Validate all example manifests on the current major version of the
+    SCHEMA_VERSION
     """
 
     # Setup a tmpdir containing dummy spec files as their existance is validated.
