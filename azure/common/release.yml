@@ -50,7 +50,9 @@ parameters:
   - name: friendly_api_name
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
+    type: boolean
+  - name: disable_status
     type: boolean
 
 stages:

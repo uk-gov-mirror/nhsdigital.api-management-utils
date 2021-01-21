@@ -52,9 +52,13 @@ parameters:
     type: boolean
     displayName: Whether monitoring is needed
     default: false
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
     displayName: Temporary flag for adding a _status endpoint to service discovery
+    default: false
+  - name: disable_status
+    type: boolean
+    displayName: Remove _status from monitoring endpoints list
     default: false
   - name: secret_file_ids
     displayName: List of additional AWS Secrets Manager multiline Secret IDs
@@ -101,7 +105,8 @@ parameters:
       - jinja_templates
       - proxy_path
       - enable_monitoring
-      - enable_status_monitoring 
+      - enable_status_monitoring
+      - disable_status
       - pre_template
       - post_template
       - pre_deploy
