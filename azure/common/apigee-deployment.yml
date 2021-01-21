@@ -130,7 +130,6 @@ parameters:
           - internal-dev-sandbox
           - internal-qa
           - internal-qa-sandbox
-          - manual-approval
           - dev
           - ref
           - int
@@ -184,35 +183,23 @@ extends:
                   ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
                     depends_on: []
                   ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
-                    ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
-                      depends_on:
-                        - internal_qa
-                        - internal_qa_sandbox
+                    depends_on:
+                      - internal_qa
+                      - internal_qa_sandbox
+                      - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
                         - manual_approval
-                    ${{ if and(eq(apigee_deployment.environment, 'prod'), not(parameters.prod_requires_approval)) }}:
-                      depends_on:
-                        - internal_qa
-                        - internal_qa_sandbox
-                    ${{ if ne(apigee_deployment.environment, 'prod') }}:
-                      depends_on:
-                        - internal_qa
-                        - internal_qa_sandbox
                 ${{ if apigee_deployment.depends_on }}:
-                  ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
                     depends_on:
                       - ${{ each depend_on in apigee_deployment.depends_on }}:
                         - ${{ depend_on }}
-                      - manual_approval
-                  ${{ if and(eq(apigee_deployment.environment, 'prod'), not(parameters.prod_requires_approval)) }}:
-                    depends_on: ${{ apigee_deployment.depends_on }}
-                  ${{ if ne(apigee_deployment.environment, 'prod') }}:
-                    depends_on: ${{ apigee_deployment.depends_on }}
+                      - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                        - manual_approval
 
         # otherwise set the default parameters for this pipeline
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
-              - ${{ if notIn(environment, 'internal-dev-sandbox', 'manual-approval', 'prod') }}:
+              - ${{ if notIn(environment, 'internal-dev-sandbox') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
@@ -221,6 +208,8 @@ extends:
                     depends_on:
                       - internal_qa
                       - internal_qa_sandbox
+                      - ${{ if and(parameters.prod_requires_approval, eq(environment, 'prod')) }}:
+                        - manual_approval
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
             - ${{ if parameters.deploy_review_sandbox }}:
@@ -229,7 +218,7 @@ extends:
                 depends_on: []
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            - ${{ if parameters.prod_requires_approval }}:
+            - ${{ if and(parameters.prod_requires_approval, containsValue(pipeline_default.environments, 'prod')) }}:
               - environment: manual-approval
                 stage_name: manual_approval
                 depends_on:
@@ -237,14 +226,3 @@ extends:
                   - internal_qa_sandbox
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
-            - environment: prod
-              stage_name: prod
-              ${{ if parameters.prod_requires_approval }}:
-                depends_on:
-                  - manual_approval
-              ${{ if not(parameters.prod_requires_approval) }}:
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
-              ${{ each var in parameters._scoped_pipeline_vars }}:
-                  ${{ var }}: ${{ parameters[var] }}
