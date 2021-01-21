@@ -6,9 +6,6 @@ meta:
 apigee:
   environments:
   - name: internal-dev
-    proxies:
-      - name: canary-api-internal-dev
-        path: proxies/live
     api_catalog:
     - anonAllowed: true
       description: tweet tweet!
@@ -39,9 +36,6 @@ apigee:
     - name: canary-api-internal-dev
       path: canary-api.json
   - name: internal-qa
-    proxies:
-      - name: canary-api-internal-qa
-        path: proxies/live
     api_catalog:
     - anonAllowed: true
       description: tweet tweet!
