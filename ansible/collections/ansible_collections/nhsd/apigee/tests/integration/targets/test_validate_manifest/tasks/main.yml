@@ -1,0 +1,22 @@
+- name: get test manifest files + path to dummy specs
+  find:
+    paths: "{{ role_path }}/files"
+    recurse: yes
+    file_type: directory
+  register: find_dist_dirs
+
+- name: check test dist_dirs files were found
+  assert:
+    that:
+      - "{{ find_dist_dirs.matched > 0 }}"
+
+- name: extract dist dirs
+  set_fact:
+    DIST_DIRS: "{{ find_dist_dirs | json_query('files[*].path') | list }}"
+
+- name: validate test manifest files
+  include_role:
+    name: validate_manifest
+  loop: "{{ DIST_DIRS }}"
+  loop_control:
+    loop_var: DIST_DIR

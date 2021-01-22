@@ -10,6 +10,8 @@ class ApigeeSpec(pydantic.BaseModel):
 
     @pydantic.validator("content", always=True)
     def load_content(cls, content, values):
+        if content is not None:
+            return content
         path = values.get("path")
         if not path:  # When path does not validate.
             return None
