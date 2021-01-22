@@ -129,7 +129,7 @@
           quotaTimeUnit: minute
           environments:
             - "{{ APIGEE_ENVIRONMENT }}"
-          scopes: ['access_mode:APPLICATION-RESTRICTED', 'acces_mode:USER-RESTRICTED' ]
+          scopes: ['access_mode:APPLICATION-RESTRICTED', 'access_mode:USER-RESTRICTED' ]
 
     - name: List product files
       set_fact:
