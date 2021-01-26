@@ -1,8 +1,11 @@
 parameters:
   - name: stage_name
+  - name: depends_on
+    type: object
 
 stages:
   - stage: ${{ parameters.stage_name }}
+    dependsOn: ${{ parameters.depends_on }}
     jobs:
       - deployment: deploy
         displayName: Manual Approval Required

@@ -221,8 +221,6 @@ extends:
             - ${{ if and(parameters.prod_requires_approval, containsValue(pipeline_default.environments, 'prod')) }}:
               - environment: manual-approval
                 stage_name: manual_approval
-                depends_on:
-                  - internal_qa
-                  - internal_qa_sandbox
+                depends_on: []
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
