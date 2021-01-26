@@ -6,7 +6,6 @@ parameters:
       - internal-qa
       - internal-qa-sandbox
       - ref
-      - dev
       - int
       - sandbox
       - prod

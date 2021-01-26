@@ -130,7 +130,6 @@ parameters:
           - internal-dev-sandbox
           - internal-qa
           - internal-qa-sandbox
-          - dev
           - ref
           - int
           - sandbox
