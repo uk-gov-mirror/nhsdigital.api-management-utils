@@ -10,6 +10,9 @@ parameters:
   - name: config_ids
     displayName: AWS SSM Config IDs
     type: object
+  - name: aws_account
+    type: string
+    default: 'ptl'
 
 steps:
   - bash: |
@@ -20,6 +23,11 @@ steps:
       echo "##vso[task.setvariable variable=SERVICE_ARTIFACT_NAME]$SERVICE_ARTIFACT_NAME"
       echo "Set Artifact Name of: $SERVICE_ARTIFACT_NAME"
     displayName: 'Set SERVICE_ARTIFACT_NAME'
+
+  - bash: |
+      echo "##vso[task.setvariable variable=SERVICE_DIR]$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)"
+      echo "##vso[task.setvariable variable=UTILS_DIR]$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    displayName: Set SERVICE_DIR and UTILS_DIR for deploy-service
 
   - bash: |
       if [ -n "$(System.PullRequest.SourceBranch)" ]; then
@@ -39,6 +47,7 @@ steps:
       secret_file_ids: ${{ parameters.secret_file_ids }}
       secret_ids: ${{ parameters.secret_ids }}
       config_ids: ${{ parameters.config_ids }}
+      aws_account: ${{ parameters.aws_account }}
 
   - template: ../components/get-mfa-code.yml
     parameters:

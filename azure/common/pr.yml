@@ -5,8 +5,7 @@ parameters:
       - internal-dev
       - internal-dev-sandbox
   - name: apigee_organization
-  - name: aws_org_account
-  - name: aws_env_account
+  - name: aws_account
   - name: stage_name
   - name: service_name
   - name: short_service_name
@@ -19,6 +18,8 @@ parameters:
   - name: proxy_path
   - name: pr_label
   - name: enable_monitoring
+    type: boolean
+  - name: enable_status_monitoring 
     type: boolean
   - name: secret_file_ids
     type: object
@@ -48,6 +49,8 @@ parameters:
   - name: ping
     type: boolean
 
+
+
 stages:
   - template: ./deploy-stage.yml
     parameters:
@@ -58,5 +61,5 @@ stages:
       service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
       notify: true
       ${{ each param in parameters }}:
-        ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'pr_label') }}:
+        ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
           ${{ param.key }}: ${{ param.value }}

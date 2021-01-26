@@ -1,0 +1,44 @@
+- name: stat proxies dir
+  stat:
+    path: "{{ PROXIES_DIR }}"
+  register: st
+
+- name: check dir exists
+  fail:
+    msg: "{{ PROXIES_DIR }} does not exist"
+  when: not st.stat.exists
+
+- name: create temporary directory
+  tempfile:
+    state: directory
+    suffix: proxies
+    path: "{{ playbook_dir }}"
+  register: temp_dir
+
+- name: template proxies
+  block:
+  - name: copy untemplated proxies to temp location
+    shell: "cp -r {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
+
+  - name: define grep regex
+    set_fact:
+      # !unsafe prevents ansible trying to jinja template this
+      grep_pattern: !unsafe '{[{%] *.+ *[%}]}'
+
+  - name: grep proxies for jinja templates
+    shell: grep -rlEh "{{ grep_pattern }}" "{{ temp_dir.path }}"
+    register: grep_output
+
+  - name: template proxies files
+    template:
+      src: '{{ item.src }}'
+      dest: "{{ PROXIES_DIR }}/{{ item.path }}"
+      mode: '{{ item.mode }}'
+    with_filetree: "{{ temp_dir.path }}"
+    when: item.state == 'file' and item.src in grep_output.stdout_lines
+
+  always:
+    - name: remove temp dir
+      file:
+        path: "{{ temp_dir.path }}"
+        state: absent

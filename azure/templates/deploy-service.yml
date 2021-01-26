@@ -8,9 +8,16 @@ parameters:
   - name: apigee_environment
   - name: apigee_organization
   - name: service_base_path
+  - name: pr_label
+  - name: aws_account
+    values:
+      - ptl
+      - prod
   - name: jinja_templates
     type: object
   - name: enable_monitoring
+    type: boolean
+  - name: enable_status_monitoring 
     type: boolean
   - name: ping
     type: boolean
@@ -33,12 +40,12 @@ parameters:
 steps:
   - bash: |
       ls -R
-      if [[ -f ecs-proxies-deploy.yml ]]; then
-        echo "##vso[task.setvariable variable=build_containers]true"
-      else
-        echo "##vso[task.setvariable variable=build_containers]false"
+      if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
+        echo "##vso[task.setvariable variable=deploy_containers]true"
+      else 
+        echo "##vso[task.setvariable variable=deploy_containers]false"
       fi
-    workingDirectory: ${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)
+    workingDirectory: "$(SERVICE_DIR)"
     displayName: "Check for ECS proxy definitions"
 
   - bash: |
@@ -48,15 +55,13 @@ steps:
         make install && break
         n=$((n+1))
       done
-    workingDirectory: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils"
+    workingDirectory: "$(UTILS_DIR)"
     displayName: "Install utils pre-requisites"
 
   - bash: |
-      brew install tfenv
-      tfenv install 0.12.29
       tfenv use 0.12.29
     displayName: setup terraform
-    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+    condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
 
   - bash: |
       echo "Deploying ${{ parameters.service_name }} artifact $(SERVICE_ARTIFACT_NAME) as ${{ parameters.fully_qualified_service_name }} to ${{ parameters.service_base_path }} on $(ENV_URL)"
@@ -66,55 +71,20 @@ steps:
     - ${{ pre_template_step }}
 
   - ${{ if parameters.jinja_templates }}:
-    - bash: echo "##vso[task.setvariable variable=TEMPLATE_DICT]''"
-      displayName: Initialise Template Dictionary
+      - bash: mkdir -p group_vars/all && touch jinja_templates.yml
+        workingDirectory: "$(UTILS_DIR)/ansible/"
+        displayName: Prepare extra template-proxy vars
 
-    - ${{ each jinja_template in parameters.jinja_templates }}:
-      - bash: |
-          set -euo pipefail
-          cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-          template_dict=`poetry run python scripts/template_dict.py '$(TEMPLATE_DICT)' --key="${{ jinja_template.key }}" --value="${{ jinja_template.value }}"`
-          echo $template_dict
-          echo "##vso[task.setvariable variable=TEMPLATE_DICT]$template_dict"
-        displayName: "Add ${{ jinja_template.key }}: ${{ jinja_template.value }} within the template dictionary"
-
-    - bash: echo "##vso[task.setvariable variable=TEMPLATE_FILES]''"
-      displayName: Initialise Template Files
-
-    - ${{ each jinja_template in parameters.jinja_templates }}:
-      - bash: |
-            set -euo pipefail
-            template_files=()
-            cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-            for template_file in $(egrep -lir --include=*.{xml,js,py} '\W${{ jinja_template.key }}\W' $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)); do
-              echo Matched ${{ jinja_template.key }} in $template_file adding to template files.
-              template_files+=("$template_file")
-            done
-            # convert array to comma delimted string
-            printf -v joined '%s,' "${template_files[@]}"
-            template_files="${joined%,}"
-            # convert to list to set
-            files_to_template=`poetry run python scripts/template_set.py "$(TEMPLATE_FILES)" --value="$template_files"`
-            echo "##vso[task.setvariable variable=TEMPLATE_FILES]$files_to_template"
-        displayName: "Gather ${{ jinja_template.key }} files"
-
-    - bash: |
-        cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-        template_files=($(echo $(TEMPLATE_FILES) | tr ',' "\n"))
-        for template_file in "${template_files[@]}"; do
-          if [ "$template_file" != "''" ]; then
-            echo Templating file: $template_file
-            poetry run python scripts/template.py '$(TEMPLATE_DICT)' --file="$template_file" > /tmp/live.xml
-            mv /tmp/live.xml $template_file
-          fi
-        done
-      displayName: Template files
+      - ${{ each jinja_template in parameters.jinja_templates }}:
+        - bash: 'echo "${{ jinja_template.key }}: ${{ jinja_template.value }}" >> jinja_templates.yml'
+          workingDirectory: "$(UTILS_DIR)/ansible/group_vars/all"
+          displayName: "Set ${{ jinja_template.key }} to ${{ jinja_template.value }}"
 
   - bash: |
       set -euo pipefail
 
       export SERVICE_NAME="${{ parameters.service_name }}"
-      export PROXIES_DIR="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies"
+      export PROXIES_DIR="$(SERVICE_DIR)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
@@ -126,54 +96,89 @@ steps:
         export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
       fi
 
-      if [ -f  $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars ]; then
-        source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+      if [ -f  $(SERVICE_DIR)/.build_env_vars ]; then
+        source $(SERVICE_DIR)/.build_env_vars
       fi
 
-      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils
-      poetry run ansible-playbook ansible/template-proxies.yml
-    displayName: Default proxy templating
+      cd $(UTILS_DIR)
+      make --no-print-directory -C ansible template-proxies
+    displayName: Template proxies
 
   - ${{ each post_template_step in parameters.post_template }}:
-    - ${{ post_template_step}}
+    - ${{ post_template_step }}
 
   - ${{ each pre_deploy_step in parameters.pre_deploy }}:
-    - ${{ pre_deploy_step}}
+    - ${{ pre_deploy_step }}
 
   - bash: |
       set -e
 
-      dist_dir="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)"
       proxy_vars_file=""
 
-      if [ -f  ${dist_dir}/ecs-deploy-${{ parameters.apigee_environment }}.yml ]; then
-        proxy_vars_file="${dist_dir}/ecs-deploy-${{ parameters.apigee_environment }}.yml"
+      if [ -f  $(SERVICE_DIR)/ecs-deploy-${{ parameters.apigee_environment }}.yml ]; then
+        proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-${{ parameters.apigee_environment }}.yml"
       else
-        if [ -f  ${dist_dir}/ecs-deploy-all.yml ]; then
-          proxy_vars_file="${dist_dir}/ecs-deploy-all.yml"
+        if [ -f  $(SERVICE_DIR)/ecs-deploy-all.yml ]; then
+          proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-all.yml"
         fi
       fi
+      deploy_role=""
 
+      if [[ ! -z "${proxy_vars_file}" ]]; then
+        source $(SERVICE_DIR)/.build_env_vars
+        deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
 
-      if [ ! -z "${proxy_vars_file}" ]; then
-        # ensure deployment pre-reqs
-        source $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/.build_env_vars
+        # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
+        export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
+        export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
+        export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
-        account=ptl SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
-        make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible create-api-deployment-pre-reqs
+        account=${{ parameters.aws_account }} \
+        SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+        APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+        make --no-print-directory  -C $(UTILS_DIR)/ansible create-api-deployment-pre-reqs
 
-        # become deployment user
-        aws --profile=apm_ptl secretsmanager get-secret-value --secret-id ptl/api-deploy-users/deploy-${{ parameters.apigee_environment }}-${service_id}/aws_config --query SecretString --output text > ~/.aws/config.tmp
-        mv -f ~/.aws/config.tmp ~/.aws/config
-        chmod 400 ~/.aws/config
-
-        # deploy ecs proxies
-        # I'm not sure that SANDBOX actually does anything...
-        account=ptl PROXY_VARS_FILE="${proxy_vars_file}" SERVICE_BASE_PATH=${{ parameters.service_base_path }} APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
-        make --no-print-directory  -C $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible deploy-ecs-proxies
       fi
+
+      echo "##vso[task.setvariable variable=PROXY_VARS_FILE]${proxy_vars_file}"
+      echo "##vso[task.setvariable variable=DEPLOY_ROLE]${deploy_role}"
+
+    displayName: Create ECS Prerequisites
+    condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
+
+  - template: ../components/aws-assume-role.yml
+    parameters:
+      role: "$(DEPLOY_ROLE)"
+      profile: "$(DEPLOY_ROLE)"
+      aws_account: "${{ parameters.aws_account }}"
+
+  - bash: |
+      set -e
+      proxy_vars_file="$(PROXY_VARS_FILE)"
+
+      source $(SERVICE_DIR)/.build_env_vars
+
+      if [[ $SERVICE_ARTIFACT_NAME == v* ]]; then
+        export DEPLOYED_VERSION=`echo $SERVICE_ARTIFACT_NAME | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+-[[:alpha:]]\+" | tail -1`
+      else
+        export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
+      fi
+
+      # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
+      export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
+      export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
+      export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
+
+      account=${{ parameters.aws_account }} \
+      PROXY_VARS_FILE="${proxy_vars_file}" \
+      SOURCE_COMMIT_ID="$(Build.SourceVersion)" \
+      RELEASE_RELEASEID="$(Build.BuildId)" \
+      SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+      APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+      make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
+
     displayName: Deploy ECS proxies
-    condition: and(succeeded(), eq(variables['build_containers'], 'true'))
+    condition: and(succeeded(), ne(variables['DEPLOY_ROLE'], ''))
 
   - bash: |
       declare -A FRIENDLY_ENV_NAMES=( ["prod"]="(Production)" \
@@ -202,7 +207,7 @@ steps:
   - bash: |
       set -euo pipefail
 
-      export PROXY_DIR="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/proxies/${{ parameters.proxy_path }}"
+      export PROXY_DIR="$(SERVICE_DIR)/proxies/${{ parameters.proxy_path }}"
       export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
@@ -210,18 +215,27 @@ steps:
       export PRODUCT_DESCRIPTION="${{ parameters.product_description }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export APIGEE_ORGANIZATION="nhsd-${{ parameters.apigee_organization }}"
+      export RELEASE_RELEASEID="$(Build.BuildId)"
       export PING="${{ parameters.ping }}"
-      if [[ -n "${{ parameters.spec_file }}" ]]; then
-        export SPEC_FILE="$(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/${{ parameters.spec_file }}"
-      fi
-      export FRIENDLY_NAME="$(FRIENDLY_NAME)"
-      export VISIBLE="${{ parameters.make_spec_visible }}"
-      export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
+      export ANSIBLE_FORCE_COLOR=yes
 
-      cd $(Pipeline.Workspace)/s/${{ parameters.service_name }}/$(SERVICE_ARTIFACT_NAME)/utils/ansible
-      poetry run ansible-playbook deploy-apigee-proxy.yml
-      if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
-        poetry run ansible-playbook deploy-apigee-product-and-spec.yml
+      make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
+
+      if [ -f $(SERVICE_DIR)/manifest.yml ]; then
+          export DIST_DIR=$(SERVICE_DIR)
+          export SERVICE_NAME="${{ parameters.service_name }}"
+          export PULL_REQUEST="${{ parameters.pr_label }}"
+          make --no-print-directory -C $(UTILS_DIR)/ansible deploy-manifest
+      else
+          if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+              if [[ -n "${{ parameters.spec_file }}" ]]; then
+                  export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
+              fi
+              export FRIENDLY_NAME="$(FRIENDLY_NAME)"
+              export VISIBLE="${{ parameters.make_spec_visible }}"
+              export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
+              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
+          fi
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
@@ -229,13 +243,25 @@ steps:
       - template: '../components/curl.yml'
         parameters:
           display_name: Add monitoring endpoints
-          ${{ if eq(parameters.apigee_environment, 'prod') }}:
-            url: "https://api.service.nhs.uk/monitoring-sd/service"
-          ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-            url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
+          url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
           method: POST
           headers: "apikey: $(MONITORING_API_KEY)"
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+          ${{ if eq(parameters.apigee_environment, 'prod') }}:
+            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+          ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
+            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+
+  - ${{ if parameters.enable_status_monitoring  }}:
+     - template: '../components/curl.yml'
+       parameters:
+        display_name: Add status endpoint
+        url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
+        method: POST
+        headers: "apikey: $(MONITORING_API_KEY)"
+        ${{ if eq(parameters.apigee_environment, 'prod') }}:
+          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
+        ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
+          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
-    - ${{ post_deploy_step}}
+    - ${{ post_deploy_step }}

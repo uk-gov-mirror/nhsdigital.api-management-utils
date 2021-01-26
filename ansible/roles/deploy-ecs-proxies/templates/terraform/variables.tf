@@ -43,3 +43,28 @@ variable "build_label" {
   type        = string
   description = "docker container label"
 }
+
+variable "min_desired_capacity" {
+  type = number
+  description = "initial desired capacity"
+}
+
+variable "autoscaling_enabled" {
+  type = bool
+}
+
+variable "autoscaling_service_metric" {
+  type = string
+}
+
+variable "autoscaling_target_value" {
+  type = number
+}
+
+variable "autoscaling_scale_in_cooldown" {
+  type = number
+}
+
+variable "autoscaling_scale_out_cooldown" {
+  type = number
+}

@@ -30,6 +30,7 @@ steps:
       echo "Reporting status for commit $(COMMIT_SHA)"
 
       if [[ "$(COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
+        echo "##[debug] Hitting https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)"
         curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName): ${{ parameters.stage_name }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
       else
         echo "##[warning]$(COMMIT_SHA) doesn't look like a commit hash"

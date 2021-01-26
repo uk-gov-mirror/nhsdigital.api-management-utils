@@ -7,6 +7,10 @@ output "private_alb_listener_arn" {
   value = local.private_alb_listener.arn
 }
 
+output "private_alb_arn_suffix" {
+  value = local.private_alb.arn_suffix
+}
+
 output "subnet_ids" {
   value = data.terraform_remote_state.account.outputs.apis.subnet_ids
 }

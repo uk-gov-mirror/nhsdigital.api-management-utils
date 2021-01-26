@@ -1,0 +1,7 @@
+---
+- name: template manifest
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - nhsd.apigee.template_manifest
