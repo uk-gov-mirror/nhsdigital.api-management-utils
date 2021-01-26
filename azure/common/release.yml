@@ -6,7 +6,6 @@ parameters:
       - internal-qa
       - internal-qa-sandbox
       - ref
-      - dev
       - int
       - sandbox
       - prod
@@ -58,6 +57,7 @@ stages:
     - template: ./deploy-manual-approval.yml
       parameters:
         stage_name: ${{ parameters.stage_name }}
+        depends_on: ${{ parameters.depends_on }}
   - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
     - template: ./deploy-stage.yml
       parameters:
