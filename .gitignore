@@ -146,3 +146,6 @@ env
 
 # vscode
 .vscode
+
+# ansible testing
+ansible/collections/ansible_collections/nhsd/apigee/tests/output/
