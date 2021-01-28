@@ -68,3 +68,7 @@ variable "autoscaling_scale_in_cooldown" {
 variable "autoscaling_scale_out_cooldown" {
   type = number
 }
+
+variable "deregistration_delay" {
+  type = number
+}
