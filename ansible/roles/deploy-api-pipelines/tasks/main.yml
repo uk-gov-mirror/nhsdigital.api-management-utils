@@ -4,16 +4,25 @@
 - name: set organization and project defaults
   shell: az devops configure --defaults organization="https://dev.azure.com/{{ ORG }}" project="{{ PROJECT }}"
 
+- name: check if already logged in to az
+  shell: az account show
+  register: az_account_show
+
 - name: login to azure
-  shell: az login
+  shell: az login --allow-no-subscriptions
+  when: az_account_show.rc != 0
 
 - name: check pipelines folder
-  shell: az pipelines folder list --path "/{{ PREFIX }}" | jq '.[]'
+  shell: az pipelines folder list --path "/{{ PREFIX }}"
   register: cmd_check_pipeline_folder
+
+- name: jsonify pipelines folder result
+  set_fact:
+    pipeline_folders: "{{ cmd_check_pipeline_folder.stdout | from_json }}"
 
 - name: create pipelines folder
   shell: az pipelines folder create --path "/{{ PREFIX }}"
-  when: cmd_check_pipeline_folder.stdout == ''
+  when: pipeline_folders | length == 0
 
 - name: create build pipeline
   shell: >

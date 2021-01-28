@@ -1,0 +1,11 @@
+APIGEE_ORGANIZATIONS: [nhsd-nonprod, nhsd-prod]
+APIGEE_ENVIRONMENTS:
+  nhsd-nonprod: [internal-dev, internal-dev-sandbox, internal-qa, internal-qa-sandbox, ref]
+  nhsd-prod: [dev, sandbox, int, prod]
+
+APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
+APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}"
+PULL_REQUEST: "{{ lookup('env', 'PULL_REQUEST') }}"
+DIST_DIR: "{{ lookup('env', 'DIST_DIR') }}"

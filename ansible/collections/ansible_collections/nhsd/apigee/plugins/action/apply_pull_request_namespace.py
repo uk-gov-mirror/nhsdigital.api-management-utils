@@ -12,4 +12,4 @@ class ActionModule(ApigeeAction):
         args, errors = self.validate_args(ApplyPullRequestNamespace)
         if errors:
             return errors
-        return {"apigee": args.apigee.dict(), "changed": False}
+        return {"manifest": args.manifest.dict(), "changed": False}
