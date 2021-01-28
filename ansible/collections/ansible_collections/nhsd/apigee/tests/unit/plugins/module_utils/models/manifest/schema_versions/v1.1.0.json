@@ -388,7 +388,8 @@
           "items": {
             "type": "string",
             "format": "uuid4"
-          }
+          },
+          "uniqueItems": true
         }
       },
       "required": [

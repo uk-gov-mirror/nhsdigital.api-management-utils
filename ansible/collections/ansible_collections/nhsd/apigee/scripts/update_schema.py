@@ -108,7 +108,7 @@ def main():
     if UPDATED_SCHEMA_VERSION not in SCHEMA_VERSION.valid_increments():
         raise ValueError(f"""{UPDATED_SCHEMA_VERSION} is invalid increment after current {SCHEMA_VERSION}.
 Please increment major, minor or patch integer, e.g:
-""" + f"\n".join(SCHEMA_VERSION.valid_increments()))
+""" + f"\n".join(str(x) for x in SCHEMA_VERSION.valid_increments()))
 
     print("-"*50)
     for delta in deltas:
