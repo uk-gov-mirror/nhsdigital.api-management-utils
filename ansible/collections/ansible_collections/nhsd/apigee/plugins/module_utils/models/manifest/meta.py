@@ -3,9 +3,15 @@ import typing
 
 SCHEMA_VERSION = "1.1.0"
 
+
 # Maps unique API IDS to API names and Spec guids.  One day this will
 # be a proper microservice. But for now, this will do.
 REGISTERED_META = [
+    {
+        "id": "96836235-09a5-4064-9220-0812765ebdd7",
+        "name": "canary-api",
+        "spec_guids": {"0af08cfb-6835-47b5-867c-95d41ef849b5", },
+    },
     {
         "id": "b3d5c83f-98f2-429c-ba1d-646dccd139a3",
         "name": "hello-world",
@@ -90,6 +96,9 @@ class ManifestMetaApi(pydantic.BaseModel):
             )
 
         supplied_spec_guids = values.get("spec_guids")
+        if supplied_spec_guids is None:  # For backwards compatibility
+            return values
+
         registered_spec_guids = registered_meta["spec_guids"]
         for supplied_spec_guid in supplied_spec_guids:
             if str(supplied_spec_guid) not in registered_spec_guids:
