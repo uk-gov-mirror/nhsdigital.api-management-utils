@@ -62,13 +62,35 @@
         "value"
       ]
     },
-    "ApigeeProductAttributeSpecGuid": {
-      "title": "ApigeeProductAttributeSpecGuid",
+    "ApigeeProductAttributeApiSpecGuid": {
+      "title": "ApigeeProductAttributeApiSpecGuid",
+      "description": "Convert a non-string value attribute to string on export.",
       "type": "object",
       "properties": {
         "name": {
           "title": "Name",
-          "const": "spec_guid",
+          "const": "api_spec_guid",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string",
+          "format": "uuid4"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ]
+    },
+    "ApigeeProductAttributeApiGuid": {
+      "title": "ApigeeProductAttributeApiGuid",
+      "description": "Convert a non-string value attribute to string on export.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "const": "api_guid",
           "type": "string"
         },
         "value": {
@@ -88,7 +110,7 @@
       "properties": {
         "name": {
           "title": "Name",
-          "pattern": "^(?!(access|ratelimit|spec_guid)$)",
+          "pattern": "^(?!(access|ratelimit|api_guid|api_spec_guid)$)",
           "type": "string"
         },
         "value": {
@@ -134,7 +156,10 @@
                 "$ref": "#/definitions/ApigeeProductAttributeRateLimit"
               },
               {
-                "$ref": "#/definitions/ApigeeProductAttributeSpecGuid"
+                "$ref": "#/definitions/ApigeeProductAttributeApiSpecGuid"
+              },
+              {
+                "$ref": "#/definitions/ApigeeProductAttributeApiGuid"
               },
               {
                 "$ref": "#/definitions/ApigeeProductAttribute"
@@ -379,6 +404,12 @@
         },
         "id": {
           "title": "Id",
+          "description": "This field is deprecated, use guid instead.",
+          "type": "string",
+          "format": "uuid4"
+        },
+        "guid": {
+          "title": "Guid",
           "type": "string",
           "format": "uuid4"
         },
@@ -393,8 +424,7 @@
         }
       },
       "required": [
-        "name",
-        "id"
+        "name"
       ]
     },
     "ManifestMeta": {

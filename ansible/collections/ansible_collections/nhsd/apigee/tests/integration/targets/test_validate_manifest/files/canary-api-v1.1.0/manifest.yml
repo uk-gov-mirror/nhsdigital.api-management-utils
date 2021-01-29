@@ -23,8 +23,10 @@ apigee:
         value: public
       - name: ratelimit
         value: 5ps
-      - name: spec_guid
+      - name: api_spec_guid
         value: 0af08cfb-6835-47b5-867c-95d41ef849b5
+      - name: api_guid
+        value: 96836235-09a5-4064-9220-0812765ebdd7
       description: tweet tweet!
       displayName: Canary API (Internal Development)
       environments:
@@ -55,8 +57,10 @@ apigee:
         value: public
       - name: ratelimit
         value: 5ps
-      - name: spec_guid
+      - name: api_spec_guid
         value: 0af08cfb-6835-47b5-867c-95d41ef849b5
+      - name: api_guid
+        value: 96836235-09a5-4064-9220-0812765ebdd7
       description: tweet tweet
       displayName: Canary API (Internal QA)
       environments:

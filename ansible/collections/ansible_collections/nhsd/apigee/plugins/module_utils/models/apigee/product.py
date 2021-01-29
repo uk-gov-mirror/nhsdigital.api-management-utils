@@ -3,28 +3,37 @@ import pydantic
 
 
 class ApigeeProductAttribute(pydantic.BaseModel):
-    name: pydantic.constr(regex=r"^(?!(access|ratelimit|spec_guid)$)")
+    name: pydantic.constr(regex=r"^(?!(access|ratelimit|api_guid|api_spec_guid)$)")
     value: str
 
 
-class ApigeeProductAttributeAccess(ApigeeProductAttribute):
+class ApigeeProductAttributeAccess(pydantic.BaseModel):
     name: typing.Literal["access"]
     value: typing.Literal["public", "private"]
 
 
-class ApigeeProductAttributeRateLimit(ApigeeProductAttribute):
+class ApigeeProductAttributeRateLimit(pydantic.BaseModel):
     name: typing.Literal["ratelimit"]
     value: pydantic.constr(regex=r"^[0-9]+(ps|pm)$")
 
 
-class ApigeeProductAttributeSpecGuid(ApigeeProductAttribute):
-    name: typing.Literal["spec_guid"]
-    value: pydantic.UUID4
+class StringValueMixin:
+    """Convert a non-string value attribute to string on export."""
 
     def dict(self, **kwargs):
         native = super().dict(**kwargs)
         native.update({"value": str(native["value"])})
         return native
+
+
+class ApigeeProductAttributeApiSpecGuid(StringValueMixin, pydantic.BaseModel):
+    name: typing.Literal["api_spec_guid"]
+    value: pydantic.UUID4
+
+
+class ApigeeProductAttributeApiGuid(StringValueMixin, pydantic.BaseModel):
+    name: typing.Literal["api_guid"]
+    value: pydantic.UUID4
 
 
 class ApigeeProduct(pydantic.BaseModel):
@@ -34,7 +43,8 @@ class ApigeeProduct(pydantic.BaseModel):
             typing.Union[
                 ApigeeProductAttributeAccess,
                 ApigeeProductAttributeRateLimit,
-                ApigeeProductAttributeSpecGuid,
+                ApigeeProductAttributeApiSpecGuid,
+                ApigeeProductAttributeApiGuid,
                 ApigeeProductAttribute,
             ],
         ]
