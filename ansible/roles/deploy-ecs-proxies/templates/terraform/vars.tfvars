@@ -14,3 +14,4 @@ autoscaling_service_metric     = "{{ autoscaling_policy.service_metric }}"
 autoscaling_target_value       = {{ autoscaling_policy.target_value }}
 autoscaling_scale_in_cooldown  = {{ autoscaling_policy.scale_in_cooldown }}
 autoscaling_scale_out_cooldown = {{ autoscaling_policy.scale_out_cooldown }}
+deregistration_delay           = {{ deregistration_delay }}
