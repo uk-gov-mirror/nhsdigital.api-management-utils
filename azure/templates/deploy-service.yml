@@ -209,6 +209,7 @@ steps:
 
       export PROXY_DIR="$(SERVICE_DIR)/proxies/${{ parameters.proxy_path }}"
       export SERVICE_NAME="${{ parameters.service_name }}"
+      export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
       export PRODUCT_DISPLAY_NAME="${{ parameters.product_display_name }}"
@@ -230,7 +231,6 @@ steps:
               if [[ -n "${{ parameters.spec_file }}" ]]; then
                   export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
               fi
-              export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
               export FRIENDLY_NAME="$(FRIENDLY_NAME)"
               export VISIBLE="${{ parameters.make_spec_visible }}"
               export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
