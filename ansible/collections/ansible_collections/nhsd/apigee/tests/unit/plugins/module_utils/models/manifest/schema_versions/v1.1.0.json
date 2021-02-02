@@ -110,7 +110,7 @@
       "properties": {
         "name": {
           "title": "Name",
-          "pattern": "^(?!(access|ratelimit|api_guid|api_spec_guid)$)",
+          "pattern": "^(?!(access|ratelimit|api_spec_guid|api_guid)$)",
           "type": "string"
         },
         "value": {

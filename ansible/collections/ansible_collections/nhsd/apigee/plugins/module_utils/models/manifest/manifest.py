@@ -9,6 +9,7 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.meta i
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.apigee.product import (
     ApigeeProductAttributeApiSpecGuid,
     ApigeeProductAttributeApiGuid,
+    _literal_name,
 )
 
 
@@ -51,18 +52,18 @@ class Manifest(pydantic.BaseModel):
 
                 # Check spec_guids match meta block
                 spec_guid_attrs = get_attrs(product, ApigeeProductAttributeApiSpecGuid)
+                attrib_name = _literal_name(ApigeeProductAttributeApiSpecGuid)
                 if meta.api.spec_guids is None and len(spec_guid_attrs) != 0:
                     msg = (
-                        f"product {product.name} has a spec_guid "
-                        + "attribute when spec_guids are not defined "
-                        + "in meta.api block"
+                        f"product {product.name} has a '{attrib_name}' "
+                        + "attribute when meta.api.spec_guids are not defined"
                     )
                     raise AssertionError(msg)
                 elif meta.api.spec_guids is not None:
                     if len(spec_guid_attrs) != 1:
                         msg = (
-                            f"product {product.name} requires "
-                            + "unique attribute spec_guid"
+                            f"product {product.name} requires unique attribute "
+                            + f"'{attrib_name}', but found {len(spec_guid_attrs)}"
                         )
                         raise AssertionError(msg)
                     elif spec_guid_attrs[0].value not in meta.api.spec_guids:

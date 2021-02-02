@@ -2,9 +2,11 @@ import typing
 import pydantic
 
 
-class ApigeeProductAttribute(pydantic.BaseModel):
-    name: pydantic.constr(regex=r"^(?!(access|ratelimit|api_guid|api_spec_guid)$)")
-    value: str
+def _literal_name(class_):
+    # This accesses the 'attribute_name' from
+    # class class_:
+    #   name: typing.Literal['attribute_name']
+    return class_.__fields__['name'].type_.__args__[0]
 
 
 class ApigeeProductAttributeAccess(pydantic.BaseModel):
@@ -36,6 +38,28 @@ class ApigeeProductAttributeApiGuid(StringValueMixin, pydantic.BaseModel):
     value: pydantic.UUID4
 
 
+# This ensures that a generic ApigeeProductAttribute can't be
+# constructed from a more specific one that fails valiation.
+PRODUCT_ATTRIBUTE_REGEX = (
+    "^(?!("
+    + "|".join(
+        _literal_name(c)
+        for c in [
+            ApigeeProductAttributeAccess,
+            ApigeeProductAttributeRateLimit,
+            ApigeeProductAttributeApiSpecGuid,
+            ApigeeProductAttributeApiGuid,
+        ]
+    )
+    + ")$)"
+)
+
+
+class ApigeeProductAttribute(pydantic.BaseModel):
+    name: pydantic.constr(regex=PRODUCT_ATTRIBUTE_REGEX)
+    value: str
+
+
 class ApigeeProduct(pydantic.BaseModel):
     name: str
     approvalType: typing.Literal["auto", "manual"]
@@ -57,12 +81,21 @@ class ApigeeProduct(pydantic.BaseModel):
     quotaTimeUnit: typing.Literal["minute", "hour"]
     scopes: typing.List[str]
 
+    @pydantic.validator("environments", "scopes", "proxies")
+    def sorted(cls, v):
+        return sorted(v)
+
     @pydantic.validator("attributes")
     def validate_attributes(cls, attributes, values):
-        for required_name in ["access", "ratelimit"]:
-            attrs = [a for a in attributes if a.name == required_name]
+        attributes = sorted(attributes, key=lambda a: a.name)
+
+        for class_ in [
+            ApigeeProductAttributeAccess,
+            ApigeeProductAttributeRateLimit,
+        ]:
+            attrs = [a for a in attributes if isinstance(a, class_)]
             if len(attrs) != 1:
                 raise AssertionError(
-                    f"Product {values['name']} must contain exactly 1 attribute with name: '{required_name}', found {len(attrs)}"
+                    f"Product {values['name']} must contain exactly 1 attribute with name: '{_literal_name(class_)}', found {len(attrs)}"
                 )
         return attributes
