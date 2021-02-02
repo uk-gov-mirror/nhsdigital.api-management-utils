@@ -208,7 +208,7 @@ steps:
       set -euo pipefail
 
       export PROXY_DIR="$(SERVICE_DIR)/proxies/${{ parameters.proxy_path }}"
-      export SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
+      export SERVICE_NAME="${{ parameters.service_name }}"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
       export PRODUCT_DISPLAY_NAME="${{ parameters.product_display_name }}"
@@ -223,7 +223,6 @@ steps:
 
       if [ -f $(SERVICE_DIR)/manifest.yml ]; then
           export DIST_DIR=$(SERVICE_DIR)
-          export SERVICE_NAME="${{ parameters.service_name }}"
           export PULL_REQUEST="${{ parameters.pr_label }}"
           make --no-print-directory -C $(UTILS_DIR)/ansible deploy-manifest
       else
@@ -231,6 +230,7 @@ steps:
               if [[ -n "${{ parameters.spec_file }}" ]]; then
                   export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
               fi
+              export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.fully_qualified_service_name }}"
               export FRIENDLY_NAME="$(FRIENDLY_NAME)"
               export VISIBLE="${{ parameters.make_spec_visible }}"
               export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
