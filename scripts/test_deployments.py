@@ -14,6 +14,17 @@ PARAMS = {"api-version": "6.0-preview.1"}
 WAIT_TIME_SECONDS = 60
 VERBOSE = True
 
+PIPELINES = {
+    "identity-service": {
+        "build": 27,
+        "pr": "54"
+    },
+    "canary-api": {
+        "build": 222,
+        "pr": 223
+    }
+}
+
 
 def print_response(response: requests.Response, note: str) -> None:
     if VERBOSE:
@@ -65,12 +76,13 @@ def run_pipeline(pipeline_id: int, wait_for_completion: bool = False) -> int:
 
 
 def main():
-    build_status = run_pipeline(27, True)
-    if build_status != 200:
-        sys.exit(1)
-    pr_status = run_pipeline(54, True)
-    if pr_status != 200:
-        sys.exit(1)
+    for pipeline_ids in PIPELINES.values():
+        build_status = run_pipeline(pipeline_ids["build"], True)
+        if build_status != 200:
+            sys.exit(1)
+        pr_status = run_pipeline(pipeline_ids["pr"], True)
+        if pr_status != 200:
+            sys.exit(1)
     sys.exit(0)
 
 
