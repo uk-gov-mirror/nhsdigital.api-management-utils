@@ -17,11 +17,13 @@ VERBOSE = True
 PIPELINES = {
     "identity-service": {
         "build": 27,
-        "pr": "54"
+        "pr": "54",
+        "branch": "master"
     },
     "canary-api": {
         "build": 222,
-        "pr": 223
+        "pr": 223,
+        "branch": "main"
     }
 }
 
@@ -35,7 +37,7 @@ def print_response(response: requests.Response, note: str) -> None:
             print(response.content.decode())
 
 
-def run_pipeline(pipeline_id: int, wait_for_completion: bool = False) -> int:
+def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bool = False) -> int:
 
     run_url = BASE_URL + f"/{pipeline_id}/runs"
     body = {
@@ -48,7 +50,7 @@ def run_pipeline(pipeline_id: int, wait_for_completion: bool = False) -> int:
                     },
                     "refName": f"refs/heads/{BRANCH_NAME}",
                 },
-                "self": {"refName": "refs/heads/master"},
+                "self": {"refName": f"refs/heads/{pipeline_branch}"},
             }
         },
         "variables": {
@@ -77,10 +79,18 @@ def run_pipeline(pipeline_id: int, wait_for_completion: bool = False) -> int:
 
 def main():
     for pipeline_ids in PIPELINES.values():
-        build_status = run_pipeline(pipeline_ids["build"], True)
+        build_status = run_pipeline(
+            pipeline_id=pipeline_ids["build"],
+            pipeline_branch=pipeline_ids["branch"],
+            wait_for_completion=True
+        )
         if build_status != 200:
             sys.exit(1)
-        pr_status = run_pipeline(pipeline_ids["pr"], True)
+        pr_status = run_pipeline(
+            pipeline_id=pipeline_ids["pr"],
+            pipeline_branch=pipeline_ids["branch"],
+            wait_for_completion=True
+        )
         if pr_status != 200:
             sys.exit(1)
     sys.exit(0)

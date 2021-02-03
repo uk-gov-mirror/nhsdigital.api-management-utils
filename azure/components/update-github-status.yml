@@ -27,7 +27,6 @@ parameters:
 
 steps:
   - bash: |
-
       export NOTIFY_GITHUB_REPOSITORY=$(NOTIFY_GITHUB_REPOSITORY)
 
       if [[ -z ${NOTIFY_GITHUB_REPOSITORY} ]]; then
