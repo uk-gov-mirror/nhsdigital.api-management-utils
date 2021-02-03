@@ -1,0 +1,9 @@
+---
+- name: deploy manifest
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  roles:
+    - nhsd.apigee.deploy_manifest
+    

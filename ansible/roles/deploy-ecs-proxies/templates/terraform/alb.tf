@@ -6,6 +6,8 @@ resource "aws_alb_target_group" "service" {
   protocol    = local.exposed_service.lb_protocol
   vpc_id      = data.terraform_remote_state.pre-reqs.outputs.vpc_id
   target_type = "ip"
+  load_balancing_algorithm_type = "least_outstanding_requests"
+  deregistration_delay = var.deregistration_delay
 
   health_check {
     matcher = local.exposed_service.health_check.matcher
@@ -16,7 +18,7 @@ resource "aws_alb_target_group" "service" {
 }
 
 resource "aws_lb_listener_rule" "service" {
-  listener_arn = data.terraform_remote_state.pre-reqs.outputs.public_alb_listener_arn
+  listener_arn = data.terraform_remote_state.pre-reqs.outputs.private_alb_listener_arn
 
   action {
     order            = 1
@@ -25,9 +27,10 @@ resource "aws_lb_listener_rule" "service" {
   }
 
   condition {
-    host_header {
+    http_header {
+      http_header_name = "X-APIM-Service"
       values = [
-        "${var.namespaced_name}.*"
+        var.namespaced_name
       ]
     }
   }

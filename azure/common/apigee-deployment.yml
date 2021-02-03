@@ -52,8 +52,12 @@ parameters:
     type: boolean
     displayName: Whether monitoring is needed
     default: false
+  - name: enable_status_monitoring 
+    type: boolean
+    displayName: Temporary flag for adding a _status endpoint to service discovery
+    default: false
   - name: secret_file_ids
-    displayName: List of additional AWS Secrets Manager multiline Secret IDs 
+    displayName: List of additional AWS Secrets Manager multiline Secret IDs
     type: object
     default: []
   - name: secret_ids
@@ -80,6 +84,10 @@ parameters:
     displayName: Steps to run after templating
     type: stepList
     default: []
+  - name: prod_requires_approval
+    displayName: Requires manual approval
+    type: boolean
+    default: true
   - name: _scoped_pipeline_vars
     type: object
     displayName: All the pipeline parameters which support per-environment scoping.
@@ -93,6 +101,7 @@ parameters:
       - jinja_templates
       - proxy_path
       - enable_monitoring
+      - enable_status_monitoring 
       - pre_template
       - post_template
       - pre_deploy
@@ -121,7 +130,6 @@ parameters:
           - internal-dev-sandbox
           - internal-qa
           - internal-qa-sandbox
-          - dev
           - ref
           - int
           - sandbox
@@ -143,6 +151,13 @@ extends:
         ${{ if gt(length(parameters.apigee_deployments), 0) }}:
           apigee_deployments:
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:
+              - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                - environment: manual-approval
+                  stage_name: manual_approval
+                  depends_on: []
+                  ${{ each var in parameters._scoped_pipeline_vars }}:
+                      ${{ var }}: ${{ parameters[var] }}
+            - ${{ each apigee_deployment in parameters.apigee_deployments }}:
               - environment: ${{ apigee_deployment.environment }}
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
                 ${{ each var in parameters._scoped_pipeline_vars }}:
@@ -162,20 +177,25 @@ extends:
                   ${{ if not(apigee_deployment[var]) }}:
                     ${{ var }}: ${{ parameters[var] }}
                 ${{ if not(apigee_deployment.depends_on) }}:
-                  ${{ if startsWith(apigee_deployment.environment, 'internal-') }}:
+                  ${{ if or(startsWith(apigee_deployment.environment, 'internal-'), eq(apigee_deployment.environment, 'manual-approval')) }}:
                     depends_on: []
-                  ${{ if not(startsWith(apigee_deployment.environment, 'internal-')) }}:
+                  ${{ if and(not(startsWith(apigee_deployment.environment, 'internal-')), ne(apigee_deployment.environment, 'manual-approval')) }}:
                     depends_on:
                       - internal_qa
-                      - internal_qa_sandbox
+                      - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                        - manual_approval
                 ${{ if apigee_deployment.depends_on }}:
-                  depends_on: ${{ apigee_deployment.depends_on }}
+                    depends_on:
+                      - ${{ each depend_on in apigee_deployment.depends_on }}:
+                        - ${{ depend_on }}
+                      - ${{ if and(eq(apigee_deployment.environment, 'prod'), parameters.prod_requires_approval) }}:
+                        - manual_approval
 
         # otherwise set the default parameters for this pipeline
         ${{ if eq(0, length(parameters.apigee_deployments)) }}:
           apigee_deployments:
             - ${{ each environment in pipeline_default.environments }}:
-              - ${{ if ne(environment, 'internal-dev-sandbox') }}:
+              - ${{ if notIn(environment, 'internal-dev-sandbox') }}:
                 - environment: ${{ environment }}
                   stage_name: ${{ replace(environment, '-', '_') }}
                   ${{ if startsWith(environment, 'internal-') }}:
@@ -184,11 +204,19 @@ extends:
                     depends_on:
                       - internal_qa
                       - internal_qa_sandbox
+                      - ${{ if and(parameters.prod_requires_approval, eq(environment, 'prod')) }}:
+                        - manual_approval
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}
             - ${{ if parameters.deploy_review_sandbox }}:
               - environment: internal-dev-sandbox
                 stage_name: internal_dev_sandbox
+                depends_on: []
+                ${{ each var in parameters._scoped_pipeline_vars }}:
+                    ${{ var }}: ${{ parameters[var] }}
+            - ${{ if and(parameters.prod_requires_approval, containsValue(pipeline_default.environments, 'prod')) }}:
+              - environment: manual-approval
+                stage_name: manual_approval
                 depends_on: []
                 ${{ each var in parameters._scoped_pipeline_vars }}:
                     ${{ var }}: ${{ parameters[var] }}

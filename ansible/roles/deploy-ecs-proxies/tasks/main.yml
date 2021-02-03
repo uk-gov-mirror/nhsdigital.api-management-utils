@@ -8,6 +8,19 @@
     state: directory
   register: temp_dir
 
+- name: setup version info
+  set_fact:
+    version_info: >-
+      {{
+        {
+          "build_label": build_label,
+          "apigee_base_uri": "https://" + APIGEE_HOSTNAME + "/" + SERVICE_BASE_PATH,
+          "version": lookup('env', 'DEPLOYED_VERSION'),
+          "releaseId": lookup('env', 'RELEASE_RELEASEID'),
+          "commitId": lookup('env', 'SOURCE_COMMIT_ID')
+        }
+      }}
+
 - name: parse ecs_service
   set_fact:
     ecs_service: "{{ docker_service | as_ecs_service }}"

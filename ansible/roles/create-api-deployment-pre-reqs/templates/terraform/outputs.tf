@@ -3,8 +3,12 @@ output "vpc_id" {
   value = data.terraform_remote_state.account.outputs.account_vpc.id
 }
 
-output "public_alb_listener_arn" {
-  value = local.public_alb_listener.arn
+output "private_alb_listener_arn" {
+  value = local.private_alb_listener.arn
+}
+
+output "private_alb_arn_suffix" {
+  value = local.private_alb.arn_suffix
 }
 
 output "subnet_ids" {

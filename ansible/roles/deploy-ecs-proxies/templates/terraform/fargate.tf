@@ -23,6 +23,7 @@ resource "aws_ecs_task_definition" "service" {
     portMappings = [
       {
         containerPort = container.port
+        hostPort      = container.port
         protocol      = lower(container.protocol)
       }
     ]
@@ -46,11 +47,11 @@ resource "aws_ecs_service" "service" {
   cluster          = data.terraform_remote_state.pre-reqs.outputs.ecs_cluster_id
   task_definition  = aws_ecs_task_definition.service.arn
 
-  desired_count = 1
+  desired_count = var.min_desired_capacity
   launch_type   = "FARGATE"
 
   deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = 0
+  deployment_minimum_healthy_percent = 100
   force_new_deployment               = true
 
   network_configuration {
@@ -58,7 +59,7 @@ resource "aws_ecs_service" "service" {
     subnets         = data.terraform_remote_state.pre-reqs.outputs.subnet_ids
   }
 
-  health_check_grace_period_seconds = 45
+  health_check_grace_period_seconds = {{ health_check_grace_period_seconds }}
 
   load_balancer {
     target_group_arn = aws_alb_target_group.service.arn
@@ -70,12 +71,41 @@ resource "aws_ecs_service" "service" {
     aws_lb_listener_rule.service
   ]
 
+  lifecycle {
+    ignore_changes = [
+      desired_count
+    ]
+  }
+
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {
-  max_capacity       = 2
-  min_capacity       = 0
+  max_capacity       = 10
+  min_capacity       = var.min_desired_capacity
   resource_id        = "service/apis-${var.apigee_environment}/${aws_ecs_service.service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
+}
+
+
+resource "aws_appautoscaling_policy" "ecs_policy" {
+
+  count = var.autoscaling_enabled ? 1 : 0
+
+  name               = local.short_env_namespaced_name
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = var.autoscaling_service_metric
+      resource_label = local.autoscaling_resource_label
+    }
+    scale_out_cooldown = var.autoscaling_scale_out_cooldown
+    scale_in_cooldown = var.autoscaling_scale_in_cooldown
+    target_value = var.autoscaling_target_value
+  }
+
 }

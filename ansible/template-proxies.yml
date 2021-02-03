@@ -14,51 +14,19 @@
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
     APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis.{{ 'prod' if APIGEE_ENVIRONMENT == 'prod' else 'ptl' }}.api.platform.nhs.uk"
     pr_number: "{{ lookup('env','pr_number') }}"
+    APIM_BASE_PATH: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}"
     APIM_PROXY_HOSTNAME: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}.{{ APIM_BASENAME }}"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
     RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
+    HOSTED_TARGET_CONNECTION: |
+          <SSLInfo>
+            <Enabled>true</Enabled>
+          </SSLInfo>
+          <LoadBalancer>
+            <Server name="hosted-apis"/>
+          </LoadBalancer>
+          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}</Path>
 
-  tasks:
-    - name: stat proxies dir
-      stat:
-        path: "{{ PROXIES_DIR }}"
-      register: st
-
-    - name: check dir exists
-      fail:
-        msg: "{{ PROXIES_DIR }} does not exist"
-      when: not st.stat.exists
-
-    - name: create temporary directory
-      tempfile:
-        state: directory
-        suffix: proxies
-      register: temp_dir
-
-    - name: template proxies
-      block:
-        - name: move proxies to temp location
-          shell: "mv {{ PROXIES_DIR }}/* {{ temp_dir.path }}"
-
-        - name: create target directories
-          file:
-            path: "{{ PROXIES_DIR }}/{{ item.path }}"
-            state: directory
-            mode: '{{ item.mode }}'
-          with_filetree: "{{ temp_dir.path }}"
-          when: item.state == 'directory'
-
-        - name: template proxies files
-          template:
-            src: '{{ item.src }}'
-            dest: "{{ PROXIES_DIR }}/{{ item.path }}"
-            mode: '{{ item.mode }}'
-          with_filetree: "{{ temp_dir.path }}"
-          when: item.state == 'file'
-
-      always:
-        - name: remove temp dir
-          file:
-            path: "{{ temp_dir.path }}"
-            state: absent
+  roles:
+    - template-proxies

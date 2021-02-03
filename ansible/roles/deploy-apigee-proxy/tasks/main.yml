@@ -8,31 +8,33 @@
   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
   changed_when: no
 
-# NOTE: uri isn't used here because it exhibits some odd behaviour AND it doesn't return the request body
-- name: upload proxy bundle
-  shell:
-    cmd: >
-      curl --fail -X POST -H 'Authorization: Bearer {{ APIGEE_ACCESS_TOKEN }}'
-      -F 'file=@/{{ tempdir.path }}/proxy.zip' -H 'Content-Type: multipart/form-data'
-      "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}"
-    warn: false
-  register: "proxy_upload_response"
-  failed_when: false
-  no_log: true
-  changed_when: yes
+- name: check zip file
+  stat:
+    path: "/{{ tempdir.path }}/proxy.zip"
+  register: zipstat
 
-- name: extract error message
-  set_fact:
-    error_message: "{{ proxy_upload_response.stderr_lines | select('match', 'curl:') | list | join('') }}"
+- fail: 
+    msg: "{{ tempdir.path }}/proxy.zip does not exist"
+  when: not zipstat.stat.exists
 
-- name: check proxy upload success
-  fail:
-    msg: "Proxy upload failed with a {{ proxy_upload_response.rc }} return code and responded with: '{{ error_message }}'"
-  when: proxy_upload_response.rc != 0
+- name: upload the flow to apigee
+  uri:
+    url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
+    method: POST
+    status_code: 201
+    headers:
+      authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body_format: form-multipart
+    body:
+      file:
+        filename: "/{{ tempdir.path }}/proxy.zip"
+        mime_type: application/octet-stream
+    return_content: yes
+  register: apigee_response
 
 - name: get revision number of upload
   set_fact:
-    revision: "{{ (proxy_upload_response.stdout | from_json).revision }}"
+    revision: "{{ apigee_response.json.revision }}"
 
 - name: update proxy deployment
   uri:
@@ -45,8 +47,10 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
+  register: _resp
   retries: 3
   delay: 30
+  until: not _resp.failed and _resp.status == 200
 
 - name: ping deployed proxy
   uri:
