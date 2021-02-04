@@ -108,6 +108,11 @@ jobs:
             fi
           displayName: Set NOTIFY_COMMIT_SHA
           condition: always()
+      
+        - bash: |
+            echo $(UTILS_PR_NUMBER)
+          displayName: Set UTILS_PR_NUMBER
+          condition: always()
 
         - template: '../components/update-github-status.yml'
           parameters:

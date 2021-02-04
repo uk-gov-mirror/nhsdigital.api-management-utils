@@ -8,6 +8,7 @@ AZURE_TOKEN = os.environ["AZURE_TOKEN"]
 AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
 BRANCH_NAME = os.environ["BRANCH_NAME"]
 NOTIFY_COMMIT_SHA = os.environ["NOTIFY_COMMIT_SHA"]
+UTILS_PR_NUMBER = os.environ["UTILS_PR_NUMBER"]
 NOTIFY_GITHUB_REPOSITORY = "NHSDigital/api-management-utils"
 BASE_URL = "https://dev.azure.com/NHSD-APIM/API Platform/_apis/pipelines"
 PARAMS = {"api-version": "6.0-preview.1"}
@@ -58,7 +59,14 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
                 "isSecret  ": False,
                 "value": f"{NOTIFY_GITHUB_REPOSITORY}",
             },
-            "NOTIFY_COMMIT_SHA": {"isSecret  ": False, "value": f"{NOTIFY_COMMIT_SHA}"},
+            "NOTIFY_COMMIT_SHA": {
+                "isSecret  ": False,
+                "value": f"{NOTIFY_COMMIT_SHA}"
+            },
+            "UTILS_PR_NUMBER": {
+                "isSecret  ": False,
+                "value": f"{UTILS_PR_NUMBER}",
+            }
         },
     }
 
