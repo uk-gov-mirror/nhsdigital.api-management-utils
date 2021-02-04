@@ -21,11 +21,11 @@ PIPELINES = {
         "pr": "54",
         "branch": "master"
     },
-    "canary-api": {
-        "build": 222,
-        "pr": 223,
-        "branch": "main"
-    }
+    # "canary-api": {
+    #     "build": 222,
+    #     "pr": 223,
+    #     "branch": "main"
+    # }
 }
 
 

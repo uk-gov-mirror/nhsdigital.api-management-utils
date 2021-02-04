@@ -1,6 +1,6 @@
 name: Test deployments
 
-on: push
+on: [push, pull_request]
 
 jobs:
   test_deployments:
