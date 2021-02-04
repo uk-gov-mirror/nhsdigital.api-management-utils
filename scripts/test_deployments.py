@@ -18,7 +18,7 @@ VERBOSE = True
 PIPELINES = {
     "identity-service": {
         "build": 27,
-        "pr": "54",
+        "pr": 54,
         "branch": "master"
     },
     # "canary-api": {
@@ -49,7 +49,8 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
                         "fullName": "NHSDigital/api-management-utils",
                         "type": "gitHub",
                     },
-                    "refName": f"refs/heads/{BRANCH_NAME}",
+                    # "refName": f"refs/heads/{BRANCH_NAME}",
+                    "refName": f"refs/pull/{UTILS_PR_NUMBER}/merge",
                 },
                 "self": {"refName": f"refs/heads/{pipeline_branch}"},
             }
