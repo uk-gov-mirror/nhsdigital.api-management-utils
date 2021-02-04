@@ -208,7 +208,7 @@ stages:
                     make_spec_visible: ${{ parameters.make_spec_visible }}
                     friendly_api_name: ${{ parameters.friendly_api_name }}
                     spec_file: ${{ parameters.spec_file }}
-                    pr_label: ${{ parameters.pr_label }}
+                    pr_label: $(PR_LABEL)
                     aws_account: ${{ parameters.aws_account }}
 
 
