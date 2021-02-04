@@ -1,12 +1,6 @@
 name: Test deployments
 
-on: 
-  push:
-    tags:
-      - v*
-  pull_request:
-    branches:
-      - APM-*
+on: push
 
 jobs:
   test_deployments:
