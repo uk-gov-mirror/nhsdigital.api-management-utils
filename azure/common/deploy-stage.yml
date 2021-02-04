@@ -173,6 +173,18 @@ stages:
                     echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
                   displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
 
+                - bash: |
+                    set -euo pipefail
+                    if [[ -z $(UTILS_PR_NUMBER) ]]; then
+                      export PR_LABEL="pr-utils-$(UTILS_PR_NUMBER)"
+                      echo "##[debug]Triggered from utils repository, PR_LABEL=${PR_LABEL}"
+                      echo "##vso[task.setvariable variable=PR_LABEL]${PR_LABEL}"
+                    else
+                      echo "##[debug]PR_NUMBER=${{ parameters.pr_label }}"
+                      echo "##vso[task.setvariable variable=PR_LABEL]${{ parameters.pr_label }}"
+                    fi
+                  displayName: Setting PR_LABEL
+
                 - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
