@@ -38,6 +38,8 @@ class ValidateManifest(pydantic.BaseModel):
     def check_service_name(cls, service_name, values):
         if service_name:
             manifest = values.get("manifest")
+            if not manifest:
+                return
             meta = manifest.meta
             if not meta:
                 return
