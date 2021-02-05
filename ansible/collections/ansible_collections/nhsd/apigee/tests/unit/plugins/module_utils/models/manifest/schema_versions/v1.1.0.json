@@ -62,55 +62,13 @@
         "value"
       ]
     },
-    "ApigeeProductAttributeApiSpecGuid": {
-      "title": "ApigeeProductAttributeApiSpecGuid",
-      "description": "Convert a non-string value attribute to string on export.",
-      "type": "object",
-      "properties": {
-        "name": {
-          "title": "Name",
-          "const": "api_spec_guid",
-          "type": "string"
-        },
-        "value": {
-          "title": "Value",
-          "type": "string",
-          "format": "uuid4"
-        }
-      },
-      "required": [
-        "name",
-        "value"
-      ]
-    },
-    "ApigeeProductAttributeApiGuid": {
-      "title": "ApigeeProductAttributeApiGuid",
-      "description": "Convert a non-string value attribute to string on export.",
-      "type": "object",
-      "properties": {
-        "name": {
-          "title": "Name",
-          "const": "api_guid",
-          "type": "string"
-        },
-        "value": {
-          "title": "Value",
-          "type": "string",
-          "format": "uuid4"
-        }
-      },
-      "required": [
-        "name",
-        "value"
-      ]
-    },
     "ApigeeProductAttribute": {
       "title": "ApigeeProductAttribute",
       "type": "object",
       "properties": {
         "name": {
           "title": "Name",
-          "pattern": "^(?!(access|ratelimit|api_spec_guid|api_guid)$)",
+          "pattern": "^(?!(access|ratelimit)$)",
           "type": "string"
         },
         "value": {
@@ -154,12 +112,6 @@
               },
               {
                 "$ref": "#/definitions/ApigeeProductAttributeRateLimit"
-              },
-              {
-                "$ref": "#/definitions/ApigeeProductAttributeApiSpecGuid"
-              },
-              {
-                "$ref": "#/definitions/ApigeeProductAttributeApiGuid"
               },
               {
                 "$ref": "#/definitions/ApigeeProductAttribute"

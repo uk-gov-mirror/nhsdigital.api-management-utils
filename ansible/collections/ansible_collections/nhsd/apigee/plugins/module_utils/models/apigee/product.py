@@ -19,25 +19,6 @@ class ApigeeProductAttributeRateLimit(pydantic.BaseModel):
     value: pydantic.constr(regex=r"^[0-9]+(ps|pm)$")
 
 
-class StringValueMixin:
-    """Convert a non-string value attribute to string on export."""
-
-    def dict(self, **kwargs):
-        native = super().dict(**kwargs)
-        native.update({"value": str(native["value"])})
-        return native
-
-
-class ApigeeProductAttributeApiSpecGuid(StringValueMixin, pydantic.BaseModel):
-    name: typing.Literal["api_spec_guid"]
-    value: pydantic.UUID4
-
-
-class ApigeeProductAttributeApiGuid(StringValueMixin, pydantic.BaseModel):
-    name: typing.Literal["api_guid"]
-    value: pydantic.UUID4
-
-
 # This ensures that a generic ApigeeProductAttribute can't be
 # constructed from a more specific one that fails valiation.
 PRODUCT_ATTRIBUTE_REGEX = (
@@ -47,8 +28,6 @@ PRODUCT_ATTRIBUTE_REGEX = (
         for c in [
             ApigeeProductAttributeAccess,
             ApigeeProductAttributeRateLimit,
-            ApigeeProductAttributeApiSpecGuid,
-            ApigeeProductAttributeApiGuid,
         ]
     )
     + ")$)"
@@ -67,8 +46,6 @@ class ApigeeProduct(pydantic.BaseModel):
             typing.Union[
                 ApigeeProductAttributeAccess,
                 ApigeeProductAttributeRateLimit,
-                ApigeeProductAttributeApiSpecGuid,
-                ApigeeProductAttributeApiGuid,
                 ApigeeProductAttribute,
             ],
         ]
@@ -96,6 +73,8 @@ class ApigeeProduct(pydantic.BaseModel):
             attrs = [a for a in attributes if isinstance(a, class_)]
             if len(attrs) != 1:
                 raise AssertionError(
-                    f"Product {values['name']} must contain exactly 1 attribute with name: '{_literal_name(class_)}', found {len(attrs)}"
+                    f"Product {values['name']} must contain exactly 1 "
+                    + f"attribute with name: '{_literal_name(class_)}', "
+                    + f"found {len(attrs)}"
                 )
         return attributes

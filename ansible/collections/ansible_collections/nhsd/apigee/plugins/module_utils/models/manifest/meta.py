@@ -139,7 +139,8 @@ class ManifestMeta(pydantic.BaseModel):
         # older versions of the manifest, which would be bad.
         if major != MAJOR:
             raise ValueError(
-                f"Current schema version is {SCHEMA_VERSION}. All minor and patch changes are backwards compatible."
+                f"Current schema version is {SCHEMA_VERSION}. "
+                + "All minor and patch changes are backwards compatible."
             )
 
         return schema_version
