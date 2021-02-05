@@ -23,7 +23,7 @@ add-apim-guids-policy:
 	@poetry run ansible-playbook --diff -i local add-apim-guids-policy.yml
 
 validate-manifest: guard-DIST_DIR
-	@poetry run ansible-playbook -i local validate-manifest.yml
+	@poetry run ansible-playbook -i local -vvv validate-manifest.yml
 
 deploy-manifest: guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN
 	@poetry run ansible-playbook --diff -i local deploy-manifest.yml

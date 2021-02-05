@@ -53,7 +53,7 @@ parameters:
     default: false
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
   - name: _expose_blacklist
     type: object
@@ -69,9 +69,44 @@ parameters:
       - depends_on
       - jinja_templates
 
+
 stages:
+  - stage: manifest_${{ parameters.stage_name }}
+    dependsOn: []
+    jobs:
+      - deployment: deploy
+        environment: ${{ parameters.environment }}
+        pool:
+          name: 'AWS-ECS'
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    source: "specific"
+                    project: $(resources.pipeline.build_pipeline.projectID)
+                    pipeline: $(resources.pipeline.build_pipeline.pipelineID)
+                    preferTriggeringPipeline: true
+                    runVersion: "latestFromBranch"
+                    runBranch: $(Build.SourceBranch)
+                    path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
+                    patterns: '*/manifest.yml'
+                - bash:
+                    ls -R "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
+                  displayName: Show me!
+
+
+
   - stage: ${{ parameters.stage_name }}
+    condition: false
     dependsOn: ${{ parameters.depends_on }}
+      # # - manifest_${{ parameters.stage_name }}
+      # - ${{ each stage in parameters.depends_on }}:
+      #     - stage
+
     jobs:
       - deployment: deploy
         environment: ${{ parameters.environment }}
@@ -102,6 +137,11 @@ stages:
                     runBranch: $(Build.SourceBranch)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
 
+                - task: UsePythonVersion@0
+                  displayName: 'Use Python 3.8'
+                  inputs:
+                    versionSpec: 3.8
+
                 - bash: |
                     instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
                     echo instance-id: "${instance_id}"
@@ -115,11 +155,6 @@ stages:
                     role: "auto-ops"
                     profile: "apm_${{ parameters.aws_account }}"
                     aws_account: "${{ parameters.aws_account }}"
-
-                - task: UsePythonVersion@0
-                  displayName: 'Use Python 3.8'
-                  inputs:
-                    versionSpec: 3.8
 
                 - template: "../components/set-facts.yml"
                   parameters:
@@ -144,6 +179,18 @@ stages:
                           - ${{ config_id }}
                     aws_account: ${{ parameters.aws_account }}
 
+                - bash: |
+                    if [ -f "$(SERVICE_DIR)/manifest.yml" ]; then
+                        MANIFEST_ENV=$(yq -r $(SERVICE_DIR)/manifest.yml 'apigee.environments(name==${{ parameters.environment }})')
+                        echo "##vso[task.setvariable variable=MANIFEST_ENV]$MANIFEST_ENV"
+                        echo "MANIFEST_ENV from manifest: ${MANIFEST_ENV}"
+                    else
+                        echo "##vso[task.setvariable variable=MANIFEST_ENV]${{ parameters.environment }}"
+                        echo "MANIFEST_ENV by default: ${MANIFEST_ENV}"
+                    fi
+                    exit 1
+                  displayName: "Check manifest includes this environment"
+
                 - ${{ if parameters.notify }}:
                   - bash: |
                       export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
@@ -162,12 +209,14 @@ stages:
                         set -euo pipefail
                         echo "##vso[task.setvariable variable=${{ upper(param.key) }}]${{ param.value }}"
                       displayName: Setting ${{ upper(param.key) }}=${{ param.value }}
+                      condition: variables['MANIFEST_ENV']
 
                 - bash: |
                     set -euo pipefail
                     echo "For backward compatibility..."
                     echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
                   displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
+
 
                 - template: '../templates/deploy-service.yml'
                   parameters:
