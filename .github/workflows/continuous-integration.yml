@@ -12,7 +12,7 @@ jobs:
     - name: Get azure devops token
       run: |
         az login -u ${{ secrets.DEVOPS_USEREMAIL }} -p ${{ secrets.DEVOPS_PASSWORD }} --allow-no-subscriptions
-        echo "AZURE_TOKEN=`az account get-access-token`" >> $GITHUB_ENV
+        echo 'AZURE_TOKEN=`az account get-access-token | jq ".accessToken"`' >> $GITHUB_ENV
 
     - name: Run Script
       run: |
