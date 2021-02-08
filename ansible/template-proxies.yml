@@ -35,7 +35,6 @@
             <Server name="hosted-apis"/>
           </LoadBalancer>
           <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}/{{fixedpath}}</Path>
-    
 
   roles:
     - template-proxies
