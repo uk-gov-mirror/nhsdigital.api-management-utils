@@ -14,7 +14,6 @@
     APIGEE_HOSTNAME: "{{ '' if APIGEE_ENVIRONMENT == 'prod' else APIGEE_ENVIRONMENT + '.' }}api.service.nhs.uk"
     APIM_BASENAME: "{{ APIGEE_ENVIRONMENT }}.apis.{{ 'prod' if APIGEE_ENVIRONMENT == 'prod' else 'ptl' }}.api.platform.nhs.uk"
     pr_number: "{{ lookup('env','pr_number') }}"
-    fixedpath: "{{ lookup('env','fixedpath') }}"
     APIM_BASE_PATH: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}"
     APIM_PROXY_HOSTNAME: "{{ service_id }}{{ '-' + pr_number if pr_number else '' }}.{{ APIM_BASENAME }}"
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
