@@ -23,4 +23,5 @@ jobs:
         echo BRANCH_NAME=${BRANCH_NAME}
         echo NOTIFY_COMMIT_SHA=${NOTIFY_COMMIT_SHA}
         echo UTILS_PR_NUMBER=${UTILS_PR_NUMBER}
+        echo AZURE_TOKEN="${AZURE_TOKEN}"
         python3 scripts/test_deployments.py
