@@ -1,47 +1,80 @@
 import typing
-import re
-
 import pydantic
 
 
+def _literal_name(class_):
+    # This accesses the 'attribute_name' from
+    # class class_:
+    #   name: typing.Literal['attribute_name']
+    return class_.__fields__['name'].type_.__args__[0]
+
+
+class ApigeeProductAttributeAccess(pydantic.BaseModel):
+    name: typing.Literal["access"]
+    value: typing.Literal["public", "private"]
+
+
+class ApigeeProductAttributeRateLimit(pydantic.BaseModel):
+    name: typing.Literal["ratelimit"]
+    value: pydantic.constr(regex=r"^[0-9]+(ps|pm)$")
+
+
+# This ensures that a generic ApigeeProductAttribute can't be
+# constructed from a more specific one that fails valiation.
+PRODUCT_ATTRIBUTE_REGEX = (
+    "^(?!("
+    + "|".join(
+        _literal_name(c)
+        for c in [
+            ApigeeProductAttributeAccess,
+            ApigeeProductAttributeRateLimit,
+        ]
+    )
+    + ")$)"
+)
+
+
 class ApigeeProductAttribute(pydantic.BaseModel):
-    name: str
+    name: pydantic.constr(regex=PRODUCT_ATTRIBUTE_REGEX)
     value: str
-
-    @pydantic.validator("value")
-    def validate_special_attribute(cls, value, values):
-        name = values.get("name")
-        if name == "access" and value not in ["public", "private"]:
-            raise ValueError(f"Product attribute 'access' must be 'public' or 'private', not {value}")
-        if name == "ratelimit" and not re.match(r"^[0-9]+(ps|pm)$", value):
-            raise ValueError(
-                f"Product attribute ratelimit must be an integer followed ps or pm, e.g. '300ps', not {value}"
-            )
-        return value
-
-
-def assert_required_name_in_attributes(required_name, attributes):
-    if len([a for a in attributes if a.name == required_name]) != 1:
-        raise AssertionError(
-            f"All products must contain exactly 1 attribute with name: '{required_name}'"
-        )
 
 
 class ApigeeProduct(pydantic.BaseModel):
+    name: str
     approvalType: typing.Literal["auto", "manual"]
-    attributes: typing.List[ApigeeProductAttribute]
+    attributes: typing.List[
+            typing.Union[
+                ApigeeProductAttributeAccess,
+                ApigeeProductAttributeRateLimit,
+                ApigeeProductAttribute,
+            ],
+        ]
     description: str
     displayName: str
     environments: typing.List[str]
-    name: str
     proxies: typing.List[str]
     quota: str
     quotaInterval: str
     quotaTimeUnit: typing.Literal["minute", "hour"]
     scopes: typing.List[str]
 
+    @pydantic.validator("environments", "scopes", "proxies")
+    def sorted(cls, v):
+        return sorted(v)
+
     @pydantic.validator("attributes")
-    def validate_attributes(cls, attributes):
-        assert_required_name_in_attributes("access", attributes)
-        assert_required_name_in_attributes("ratelimit", attributes)
+    def validate_attributes(cls, attributes, values):
+        attributes = sorted(attributes, key=lambda a: a.name)
+
+        for class_ in [
+            ApigeeProductAttributeAccess,
+            ApigeeProductAttributeRateLimit,
+        ]:
+            attrs = [a for a in attributes if isinstance(a, class_)]
+            if len(attrs) != 1:
+                raise AssertionError(
+                    f"Product {values['name']} must contain exactly 1 "
+                    + f"attribute with name: '{_literal_name(class_)}', "
+                    + f"found {len(attrs)}"
+                )
         return attributes

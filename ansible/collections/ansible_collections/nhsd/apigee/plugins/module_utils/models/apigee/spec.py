@@ -28,4 +28,6 @@ class ApigeeSpec(pydantic.BaseModel):
         # object so we convert it back to a string for export.
         native = super().dict(**kwargs)
         native.update({"path": str(native["path"])})
+        if native.get("guid"):
+            native.update({"guid": str(native["guid"])})
         return native

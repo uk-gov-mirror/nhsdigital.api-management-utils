@@ -102,6 +102,13 @@ steps:
 
       cd $(UTILS_DIR)
       make --no-print-directory -C ansible template-proxies
+
+      if [ -f $(SERVICE_DIR)/manifest.yml ]; then
+          DIST_DIR=$(SERVICE_DIR) \
+          PROXY_DIR=${{ parameters.proxy_path }} \
+          make --no-print-directory -C ansible add-apim-guids-policy
+      fi
+
     displayName: Template proxies
 
   - ${{ each post_template_step in parameters.post_template }}:

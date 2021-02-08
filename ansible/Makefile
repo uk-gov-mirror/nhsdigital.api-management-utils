@@ -19,6 +19,9 @@ guard-%:
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook -i local template-manifest.yml
 
+add-apim-guids-policy:
+	@poetry run ansible-playbook --diff -i local add-apim-guids-policy.yml
+
 validate-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook -i local validate-manifest.yml
 
