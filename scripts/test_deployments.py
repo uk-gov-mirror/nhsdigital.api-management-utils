@@ -49,7 +49,6 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
                         "fullName": "NHSDigital/api-management-utils",
                         "type": "gitHub",
                     },
-                    # "refName": f"refs/heads/{BRANCH_NAME}",
                     "refName": f"refs/pull/{UTILS_PR_NUMBER}/merge",
                 },
                 "self": {"refName": f"refs/heads/{pipeline_branch}"},
@@ -82,6 +81,8 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
             delay = delay + WAIT_TIME_SECONDS
             response = requests.get(state_url, headers=AUTH_HEADER, params=PARAMS)
             print_response(response, f"Response from {state_url} after {delay} seconds")
+    elif response.status_code != 200:
+        print(f"Status code: {response.status_code}")
 
     return response.status_code
 
