@@ -1,0 +1,77 @@
+meta:
+  api:
+    id: 96836235-09a5-4064-9220-0812765ebdd7
+    name: canary-api
+    spec_guids:
+      - 0af08cfb-6835-47b5-867c-95d41ef849b5
+  schema_version: 1
+apigee:
+  environments:
+  - name: internal-dev
+    api_catalog:
+    - anonAllowed: true
+      description: tweet tweet!
+      edgeAPIProductName: canary-api-internal-dev
+      requireCallbackUrl: false
+      specId: canary-api-internal-dev
+      title: Canary API (Internal Development)
+      visibility: false
+    products:
+    - approvalType: auto
+      attributes:
+      - name: access
+        value: public
+      - name: ratelimit
+        value: 5ps
+      - name: api_spec_guid
+        value: 0af08cfb-6835-47b5-867c-95d41ef849b5
+      - name: api_guid
+        value: 96836235-09a5-4064-9220-0812765ebdd7
+      description: tweet tweet!
+      displayName: Canary API (Internal Development)
+      environments:
+      - internal-dev
+      name: canary-api-internal-dev
+      proxies:
+      - canary-api-internal-dev
+      quota: '300'
+      quotaInterval: '1'
+      quotaTimeUnit: minute
+      scopes: []
+    specs:
+    - name: canary-api-internal-dev
+      path: canary-api.json
+  - name: internal-qa
+    api_catalog:
+    - anonAllowed: true
+      description: tweet tweet!
+      edgeAPIProductName: canary-api-internal-qa
+      requireCallbackUrl: false
+      specId: canary-api-internal-qa
+      title: Canary API (Internal QA)
+      visibility: false
+    products:
+    - approvalType: auto
+      attributes:
+      - name: access
+        value: public
+      - name: ratelimit
+        value: 5ps
+      - name: api_spec_guid
+        value: 0af08cfb-6835-47b5-867c-95d41ef849b5
+      - name: api_guid
+        value: 96836235-09a5-4064-9220-0812765ebdd7
+      description: tweet tweet
+      displayName: Canary API (Internal QA)
+      environments:
+      - internal-qa
+      name: canary-api-internal-qa
+      proxies:
+      - canary-api-internal-qa
+      quota: '300'
+      quotaInterval: '1'
+      quotaTimeUnit: minute
+      scopes: []
+    specs:
+    - name: canary-api-internal-qa
+      path: canary-api.json
