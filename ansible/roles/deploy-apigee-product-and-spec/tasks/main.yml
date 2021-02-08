@@ -129,7 +129,7 @@
           quotaTimeUnit: minute
           environments:
             - "{{ APIGEE_ENVIRONMENT }}"
-          scopes: ['urn:nhsd:apim:app:jwks:{{ SERVICE_NAME }}', 'urn:nhsd:apim:user:aal3:{{ SERVICE_NAME }}' ]
+          scopes: ['urn:nhsd:apim:app:level3:{{ SERVICE_NAME }}', 'urn:nhsd:apim:user-nhs-id:aal3:{{ SERVICE_NAME }}' ]
 
     - name: List product files
       set_fact:
