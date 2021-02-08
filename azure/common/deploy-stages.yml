@@ -43,9 +43,9 @@ stages:
         # deploy_review_sandbox not for release pipeline, for now
         ${{ if eq(parameters.deploy_template, 'pr.yml')}}:
           deploy_review_sandbox: ${{ parameters.deploy_review_sandbox }}
-          ${{ if ne(variables.utilsPrNumber, '') }}:
-            pr_label: pr-utils-${{ variables.utilsPrNumber }}
-          ${{ if eq(variables.utilsPrNumber, '') }}:
+          ${{ if ne(variables.UTILS_PR_NUMBER, '') }}:
+            pr_label: pr-utils-${{ variables.UTILS_PR_NUMBER }}
+          ${{ if eq(variables.UTILS_PR_NUMBER, '') }}:
             pr_label: pr-${{ replace(replace(replace(variables['Build.SourceBranch'], '/merge', ''), 'refs/pull/', ''), '/', '_') }}
 
         # if Release pipeline use friendly api name for api portal
