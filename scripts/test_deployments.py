@@ -5,7 +5,7 @@ import sys
 import json
 
 AZURE_TOKEN = os.environ["AZURE_TOKEN"]
-AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
+AUTH = {"Authorization": f"Bearer {AZURE_TOKEN}"}
 BRANCH_NAME = os.environ["BRANCH_NAME"]
 NOTIFY_COMMIT_SHA = os.environ["NOTIFY_COMMIT_SHA"]
 UTILS_PR_NUMBER = os.environ["UTILS_PR_NUMBER"]
