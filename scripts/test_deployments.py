@@ -64,7 +64,7 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
                 "isSecret  ": False,
                 "value": f"{NOTIFY_COMMIT_SHA}"
             },
-            "UTILS_PR_NUMBER": {
+            "utilsPrNumber": {
                 "isSecret  ": False,
                 "value": f"{UTILS_PR_NUMBER}",
             }
