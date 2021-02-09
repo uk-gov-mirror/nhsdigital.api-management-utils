@@ -5,7 +5,7 @@ import sys
 import json
 
 AZURE_TOKEN = os.environ["AZURE_TOKEN"]
-AUTH_HEADER = {"Authorization": f"Bearer {AZURE_TOKEN}"}
+AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
 BRANCH_NAME = os.environ["BRANCH_NAME"]
 NOTIFY_COMMIT_SHA = os.environ["NOTIFY_COMMIT_SHA"]
 UTILS_PR_NUMBER = os.environ["UTILS_PR_NUMBER"]
@@ -70,7 +70,7 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
         },
     }
 
-    response = requests.post(run_url, headers=AUTH_HEADER, params=PARAMS, json=body)
+    response = requests.post(run_url, auth=AUTH, params=PARAMS, json=body)
     print_response(response, f"Initial request to {run_url}")
 
     if wait_for_completion and response.status_code == 200:
@@ -79,11 +79,12 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
         while response.status_code == 200 and response.json()["state"] == "inProgress":
             time.sleep(WAIT_TIME_SECONDS)
             delay = delay + WAIT_TIME_SECONDS
-            response = requests.get(state_url, headers=AUTH_HEADER, params=PARAMS)
+            response = requests.get(state_url, auth=AUTH, params=PARAMS)
             print_response(response, f"Response from {state_url} after {delay} seconds")
-    elif response.status_code != 200:
+    elif response.status_code == 203 or response.status_code == 401:
+        print(f"{response.status_code}: Invalid or expired PAT (Personal Access Token), please verify or renew token")
+    else:
         print(f"Status code: {response.status_code}")
-
     return response.status_code
 
 
