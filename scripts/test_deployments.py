@@ -96,24 +96,21 @@ def trigger_pipelines(pipeline_ids: dict):
         wait_for_completion=True
     )
     if build_status != 200:
-        return False
-    pr_status = run_pipeline(
+        return
+    run_pipeline(
         pipeline_id=pipeline_ids["pr"],
         pipeline_branch=pipeline_ids["branch"],
         wait_for_completion=True
     )
-    if pr_status != 200:
-        return False
-    return True
 
 
 def main():
-    processes = []
+    jobs = []
     for pipeline_ids in PIPELINES.values():
         process = Process(target=trigger_pipelines, args=(pipeline_ids,))
         process.start()
-        processes.append(process)
-    for process in processes:
+        jobs.append(process)
+    for process in jobs:
         process.join()
     sys.exit(0)
 
