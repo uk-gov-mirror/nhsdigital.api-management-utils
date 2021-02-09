@@ -14,7 +14,8 @@
 
 - name: extract guids from manifest
   set_fact:
-    API_GUID: "{{ manifest.meta.api.guid }}"
+    # Allow for depreated meta.api.id if meta.api.guid not provided
+    API_GUID: "{{ manifest.meta.api.guid | default(manifest.meta.api.id) }}"
     API_SPEC_GUID: "{{ manifest.meta.api.spec_guids[0] | default('') }}"
 
 - name: add policy xml file
