@@ -4,6 +4,7 @@ import time
 import sys
 import json
 from multiprocessing import Process
+from collections import defaultdict
 
 AZURE_TOKEN = os.environ["AZURE_TOKEN"]
 AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
@@ -44,7 +45,7 @@ def print_response(response: requests.Response, note: str) -> None:
             print(response.content.decode())
 
 
-def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bool = False) -> int:
+def run_pipeline(service: str, pipeline_type: str, pipeline_id: int, pipeline_branch: str, wait_for_completion: bool = False) -> int:
 
     run_url = BASE_URL + f"/{pipeline_id}/runs"
     body = {
@@ -79,6 +80,7 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
     response = requests.post(run_url, auth=AUTH, params=PARAMS, json=body)
     print_response(response, f"Initial request to {run_url}")
 
+    result = "failed"
     if wait_for_completion and response.status_code == 200:
         delay = 0
         state_url = response.json()["_links"]["self"]["href"]
@@ -87,22 +89,28 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
             delay = delay + WAIT_TIME_SECONDS
             response = requests.get(state_url, auth=AUTH, params=PARAMS)
             print_response(response, f"Response from {state_url} after {delay} seconds")
+        result = response.json()["result"]
+        print(f"Result of {service} {pipeline_type} pipeline: {result}")
     elif response.status_code == 203 or response.status_code == 401:
         print(f"{response.status_code}: Invalid or expired PAT (Personal Access Token), please verify or renew token")
     else:
-        print(f"Status code: {response.status_code}")
-    return response.status_code
+        print(f"Triggering pipeline: {service} {pipeline_type} failed, status code: {response.status_code}")
+    return result
 
 
-def trigger_pipelines(pipeline_ids: dict):
+def trigger_pipelines(pipeline_ids: dict, service: str):
     build_status = run_pipeline(
+        service=service,
+        pipeline_type="build",
         pipeline_id=pipeline_ids["build"],
         pipeline_branch=pipeline_ids["branch"],
         wait_for_completion=True
     )
-    if build_status != 200:
+    if build_status != "succeeded":
         return
     run_pipeline(
+        service=service,
+        pipeline_type="pr",
         pipeline_id=pipeline_ids["pr"],
         pipeline_branch=pipeline_ids["branch"],
         wait_for_completion=True
@@ -111,8 +119,8 @@ def trigger_pipelines(pipeline_ids: dict):
 
 def main():
     jobs = []
-    for pipeline_ids in PIPELINES.values():
-        process = Process(target=trigger_pipelines, args=(pipeline_ids,))
+    for service, pipeline_ids in PIPELINES.items():
+        process = Process(target=trigger_pipelines, args=(pipeline_ids, service,))
         process.start()
         jobs.append(process)
     for process in jobs:
