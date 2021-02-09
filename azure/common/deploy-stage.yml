@@ -183,14 +183,43 @@ stages:
                       echo "##[debug]PR_NUMBER=${{ parameters.pr_label }}"
                       echo "##vso[task.setvariable variable=PR_LABEL]${{ parameters.pr_label }}"
                     fi
-                  displayName: Setting PR_LABEL
+                  displayName: Determine PR_LABEL
+
+                - bash: |
+                    set -euo pipefail
+                    if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+                      if [[ "${{ parameters.proxy_path }}" == "live" ]]
+                        export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.service_name }}-$(PR_LABEL)"
+                        echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${FULLY_QUALIFIED_SERVICE_NAME}"
+                      else
+                        export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.service_name }}-$(PR_LABEL)-${{ parameters.proxy_path }}"
+                        echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${FULLY_QUALIFIED_SERVICE_NAME}"
+                      fi
+                      echo "##[debug]Triggered from utils repository, FULLY_QUALIFIED_SERVICE_NAME=${FULLY_QUALIFIED_SERVICE_NAME}"
+                    else
+                      echo "##[debug]FULLY_QUALIFIED_SERVICE_NAME=${{ parameters.fully_qualified_service_name }}"
+                      echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${{ parameters.fully_qualified_service_name }}"
+                    fi
+                  displayName: Determine FULLY_QUALIFIED_SERVICE_NAME
+
+                - bash: |
+                    set -euo pipefail
+                    if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+                      export SERVICE_BASE_PATH="${{ parameters.service_base_path }}-$(PR_LABEL)"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]${SERVICE_BASE_PATH}"
+                      echo "##[debug]Triggered from utils repository, SERVICE_BASE_PATH=${SERVICE_BASE_PATH}"
+                    else
+                      echo "##[debug]SERVICE_BASE_PATH=${{ parameters.service_base_path }}"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]${{ parameters.service_base_path }}"
+                    fi
+                  displayName: Determine SERVICE_BASE_PATH
 
                 - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
                     short_service_name: ${{ parameters.short_service_name }}
-                    fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                    service_base_path: ${{ parameters.service_base_path }}
+                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
+                    service_base_path: $(SERVICE_BASE_PATH)
                     jinja_templates: ${{ parameters.jinja_templates }}
                     apigee_environment: ${{ parameters.environment }}
                     apigee_organization: ${{ parameters.apigee_organization }}
