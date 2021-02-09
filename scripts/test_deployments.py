@@ -26,6 +26,11 @@ PIPELINES = {
         "build": 222,
         "pr": 223,
         "branch": "main"
+    },
+    "personal-demographics-service": {
+        "build": 140,
+        "pr": 144,
+        "branch": "master"
     }
 }
 
