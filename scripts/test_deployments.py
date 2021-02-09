@@ -3,6 +3,7 @@ import requests
 import time
 import sys
 import json
+from multiprocessing import Process
 
 AZURE_TOKEN = os.environ["AZURE_TOKEN"]
 AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
@@ -21,11 +22,11 @@ PIPELINES = {
         "pr": 54,
         "branch": "master"
     },
-    # "canary-api": {
-    #     "build": 222,
-    #     "pr": 223,
-    #     "branch": "main"
-    # }
+    "canary-api": {
+        "build": 222,
+        "pr": 223,
+        "branch": "main"
+    }
 }
 
 
@@ -88,22 +89,32 @@ def run_pipeline(pipeline_id: int, pipeline_branch: str, wait_for_completion: bo
     return response.status_code
 
 
+def trigger_pipelines(pipeline_ids: dict):
+    build_status = run_pipeline(
+        pipeline_id=pipeline_ids["build"],
+        pipeline_branch=pipeline_ids["branch"],
+        wait_for_completion=True
+    )
+    if build_status != 200:
+        return False
+    pr_status = run_pipeline(
+        pipeline_id=pipeline_ids["pr"],
+        pipeline_branch=pipeline_ids["branch"],
+        wait_for_completion=True
+    )
+    if pr_status != 200:
+        return False
+    return True
+
+
 def main():
+    processes = []
     for pipeline_ids in PIPELINES.values():
-        build_status = run_pipeline(
-            pipeline_id=pipeline_ids["build"],
-            pipeline_branch=pipeline_ids["branch"],
-            wait_for_completion=True
-        )
-        if build_status != 200:
-            sys.exit(1)
-        pr_status = run_pipeline(
-            pipeline_id=pipeline_ids["pr"],
-            pipeline_branch=pipeline_ids["branch"],
-            wait_for_completion=True
-        )
-        if pr_status != 200:
-            sys.exit(1)
+        process = Process(target=trigger_pipelines, args=(pipeline_ids,))
+        process.start()
+        processes.append(process)
+    for process in processes:
+        process.join()
     sys.exit(0)
 
 
