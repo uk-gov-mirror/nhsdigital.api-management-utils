@@ -20,3 +20,13 @@ jobs:
         echo BRANCH_NAME=${BRANCH_NAME}
         echo NOTIFY_COMMIT_SHA=${NOTIFY_COMMIT_SHA}
         python3 scripts/test_pull_request_deployments.py
+
+    - name: Test Release Deployments
+      env:
+        AZURE_TOKEN: "${{ secrets.AZURE_TOKEN }}"
+      run: |
+        export BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+        export NOTIFY_COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+        echo BRANCH_NAME=${BRANCH_NAME}
+        echo NOTIFY_COMMIT_SHA=${NOTIFY_COMMIT_SHA}
+        python3 scripts/test_release_deployments.py

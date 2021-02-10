@@ -10,7 +10,6 @@ class AzureDevOps:
         self.base_url = "https://dev.azure.com/NHSD-APIM/API Platform/_apis/pipelines"
         self.token = os.environ["AZURE_TOKEN"]
         self.auth = requests.auth.HTTPBasicAuth("", self.token)
-        self.branch_name = os.environ["BRANCH_NAME"]
         self.notify_commit_sha = os.environ["NOTIFY_COMMIT_SHA"]
         self.utils_pr_number = utils_pr_number
         self.notify_github_repo = "NHSDigital/api-management-utils"
