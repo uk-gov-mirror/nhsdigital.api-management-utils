@@ -177,8 +177,8 @@ stages:
                   parameters:
                     service_name: ${{ parameters.service_name }}
                     short_service_name: ${{ parameters.short_service_name }}
-                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
-                    service_base_path: $(SERVICE_BASE_PATH)
+                    fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
+                    service_base_path: ${{ parameters.service_base_path }}
                     jinja_templates: ${{ parameters.jinja_templates }}
                     apigee_environment: ${{ parameters.environment }}
                     apigee_organization: ${{ parameters.apigee_organization }}
@@ -196,9 +196,8 @@ stages:
                     make_spec_visible: ${{ parameters.make_spec_visible }}
                     friendly_api_name: ${{ parameters.friendly_api_name }}
                     spec_file: ${{ parameters.spec_file }}
-                    pr_label: $(PR_LABEL)
+                    pr_label: ${{ parameters.pr_label }}
                     aws_account: ${{ parameters.aws_account }}
-
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

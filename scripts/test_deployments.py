@@ -3,8 +3,7 @@ import requests
 import time
 import sys
 import json
-from multiprocessing import Process
-from collections import defaultdict
+from multiprocessing import Process, Manager
 
 AZURE_TOKEN = os.environ["AZURE_TOKEN"]
 AUTH = requests.auth.HTTPBasicAuth("", AZURE_TOKEN)
@@ -45,7 +44,11 @@ def print_response(response: requests.Response, note: str) -> None:
             print(response.content.decode())
 
 
-def run_pipeline(service: str, pipeline_type: str, pipeline_id: int, pipeline_branch: str, wait_for_completion: bool = False) -> int:
+def run_pipeline(service: str,
+                 pipeline_type: str,
+                 pipeline_id: int,
+                 pipeline_branch: str,
+                 wait_for_completion: bool = False) -> int:
 
     run_url = BASE_URL + f"/{pipeline_id}/runs"
     body = {

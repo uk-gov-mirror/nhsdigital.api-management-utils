@@ -13,8 +13,8 @@ jobs:
       env:
         AZURE_TOKEN: "${{ secrets.AZURE_TOKEN }}"
       run: |
-        export BRANCH_NAME="${{ github.head_ref }}"
-        export NOTIFY_COMMIT_SHA="${{ github.sha }}"
+        export BRANCH_NAME="$(git rev-parse --abbrev-ref HEAD)"
+        export NOTIFY_COMMIT_SHA="$(git rev-parse HEAD)"
         export UTILS_PR_NUMBER="${{ github.event.pull_request.number }}"
         echo UTILS_PR_NUMBER=${UTILS_PR_NUMBER}
         echo BRANCH_NAME=${BRANCH_NAME}
