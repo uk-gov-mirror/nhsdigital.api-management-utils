@@ -24,11 +24,11 @@
       vars:
         qualified_product_name: >-
           {{
-                product.name | ternary(SERVICE_NAME + '-' + product.name,
-                                       SERVICE_NAME)
+                product.name | ternary(FULLY_QUALIFIED_SERVICE_NAME + '-' + product.name,
+                                       FULLY_QUALIFIED_SERVICE_NAME)
           }}
         qualified_display_name: >-
-          {{ ('-pr-' in SERVICE_NAME) | ternary(qualified_product_name, product.displayName) }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)
+          {{ ('-pr-' in FULLY_QUALIFIED_SERVICE_NAME) | ternary(qualified_product_name, product.displayName) }} ({{ env_names[APIGEE_ENVIRONMENT] }} Environment)
       set_fact:
         product: >-
           {{ product | combine({'displayName': qualified_display_name,

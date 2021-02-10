@@ -4,7 +4,7 @@
   gather_facts: no
 
   vars:
-    SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}"
+    FULLY_QUALIFIED_SERVICE_NAME: "{{ lookup('env', 'FULLY_QUALIFIED_SERVICE_NAME') }}"
     SERVICE_BASE_PATH: "{{ lookup('env', 'SERVICE_BASE_PATH') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
@@ -13,10 +13,10 @@
     PING: "{{ (lookup('env', 'PING') | length > 0) | ternary(lookup('env', 'PING'), 'true') }}"
 
   pre_tasks:
-    - name: check SERVICE_NAME
+    - name: check FULLY_QUALIFIED_SERVICE_NAME
       fail:
-        msg: "SERVICE_NAME not set"
-      when: not SERVICE_NAME
+        msg: "FULLY_QUALIFIED_SERVICE_NAME not set"
+      when: not FULLY_QUALIFIED_SERVICE_NAME
 
     - name: check SERVICE_BASE_PATH
       fail:
