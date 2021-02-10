@@ -1,3 +1,7 @@
+variables:
+  - name: UTILS_PR_NUMBER
+    value: ''
+
 parameters:
   - name: apigee_deployments
     displayName: List of apigee deployments
@@ -143,7 +147,7 @@ extends:
         ${{ if not(contains(join(',', parameters._scoped_pipeline_vars), param.key)) }}:
           ${{ param.key }}: ${{ param.value }}
     # Exists if triggered from a utils pull_request
-    utils_pr_number: $(UTILS_PR_NUMBER)
+    utils_pr_number: ${{ variables.UTILS_PR_NUMBER }}
 
     ${{ each pipeline_default in parameters._pipeline_defaults }}:
       ${{ if endsWith(variables['Build.DefinitionName'], pipeline_default.name_suffix) }}:
