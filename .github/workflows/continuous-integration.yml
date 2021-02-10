@@ -9,7 +9,7 @@ jobs:
     - name: Checkout Scripts
       uses: actions/checkout@v2
 
-    - name: Run Scripts
+    - name: Test Pull Request Deployments
       env:
         AZURE_TOKEN: "${{ secrets.AZURE_TOKEN }}"
       run: |
@@ -19,4 +19,4 @@ jobs:
         echo UTILS_PR_NUMBER=${UTILS_PR_NUMBER}
         echo BRANCH_NAME=${BRANCH_NAME}
         echo NOTIFY_COMMIT_SHA=${NOTIFY_COMMIT_SHA}
-        python3 scripts/test_deployments.py
+        python3 scripts/test_pull_request_deployments.py
