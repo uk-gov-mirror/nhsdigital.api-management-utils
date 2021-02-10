@@ -25,7 +25,8 @@ def trigger_pipelines(pipeline_ids: dict, service: str, tag: str):
         pipeline_type="build",
         pipeline_id=pipeline_ids["build"],
         pipeline_branch=tag,
-        wait_for_completion=True
+        wait_for_completion=True,
+        is_release=True
     )
     if build_status != "succeeded":
         return
@@ -34,7 +35,8 @@ def trigger_pipelines(pipeline_ids: dict, service: str, tag: str):
         pipeline_type="release",
         pipeline_id=pipeline_ids["release"],
         pipeline_branch=tag,
-        wait_for_completion=True
+        wait_for_completion=True,
+        is_release=True
     )
 
 

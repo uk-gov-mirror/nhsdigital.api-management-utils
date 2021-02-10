@@ -3,7 +3,6 @@ import sys
 from multiprocessing import Process
 from trigger_pipelines import AzureDevOps
 
-UTILS_PR_NUMBER = os.environ["UTILS_PR_NUMBER"]
 
 PULL_REQUEST_PIPELINES = {
     "identity-service": {
@@ -25,7 +24,7 @@ PULL_REQUEST_PIPELINES = {
 
 
 def trigger_pipelines(pipeline_ids: dict, service: str):
-    azure_dev_ops = AzureDevOps(utils_pr_number=UTILS_PR_NUMBER)
+    azure_dev_ops = AzureDevOps()
     build_status = azure_dev_ops.run_pipeline(
         service=service,
         pipeline_type="build",

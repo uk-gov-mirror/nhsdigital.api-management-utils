@@ -6,12 +6,12 @@ import requests
 
 class AzureDevOps:
 
-    def __init__(self, utils_pr_number: int = None):
+    def __init__(self):
         self.base_url = "https://dev.azure.com/NHSD-APIM/API Platform/_apis/pipelines"
         self.token = os.environ["AZURE_TOKEN"]
         self.auth = requests.auth.HTTPBasicAuth("", self.token)
         self.notify_commit_sha = os.environ["NOTIFY_COMMIT_SHA"]
-        self.utils_pr_number = utils_pr_number
+        self.utils_pr_number = os.environ["UTILS_PR_NUMBER"]
         self.notify_github_repo = "NHSDigital/api-management-utils"
         self.api_params = {"api-version": "6.0-preview.1"}
         self.api_request_delay = 60
@@ -30,7 +30,8 @@ class AzureDevOps:
                      pipeline_type: str,
                      pipeline_id: int,
                      pipeline_branch: str,
-                     wait_for_completion: bool = False) -> int:
+                     wait_for_completion: bool = False,
+                     is_release: bool = False) -> int:
 
         run_url = self.base_url + f"/{pipeline_id}/runs"
         body = {
@@ -58,7 +59,7 @@ class AzureDevOps:
             },
         }
 
-        if self.utils_pr_number is not None:
+        if not is_release:
             body["variables"]["UTILS_PR_NUMBER"] = {
                 "isSecret  ": False,
                 "value": f"{self.utils_pr_number}",
