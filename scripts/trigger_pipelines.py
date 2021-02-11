@@ -29,12 +29,37 @@ class AzureDevOps:
                      service: str,
                      pipeline_type: str,
                      pipeline_id: int,
-                     pipeline_branch: str,
-                     wait_for_completion: bool = False,
-                     is_release: bool = False) -> int:
+                     pipeline_branch: str) -> int:
 
         run_url = self.base_url + f"/{pipeline_id}/runs"
-        body = {
+        request_body = self._build_request_body(pipeline_branch)
+
+        response = requests.post(run_url, auth=self.auth, params=self.api_params, json=request_body)
+        self.print_response(response, f"Initial request to {run_url}")
+
+        result = "failed"
+        if response.status_code == 200:
+            result = self._check_pipeline_response(response)
+            print(f"Result of {service} {pipeline_type} pipeline: {result}")
+        elif response.status_code == 203 or response.status_code == 401:
+            print(f"{response.status_code}: Invalid or expired PAT (Personal Access Token),"
+                  f" please verify or renew token")
+        else:
+            print(f"Triggering pipeline: {service} {pipeline_type} failed, status code: {response.status_code}")
+        return result
+
+    def _check_pipeline_response(self, response: requests.Response):
+        delay = 0
+        state_url = response.json()["_links"]["self"]["href"]
+        while response.status_code == 200 and response.json()["state"] == "inProgress":
+            time.sleep(self.api_request_delay)
+            delay = delay + self.api_request_delay
+            response = requests.get(state_url, auth=self.auth, params=self.api_params)
+            self.print_response(response, f"Response from {state_url} after {delay} seconds")
+        return response.json()["result"]
+
+    def _build_request_body(self, pipeline_branch: str):
+        return {
             "resources": {
                 "repositories": {
                     "common": {
@@ -56,32 +81,9 @@ class AzureDevOps:
                     "isSecret  ": False,
                     "value": f"{self.notify_commit_sha}"
                 },
-            },
-        }
-
-        if not is_release:
-            body["variables"]["UTILS_PR_NUMBER"] = {
-                "isSecret  ": False,
-                "value": f"{self.utils_pr_number}",
+                "UTILS_PR_NUMBER": {
+                    "isSecret  ": False,
+                    "value": f"{self.utils_pr_number}",
+                }
             }
-
-        response = requests.post(run_url, auth=self.auth, params=self.api_params, json=body)
-        self.print_response(response, f"Initial request to {run_url}")
-
-        result = "failed"
-        if wait_for_completion and response.status_code == 200:
-            delay = 0
-            state_url = response.json()["_links"]["self"]["href"]
-            while response.status_code == 200 and response.json()["state"] == "inProgress":
-                time.sleep(self.api_request_delay)
-                delay = delay + self.api_request_delay
-                response = requests.get(state_url, auth=self.auth, params=self.api_params)
-                self.print_response(response, f"Response from {state_url} after {delay} seconds")
-            result = response.json()["result"]
-            print(f"Result of {service} {pipeline_type} pipeline: {result}")
-        elif response.status_code == 203 or response.status_code == 401:
-            print(f"{response.status_code}: Invalid or expired PAT (Personal Access Token),"
-                  f" please verify or renew token")
-        else:
-            print(f"Triggering pipeline: {service} {pipeline_type} failed, status code: {response.status_code}")
-        return result
+        }
