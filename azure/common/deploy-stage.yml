@@ -144,6 +144,35 @@ stages:
                           - ${{ config_id }}
                     aws_account: ${{ parameters.aws_account }}
 
+                - ${{ if parameters.notify }}:
+                  - bash: |
+                      if [[ -z $(NOTIFY_COMMIT_SHA) ]]; then
+                          export NOTIFY_COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
+                          echo "##vso[task.setvariable variable=NOTIFY_COMMIT_SHA]$NOTIFY_COMMIT_SHA"
+                      else
+                          echo "##[debug]Using already provided NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
+                      fi
+                    displayName: Set NOTIFY_COMMIT_SHA
+
+                  - template: '../components/update-github-status.yml'
+                    parameters:
+                      state: pending
+                      description: "Deploy to ${{ parameters.environment }} started"
+                      environment: ${{ parameters.environment }}
+
+                - ${{ each param in parameters }}:
+                  - ${{ if not(containsValue(parameters._expose_blacklist, param.key)) }}:
+                    - bash: |
+                        set -euo pipefail
+                        echo "##vso[task.setvariable variable=${{ upper(param.key) }}]${{ param.value }}"
+                      displayName: Setting ${{ upper(param.key) }}=${{ param.value }}
+
+                - bash: |
+                    set -euo pipefail
+                    echo "For backward compatibility..."
+                    echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
+                  displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
+
                 - bash: |
                     set -euo pipefail
                     if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
@@ -184,35 +213,6 @@ stages:
                       echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]${{ parameters.service_base_path }}"
                     fi
                   displayName: Override SERVICE_BASE_PATH
-
-                - ${{ if parameters.notify }}:
-                  - bash: |
-                      if [[ -z $(NOTIFY_COMMIT_SHA) ]]; then
-                          export NOTIFY_COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
-                          echo "##vso[task.setvariable variable=NOTIFY_COMMIT_SHA]$NOTIFY_COMMIT_SHA"
-                      else
-                          echo "##[debug]Using already provided NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
-                      fi
-                    displayName: Set NOTIFY_COMMIT_SHA
-
-                  - template: '../components/update-github-status.yml'
-                    parameters:
-                      state: pending
-                      description: "Deploy to ${{ parameters.environment }} started"
-                      environment: ${{ parameters.environment }}
-
-                - ${{ each param in parameters }}:
-                  - ${{ if not(containsValue(parameters._expose_blacklist, param.key)) }}:
-                    - bash: |
-                        set -euo pipefail
-                        echo "##vso[task.setvariable variable=${{ upper(param.key) }}]${{ param.value }}"
-                      displayName: Setting ${{ upper(param.key) }}=${{ param.value }}
-
-                - bash: |
-                    set -euo pipefail
-                    echo "For backward compatibility..."
-                    echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
-                  displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
 
                 - template: '../templates/deploy-service.yml'
                   parameters:
