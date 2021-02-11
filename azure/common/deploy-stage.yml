@@ -92,6 +92,8 @@ stages:
                     fi
                   displayName: "check workspace is clean"
 
+                - bash: echo "UTILS_PR_NUMBER=$(UTILS_PR_NUMBER)"
+
                 - task: DownloadPipelineArtifact@2
                   inputs:
                     source: "specific"

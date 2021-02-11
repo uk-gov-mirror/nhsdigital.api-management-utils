@@ -46,7 +46,10 @@ def trigger_pipelines(pipeline_ids: dict, service: str):
 def main():
     jobs = []
     for service, pipeline_ids in PULL_REQUEST_PIPELINES.items():
-        process = Process(target=trigger_pipelines, args=(pipeline_ids, service,))
+        process = Process(
+            target=trigger_pipelines,
+            args=(pipeline_ids, service,)
+        )
         process.start()
         jobs.append(process)
     for process in jobs:
