@@ -45,7 +45,7 @@
 
 - name: Get or create remote spec
   vars:
-    spec_list: "{{ specs.json.contents | selectattr('name', '==', SERVICE_NAME) | list }}"
+    spec_list: "{{ specs.json.contents | selectattr('name', '==', FULLY_QUALIFIED_SERVICE_NAME) | list }}"
   block:
     - name: select remote spec if it exists
       set_fact:
@@ -58,7 +58,7 @@
         method: POST
         body:
           folder: "{{ folder_id }}"
-          name: "{{ SERVICE_NAME }}"
+          name: "{{ FULLY_QUALIFIED_SERVICE_NAME }}"
           kind: "Doc"
         body_format: json
         headers:
@@ -114,7 +114,7 @@
     - name: Set default_product
       set_fact:
         default_product:
-          name: "" # SERVICE_NAME is appended inside loop, so leave blank here
+          name: "" # FULLY_QUALIFIED_SERVICE_NAME is appended inside loop, so leave blank here
           displayName: "{{ PRODUCT_DISPLAY_NAME }}" # Environment name appended later
           description: "{{ PRODUCT_DESCRIPTION }}"
           approvalType: "{{ approval_type }}"
@@ -129,7 +129,7 @@
           quotaTimeUnit: minute
           environments:
             - "{{ APIGEE_ENVIRONMENT }}"
-          scopes: ['urn:nhsd:apim:app:jwks', 'urn:nhsd:apim:user:aal3' ]
+          scopes: ['urn:nhsd:apim:app:level3:{{ SERVICE_NAME }}', 'urn:nhsd:apim:user-nhs-id:aal3:{{ SERVICE_NAME }}' ]
 
     - name: List product files
       set_fact:
@@ -150,7 +150,7 @@
       assert:
         that:
           - product.name is defined # Each needs a unique name
-                                    # (SERVICE_NAME appended inside
+                                    # (FULLY_QUALIFIED_SERVICE_NAME appended inside
                                     # loop)
         fail_msg: >-
           User defined API products must have a 'name' field

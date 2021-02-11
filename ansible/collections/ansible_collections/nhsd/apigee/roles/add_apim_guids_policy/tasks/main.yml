@@ -1,0 +1,31 @@
+- name: check DIST_DIR
+  fail:
+    msg: DIST_DIR not provided
+  when: not DIST_DIR
+
+- name: check PROXY_DIR
+  fail:
+    msg: PROXY_DIR not provided, usually 'live' or 'sandbox'
+  when: not PROXY_DIR
+
+- name: load manifest
+  set_fact:
+    manifest: "{{ lookup('file', DIST_DIR + '/manifest.yml' ) | from_yaml }}"
+
+- name: extract guids from manifest
+  set_fact:
+    # Allow for depreated meta.api.id if meta.api.guid not provided
+    API_GUID: "{{ manifest.meta.api.guid | default(manifest.meta.api.id) }}"
+    API_SPEC_GUID: "{{ manifest.meta.api.spec_guids[0] | default('') }}"
+
+- name: add policy xml file
+  template:
+    src: AssignMessage.SetApimGuids.xml
+    dest: "{{ DIST_DIR + '/proxies/' + PROXY_DIR + '/apiproxy/policies/' + POLICY_NAME + '.xml' }}"
+    mode: '664'
+
+- name: add policy to PreFlow
+  nhsd.apigee.add_policy_to_pre_flow:
+    dist_dir: "{{ DIST_DIR }}"
+    proxy_dir: "{{ PROXY_DIR }}"
+    policy_name: "{{ POLICY_NAME }}"
