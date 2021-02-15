@@ -1,4 +1,6 @@
 import pydantic
+import typing
+
 from ansible_collections.nhsd.apigee.plugins.module_utils.models import apigee
 
 
