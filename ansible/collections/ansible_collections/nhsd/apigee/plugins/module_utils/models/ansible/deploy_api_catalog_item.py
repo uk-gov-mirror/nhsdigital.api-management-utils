@@ -4,5 +4,5 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.apigee.apidoc i
 
 class DeployApidoc(pydantic.BaseModel):
     api_catalog_item: ApigeeApidoc
-    organization: str
+    organization: typing.Literal["nhsd-nonprod", "nhsd-prod"]
     access_token: str
