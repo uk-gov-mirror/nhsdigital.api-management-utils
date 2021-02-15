@@ -1,4 +1,4 @@
-APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION')}}"
 APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT')}}"
+APIGEE_ORGANIZATION: "{{ 'nhsd-prod' if APIGEE_ENVIRONMENT in ['prod', 'sandbox', 'int', 'dev'] else 'nhsd-nonprod' }}"
 APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN')}}"
 APP_ID: "{{ lookup('env', 'APP_ID')}}"
