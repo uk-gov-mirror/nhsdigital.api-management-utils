@@ -19,7 +19,7 @@
 
 - name: upload the flow to apigee
   uri:
-    url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
+    url: "{{ apis_api_uri }}?action=import&name={{ FULLY_QUALIFIED_SERVICE_NAME }}&validate=true"
     method: POST
     status_code: 201
     headers:
@@ -38,7 +38,7 @@
 
 - name: update proxy deployment
   uri:
-    url: "{{ env_apis_api_uri }}/{{ SERVICE_NAME }}/revisions/{{ revision }}/deployments"
+    url: "{{ env_apis_api_uri }}/{{ FULLY_QUALIFIED_SERVICE_NAME }}/revisions/{{ revision }}/deployments"
     method: "POST"
     body:
       override: true
