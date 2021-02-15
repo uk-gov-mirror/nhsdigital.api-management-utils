@@ -21,7 +21,7 @@ VERBOSE := $(if ${VERBOSE},-vvv , )
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
 
-add-jwks-resource-url-to-app: guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN guard-APP_ID
+add-jwks-resource-url-to-app: guard-APIGEE_ENVIRONMENT guard-APIGEE_ACCESS_TOKEN guard-APP_ID
 	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-jwks-resource-url-to-app.yml
 
 add-apim-guids-policy:
