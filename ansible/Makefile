@@ -15,18 +15,23 @@ guard-%:
 	    exit 1; \
 	fi
 
+CHECK := $(if ${CHECK},--check , )
+VERBOSE := $(if ${VERBOSE},-vvv , )
 
 template-manifest: guard-DIST_DIR
-	@poetry run ansible-playbook -i local template-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
+
+add-jwks-resource-url-to-app: guard-APIGEE_ENVIRONMENT guard-APIGEE_ACCESS_TOKEN guard-APP_ID
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-jwks-resource-url-to-app.yml
 
 add-apim-guids-policy:
-	@poetry run ansible-playbook --diff -i local add-apim-guids-policy.yml
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-apim-guids-policy.yml
 
 validate-manifest: guard-DIST_DIR
-	@poetry run ansible-playbook -i local validate-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) -i local validate-manifest.yml
 
 deploy-manifest: guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN
-	@poetry run ansible-playbook --diff -i local deploy-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local deploy-manifest.yml
 
 build-ecs-proxies: guard-build_label guard-service_id guard-CONTAINER_VARS_FILE
 	@poetry run ansible-playbook -i local build-ecs-proxies.yml
