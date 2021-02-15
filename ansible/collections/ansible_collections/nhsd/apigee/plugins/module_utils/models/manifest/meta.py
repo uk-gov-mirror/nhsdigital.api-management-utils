@@ -57,6 +57,11 @@ REGISTERED_META = [
     #     "name": "signing-service-api",
     #     "spec_guids": {"a062e39c-b843-4833-8d24-8fc1434900a0",},
     # },
+    {
+        "guid": "3ef873d7-18d3-4c51-b1f4-d36a3749c857",
+        "name": "summary-care-record",
+        "spec_guids": {"bec2d100-b515-4fa6-8a2f-617d73182b83", },
+    },
 ]
 
 
