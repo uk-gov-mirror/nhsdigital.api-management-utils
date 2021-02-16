@@ -15,15 +15,23 @@ guard-%:
 	    exit 1; \
 	fi
 
+CHECK := $(if ${CHECK},--check , )
+VERBOSE := $(if ${VERBOSE},-vvv , )
 
 template-manifest: guard-DIST_DIR
-	@poetry run ansible-playbook -i local template-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
+
+add-jwks-resource-url-to-app: guard-APIGEE_ENVIRONMENT guard-APIGEE_ACCESS_TOKEN guard-APP_ID
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-jwks-resource-url-to-app.yml
+
+add-apim-guids-policy:
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-apim-guids-policy.yml
 
 validate-manifest: guard-DIST_DIR
-	@poetry run ansible-playbook -i local validate-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) -i local validate-manifest.yml
 
 deploy-manifest: guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN
-	@poetry run ansible-playbook --diff -i local deploy-manifest.yml
+	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local deploy-manifest.yml
 
 build-ecs-proxies: guard-build_label guard-service_id guard-CONTAINER_VARS_FILE
 	@poetry run ansible-playbook -i local build-ecs-proxies.yml
@@ -37,10 +45,10 @@ create-build-env-vars: guard-build_label guard-out_dir
 deploy-ecs-proxies: guard-account guard-build_label guard-service_id guard-APIGEE_ENVIRONMENT guard-PROXY_VARS_FILE
 	@poetry run ansible-playbook -i local deploy-ecs-proxies.yml
 
-deploy-apigee-proxy: guard-SERVICE_NAME guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN guard-PROXY_DIR guard-PING
+deploy-apigee-proxy: guard-FULLY_QUALIFIED_SERVICE_NAME guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN guard-PROXY_DIR guard-PING
 	@poetry run ansible-playbook -i local deploy-apigee-proxy.yml
 
-deploy-apigee-product-and-spec: guard-SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN guard-FRIENDLY_NAME guard-PRODUCT_DISPLAY_NAME guard-PRODUCT_DESCRIPTION guard-VISIBLE guard-REQUIRE_CALLBACK_URL
+deploy-apigee-product-and-spec: guard-SERVICE_NAME guard-FULLY_QUALIFIED_SERVICE_NAME guard-APIGEE_ENVIRONMENT guard-APIGEE_ORGANIZATION guard-APIGEE_ACCESS_TOKEN guard-FRIENDLY_NAME guard-PRODUCT_DISPLAY_NAME guard-PRODUCT_DESCRIPTION guard-VISIBLE guard-REQUIRE_CALLBACK_URL
 	@poetry run ansible-playbook -i local deploy-apigee-product-and-spec.yml
 
 template-proxies: guard-PROXIES_DIR guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT
