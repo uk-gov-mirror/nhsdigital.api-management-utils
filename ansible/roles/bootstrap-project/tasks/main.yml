@@ -49,7 +49,6 @@
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
     depth: 1
-    version: APM-1706-Add-manifest-to-template
 
 - name: delete git history
   file:
