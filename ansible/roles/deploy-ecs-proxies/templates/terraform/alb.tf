@@ -6,6 +6,8 @@ resource "aws_alb_target_group" "service" {
   protocol    = local.exposed_service.lb_protocol
   vpc_id      = data.terraform_remote_state.pre-reqs.outputs.vpc_id
   target_type = "ip"
+  load_balancing_algorithm_type = "least_outstanding_requests"
+  deregistration_delay = var.deregistration_delay
 
   health_check {
     matcher = local.exposed_service.health_check.matcher
@@ -23,8 +25,6 @@ resource "aws_lb_listener_rule" "service" {
     target_group_arn = aws_alb_target_group.service.arn
     type             = "forward"
   }
-
-
 
   condition {
     http_header {

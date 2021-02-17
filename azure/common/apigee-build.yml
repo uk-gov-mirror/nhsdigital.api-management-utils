@@ -50,6 +50,7 @@ jobs:
           echo instance-id: "${instance_id}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
           echo sudo su - ubuntu
+          echo working directory: $(System.DefaultWorkingDirectory)
         displayName: print aws info
 
       - template: ../components/aws-clean-config.yml
@@ -162,7 +163,8 @@ jobs:
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-#
+
+# don't use cache in  aws build agents safely, currently
 #       - task: Cache@2
 #         inputs:
 #           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
@@ -183,6 +185,7 @@ jobs:
           export pr_number="$(System.PullRequest.PullRequestNumber)"
           export service_name="${{ parameters.service_name }}"
           export service_id="${{ parameters.short_service_name }}"
+          export ANSIBLE_FORCE_COLOR=yes
           make --no-print-directory -C ${{ parameters.service_name }}/utils/ansible create-build-env-vars
         displayName: output build env vars for artifact
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
@@ -234,6 +237,7 @@ jobs:
       - bash: |
           set -euo pipefail
           export DIST_DIR=`pwd`/dist
+          export ANSIBLE_FORCE_COLOR=yes
           if [ -f manifest.yml ]; then
              rsync -a manifest.yml dist
              make -C utils/ansible validate-manifest

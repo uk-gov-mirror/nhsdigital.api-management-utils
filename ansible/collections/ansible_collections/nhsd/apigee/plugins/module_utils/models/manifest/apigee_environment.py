@@ -25,7 +25,7 @@ class ManifestApigeeEnvironment(pydantic.BaseModel):
     ]
     products: typing.List[ApigeeProduct]
     specs: typing.List[ApigeeSpec]
-    portals: typing.List[ApigeeApidoc]
+    api_catalog: typing.List[ApigeeApidoc]
 
     @pydantic.validator("products", "specs")
     def names_unique(cls, values):
@@ -34,18 +34,18 @@ class ManifestApigeeEnvironment(pydantic.BaseModel):
             raise ValueError("Names are not unique")
         return values
 
-    @pydantic.validator("portals")
-    def portal_references(cls, apidocs, values):
+    @pydantic.validator("api_catalog")
+    def catalog_references(cls, api_catalog, values):
         spec_names = [spec.name for spec in values.get("specs", [])]
         product_names = [product.name for product in values.get("products", [])]
 
-        for apidoc in apidocs:
-            if apidoc.edgeAPIProductName not in product_names:
+        for item in api_catalog:
+            if item.edgeAPIProductName not in product_names:
                 raise ValueError(
-                    f"edgeAPIProductName {apidoc.edgeAPIProductName} not in list of products in this environment"
+                    f"edgeAPIProductName {item.edgeAPIProductName} not in list of products in this environment"
                 )
-            if apidoc.specId and apidoc.specId not in spec_names:
+            if item.specId and item.specId not in spec_names:
                 raise ValueError(
-                    f"specId {apidoc.specId} not in list of specs in this environment"
+                    f"specId {item.specId} not in list of specs in this environment"
                 )
-        return apidocs
+        return api_catalog

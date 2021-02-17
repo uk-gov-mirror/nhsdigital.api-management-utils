@@ -29,8 +29,10 @@ jobs:
         run: poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Test ansible collection
-        env:
-          PYTHONPATH: collections
-        working-directory: ansible
-        run: poetry run pytest
+      - name: Unit test ansible collection
+        working-directory: ansible/collections/ansible_collections/nhsd/apigee
+        run: poetry run ansible-test units --python=3.8
+
+      - name: Integration test ansible collection
+        working-directory: ansible/collections/ansible_collections/nhsd/apigee
+        run: poetry run ansible-test integration --python=3.8

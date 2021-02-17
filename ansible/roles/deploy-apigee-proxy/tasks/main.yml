@@ -8,9 +8,18 @@
   shell: "cd {{ PROXY_DIR }} && zip -rXD9 /{{ tempdir.path }}/proxy.zip apiproxy"
   changed_when: no
 
+- name: check zip file
+  stat:
+    path: "/{{ tempdir.path }}/proxy.zip"
+  register: zipstat
+
+- fail: 
+    msg: "{{ tempdir.path }}/proxy.zip does not exist"
+  when: not zipstat.stat.exists
+
 - name: upload the flow to apigee
   uri:
-    url: "{{ apis_api_uri }}?action=import&name={{ SERVICE_NAME }}&validate=true"
+    url: "{{ apis_api_uri }}?action=import&name={{ FULLY_QUALIFIED_SERVICE_NAME }}&validate=true"
     method: POST
     status_code: 201
     headers:
@@ -29,7 +38,7 @@
 
 - name: update proxy deployment
   uri:
-    url: "{{ env_apis_api_uri }}/{{ SERVICE_NAME }}/revisions/{{ revision }}/deployments"
+    url: "{{ env_apis_api_uri }}/{{ FULLY_QUALIFIED_SERVICE_NAME }}/revisions/{{ revision }}/deployments"
     method: "POST"
     body:
       override: true
@@ -38,8 +47,10 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     timeout: 300 # This needs to be quite long because the request will hang for at least as long as the delay
+  register: _resp
   retries: 3
   delay: 30
+  until: not _resp.failed and _resp.status == 200
 
 - name: ping deployed proxy
   uri:

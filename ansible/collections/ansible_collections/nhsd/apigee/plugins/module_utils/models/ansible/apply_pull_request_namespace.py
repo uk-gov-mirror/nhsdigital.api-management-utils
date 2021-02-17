@@ -1,7 +1,6 @@
 import pydantic
 
-from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.apigee import ManifestApigee
-from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.meta import ManifestMeta
+from ansible_collections.nhsd.apigee.plugins.module_utils.models.manifest.manifest import Manifest
 
 
 class ApplyPullRequestNamespace(pydantic.BaseModel):
@@ -25,20 +24,18 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
 
     :param pull_request: A string like 'pr-1234' for pull request
         number 1234.
-    :param meta: The 'meta' item your manifest.yml.
-    :param apigee: The 'apigee' item from your manifest.yml
+    :param manifest: The content of your manifest.yml.
     """
 
     pull_request: pydantic.constr(regex=r"^pr-[0-9]+$")  # i.e. 'pr-1234'
-    meta: ManifestMeta
-    apigee: ManifestApigee
+    manifest: Manifest
 
-    @pydantic.validator("apigee")
-    def apply_namespace(cls, apigee, values):
-        api_name = values["meta"].api.name
+    @pydantic.validator("manifest")
+    def apply_namespace(cls, manifest, values):
+        api_name = manifest.meta.api.name
 
-        apigee.environments = [
-            env for env in apigee.environments if env.name.startswith("internal-dev")
+        manifest.apigee.environments = [
+            env for env in manifest.apigee.environments if env.name.startswith("internal-dev")
         ]
 
         # here we want:
@@ -46,7 +43,7 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
         # canary-api-internal-dev-sandbox -> canary-api-pr-1234-sandbox
         old = "internal-dev"
         new = values["pull_request"]
-        for env in apigee.environments:
+        for env in manifest.apigee.environments:
             for product in env.products:
                 product.name = product.name.replace(old, new, 1)
                 product.proxies = [
@@ -58,10 +55,10 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
 
             for spec in env.specs:
                 spec.name = spec.name.replace(old, new, 1)
-            for portal in env.portals:
-                portal.edgeAPIProductName = portal.edgeAPIProductName.replace(
+            for entry in env.api_catalog:
+                entry.edgeAPIProductName = entry.edgeAPIProductName.replace(
                     old, new, 1
                 )
-                portal.specId = portal.specId.replace(old, new, 1)
+                entry.specId = entry.specId.replace(old, new, 1)
 
-        return apigee
+        return manifest

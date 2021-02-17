@@ -48,12 +48,57 @@ def as_ecs_service(docker_service):
     return ecs_service
 
 
+_app_scaling_defaults = dict(
+    service_metric='',
+    target_value=0,
+    scale_in_cooldown=300,
+    scale_out_cooldown=60,
+    enabled=False
+)
+
+_ecs_service_metrics = (
+    'ALBRequestCountPerTarget',
+    'ECSServiceAverageCPUUtilization',
+    'ECSServiceAverageMemoryUtilization'
+)
+
+
+def as_ecs_autoscaling(docker_service_autoscaling):
+
+    if not docker_service_autoscaling:
+        return _app_scaling_defaults
+
+    autoscaling_policy = combine(_app_scaling_defaults, docker_service_autoscaling)
+    service_metric = autoscaling_policy.get('service_metric')
+    if service_metric not in _ecs_service_metrics:
+        raise AnsibleFilterError(f"scaling policy must have a service_metric in set {_ecs_service_metrics}")
+
+    target_value = str(autoscaling_policy.get('target_value', ''))
+    if not target_value.isdigit():
+        raise AnsibleFilterError(f"scaling policy must have a target_value as a positive integer")
+
+    target_value = int(target_value)
+    autoscaling_policy['target_value'] = target_value
+    autoscaling_policy['enabled'] = True
+    if target_value < 10:
+        raise AnsibleFilterError(f"scaling policy target_value should be >= 10")
+
+    if service_metric == 'ALBRequestCountPerTarget':
+        return autoscaling_policy
+
+    if target_value > 90:
+        raise AnsibleFilterError(f"Utilization scaling policy target_value should be between 10 and 90")
+
+    return autoscaling_policy
+
+
 class FilterModule:
 
     @staticmethod
     def filters():
         return {
             # jinja2 overrides
-            'as_ecs_service': as_ecs_service
+            'as_ecs_service': as_ecs_service,
+            'as_ecs_autoscaling': as_ecs_autoscaling
         }
 

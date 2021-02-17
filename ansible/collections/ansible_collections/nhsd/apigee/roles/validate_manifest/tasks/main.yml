@@ -1,0 +1,25 @@
+- name: check DIST_DIR
+  fail:
+    msg: "DIST_DIR not defined"
+  when: DIST_DIR is not defined
+
+# Passing an empty string with skip the namespace validation inside
+# the role. It is better to pass the name!
+- name: check SERVICE_NAME
+  set_fact:
+    SERVICE_NAME: ""
+  when: SERVICE_NAME is not defined
+
+- name: set full path to manifest file
+  set_fact:
+    manifest_file: "{{ (DIST_DIR, 'manifest.yml') | path_join }}"
+
+- name: load manifest
+  set_fact:
+    manifest: "{{ lookup('file', manifest_file ) | from_yaml }}"
+
+- name: validate manifest
+  nhsd.apigee.validate_manifest:
+    manifest: "{{ manifest }}"
+    dist_dir: "{{ DIST_DIR }}"
+    service_name: "{{ SERVICE_NAME }}"

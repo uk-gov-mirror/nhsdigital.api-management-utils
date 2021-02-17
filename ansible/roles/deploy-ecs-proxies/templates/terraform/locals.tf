@@ -1,9 +1,8 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-
-
 locals {
+
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
   env_service_id = "${var.apigee_environment}-${var.service_id}"
@@ -58,4 +57,10 @@ locals {
 
   exposed_service = element(matchkeys(local.ecs_service, local.ecs_service.*.expose, list(true)), 0)
 
+  private_alb_arn_suffix = data.terraform_remote_state.pre-reqs.outputs.private_alb_arn_suffix
+
+  autoscaling_resource_label =  (
+    var.autoscaling_enabled && var.autoscaling_service_metric == "ALBRequestCountPerTarget" ?
+      "${local.private_alb_arn_suffix}/${aws_alb_target_group.service.arn_suffix}" : ""
+  )
 }

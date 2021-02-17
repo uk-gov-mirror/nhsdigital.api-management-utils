@@ -11,7 +11,6 @@ data "aws_iam_policy_document" "ecs-tasks-assume-role" {
 
 data "aws_iam_policy_document" "ecs-execution-role" {
 
-
   statement {
     actions = [
       "ssm:GetParameter",
@@ -60,7 +59,6 @@ data "aws_iam_policy_document" "ecs-execution-role" {
 
 }
 
-
 resource "aws_iam_role" "ecs-execution-role" {
   name               = "ecs-x-${local.env_service_id}"
   assume_role_policy = data.aws_iam_policy_document.ecs-tasks-assume-role.json
@@ -77,15 +75,9 @@ resource "aws_iam_role_policy" "ecs-execution-role" {
   policy = data.aws_iam_policy_document.ecs-execution-role.json
 }
 
-
 resource "aws_iam_role_policy_attachment" "attach_AmazonECSTaskExecutionRolePolicy_to_monitoring-ecs-tasks" {
   role       = aws_iam_role.ecs-execution-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-
-resource "aws_iam_user" "deploy-user" {
-  name = "deploy-${local.env_service_id}"
 }
 
 resource "aws_iam_policy" "deploy-user" {
@@ -93,28 +85,29 @@ resource "aws_iam_policy" "deploy-user" {
   policy = data.aws_iam_policy_document.deploy-user.json
 }
 
-resource "aws_iam_user_policy_attachment" "deploy-user" {
-  user       = aws_iam_user.deploy-user.name
-  policy_arn = aws_iam_policy.deploy-user.arn
+data "aws_ssm_parameter" "ptl_account_id" {
+  name = "/account-ids/ptl"
+}
+
+data "aws_iam_policy_document" "deploy-user-assume-role" {
+  statement {
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "arn:aws:iam::${data.aws_ssm_parameter.ptl_account_id.value}:role/build-agent",
+      ]
+    }
+  }
 }
 
 resource "aws_iam_role" "deploy-user" {
   name = "deploy-${local.env_service_id}"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/build-agent"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
+  assume_role_policy = data.aws_iam_policy_document.deploy-user-assume-role.json
 }
 
 resource "aws_iam_role_policy_attachment" "deploy-user" {
@@ -123,7 +116,6 @@ resource "aws_iam_role_policy_attachment" "deploy-user" {
 }
 
 data "aws_iam_policy_document" "deploy-user" {
-
 
   statement {
 
@@ -137,7 +129,10 @@ data "aws_iam_policy_document" "deploy-user" {
       "elasticloadbalancing:DescribeRules",
       "application-autoscaling:RegisterScalableTarget",
       "application-autoscaling:DescribeScalableTargets",
-      "application-autoscaling:DeregisterScalableTarget"
+      "application-autoscaling:DeregisterScalableTarget",
+      "application-autoscaling:PutScalingPolicy",
+      "application-autoscaling:DeleteScalingPolicy",
+      "application-autoscaling:DescribeScalingPolicies"
     ]
 
     # these actions can't be restricted by resource
@@ -187,7 +182,8 @@ data "aws_iam_policy_document" "deploy-user" {
 
     resources = concat(
       [
-        aws_iam_role.ecs-execution-role.arn
+        aws_iam_role.ecs-execution-role.arn,
+        "arn:aws:iam::${local.account_id}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
       ],
       [for ws in local.workspaces : "arn:aws:s3:::${var.state_bucket}/env:/${ws}/deployment/*"]
     )

@@ -10,6 +10,8 @@ class ApigeeSpec(pydantic.BaseModel):
 
     @pydantic.validator("content", always=True)
     def load_content(cls, content, values):
+        if content is not None:
+            return content
         path = values.get("path")
         if not path:  # When path does not validate.
             return None
@@ -26,4 +28,6 @@ class ApigeeSpec(pydantic.BaseModel):
         # object so we convert it back to a string for export.
         native = super().dict(**kwargs)
         native.update({"path": str(native["path"])})
+        if native.get("guid"):
+            native.update({"guid": str(native["guid"])})
         return native

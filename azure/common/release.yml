@@ -12,8 +12,7 @@ parameters:
       - prod
       - manual-approval
   - name: apigee_organization
-  - name: aws_org_account
-  - name: aws_env_account
+  - name: aws_account
   - name: stage_name
   - name: service_name
   - name: short_service_name
@@ -59,6 +58,7 @@ stages:
     - template: ./deploy-manual-approval.yml
       parameters:
         stage_name: ${{ parameters.stage_name }}
+        depends_on: ${{ parameters.depends_on }}
   - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
     - template: ./deploy-stage.yml
       parameters:
