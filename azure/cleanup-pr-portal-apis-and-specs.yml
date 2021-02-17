@@ -17,17 +17,33 @@ jobs:
     timeoutInMinutes: 240
     pool:
       name: 'AWS-ECS'
+    workspace:
+      clean: all
+
     steps:
+
       - checkout: self
+
+      - bash: |
+          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          echo instance-id: "${instance_id}"
+          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+          echo sudo su - ubuntu
+          echo working directory: $(System.DefaultWorkingDirectory)
+        displayName: print aws info
 
       - template: ./components/aws-assume-role.yml
         parameters:
           role: "auto-ops"
           profile: "apm_ptl"
 
-      - template: build-prereqs.yml
-        parameters:
-          utils_dir: "./"
+      - bash: |
+          tfenv use 0.13.6
+        displayName: setup terraform
+
+      - bash: |
+          make install
+        displayName: install dependencies
 
       - template: ./components/get-aws-secrets-and-ssm-params.yml
         parameters:
