@@ -27,7 +27,7 @@
           <LoadBalancer>
             <Server name="hosted-apis"/>
           </LoadBalancer>
-          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_CONNECTION_PATH_SUFFIX if HOSTED_TARGET_CONNECTION_PATH_SUFFIX else '' }}</Path>
+          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_CONNECTION_PATH_SUFFIX }}</Path>
    
 
   roles:
