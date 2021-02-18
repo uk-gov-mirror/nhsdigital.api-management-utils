@@ -4,8 +4,11 @@
   gather_facts: no
 
   vars:
-    service_id: "{{ lookup('env','service_id') }}"
     APIGEE_ENVIRONMENT: "{{ lookup('env','APIGEE_ENVIRONMENT') }}"
+    SHORT_SERVICE_NAME: "{{ lookup('env','SHORT_SERVICE_NAME') }}"
+    apigee_environment: "{{ APIGEE_ENVIRONMENT }}"
+    short_service_name: "{{ SHORT_SERVICE_NAME }}"
+    service_id: "{{ lookup('env','service_id') }}"
     pr_number: "{{ lookup('env','pr_number') }}"
     account:  "{{ lookup('env','account') }}"
     aws_profile: "apm_{{ account }}"
@@ -26,6 +29,11 @@
       fail:
         msg: "APIGEE_ENVIRONMENT not set"
       when: not APIGEE_ENVIRONMENT
+
+    - name: check SHORT_SERVICE_NAME
+      fail:
+        msg: "SHORT_SERVICE_NAME not set"
+      when: not SHORT_SERVICE_NAME
 
   roles:
     - setup-facts

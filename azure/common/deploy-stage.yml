@@ -244,6 +244,7 @@ stages:
                     spec_file: ${{ parameters.spec_file }}
                     pr_label: $(PR_LABEL)
                     aws_account: ${{ parameters.aws_account }}
+                    stage_name: ${{ parameters.stage_name }}
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'
