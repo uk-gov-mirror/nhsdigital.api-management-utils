@@ -142,7 +142,7 @@ steps:
         account=${{ parameters.aws_account }} \
         SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
         APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
-        SHORT_SERVICE_NAME=${{ parameters.short_service_name }}
+        SHORT_SERVICE_NAME=${{ parameters.short_service_name }} \
         make --no-print-directory  -C $(UTILS_DIR)/ansible create-api-deployment-pre-reqs
 
       fi
