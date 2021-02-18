@@ -1,4 +1,6 @@
-
+- name: echo workspace
+  debug:
+    var: workspace
 
 - name: create temporary directory
   tempfile:
