@@ -44,6 +44,9 @@ parameters:
     displayName: Toggle ping endpoint avaliablility
     type: boolean
     default: true
+  - name: hosted_target_connection_path_suffix
+    type: string
+    default: ''
   - name: jinja_templates
     type: object
     displayName:  Key/values for custom jinja templating
@@ -52,7 +55,7 @@ parameters:
     type: boolean
     displayName: Whether monitoring is needed
     default: false
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
     displayName: Temporary flag for adding a _status endpoint to service discovery
     default: false
@@ -95,13 +98,14 @@ parameters:
       - service_name
       - short_service_name
       - service_base_path
+      - hosted_target_connection_path_suffix
       - product_display_name
       - product_description
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
       - enable_monitoring
-      - enable_status_monitoring 
+      - enable_status_monitoring
       - pre_template
       - post_template
       - pre_deploy
