@@ -98,6 +98,7 @@ parameters:
       - service_name
       - short_service_name
       - service_base_path
+      - hosted_target_connection_path_suffix
       - product_display_name
       - product_description
       - fully_qualified_service_name
