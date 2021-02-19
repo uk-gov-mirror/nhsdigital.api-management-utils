@@ -53,8 +53,10 @@ parameters:
     default: false
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
+  - name: hosted_target_connection_path_suffix
+    type: string
   - name: _expose_blacklist
     type: object
     default:
@@ -225,6 +227,7 @@ stages:
                     apigee_organization: ${{ parameters.apigee_organization }}
                     product_display_name: ${{ parameters.product_display_name }}
                     product_description: ${{ parameters.product_description }}
+                    hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
                     proxy_path: ${{ parameters.proxy_path }}
                     pre_template: ${{ parameters.pre_template }}
                     post_template: ${{ parameters.post_template }}
