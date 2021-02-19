@@ -9,6 +9,7 @@ parameters:
   - name: apigee_organization
   - name: service_base_path
   - name: pr_label
+  - name: hosted_target_connection_path_suffix
   - name: aws_account
     values:
       - ptl
@@ -17,7 +18,7 @@ parameters:
     type: object
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
   - name: ping
     type: boolean
@@ -42,7 +43,7 @@ steps:
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
         echo "##vso[task.setvariable variable=deploy_containers]true"
-      else 
+      else
         echo "##vso[task.setvariable variable=deploy_containers]false"
       fi
     workingDirectory: "$(SERVICE_DIR)"
@@ -87,6 +88,7 @@ steps:
       export PROXIES_DIR="$(SERVICE_DIR)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export HOSTED_TARGET_CONNECTION_PATH_SUFFIX="${{ parameters.hosted_target_connection_path_suffix }}"
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
       export RELEASE_RELEASEID=$(Build.BuildId)
 
