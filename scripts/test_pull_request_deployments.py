@@ -20,11 +20,6 @@ PULL_REQUEST_PIPELINES = {
         "pr": 144,
         "branch": "refs/heads/master"
     },
-    "nhs-app-api": {
-        "build": 193,
-        "pr": 191,
-        "branch": "refs/heads/master"
-    }
 }
 
 
