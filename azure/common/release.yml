@@ -20,6 +20,7 @@ parameters:
   - name: service_base_path
   - name: product_display_name
   - name: product_description
+  - name: hosted_target_connection_path_suffix
   - name: proxy_path
   - name: secret_file_ids
     type: object
@@ -50,7 +51,7 @@ parameters:
   - name: friendly_api_name
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
 
 stages:
