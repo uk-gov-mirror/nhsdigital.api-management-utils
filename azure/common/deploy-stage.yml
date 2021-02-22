@@ -284,7 +284,7 @@ stages:
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-green
-                      short_service_name: ${{ parameters.short_service_name }}-b
+                      short_service_name: ${{ parameters.short_service_name }}-g
                       fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)-green
                       service_base_path: $(SERVICE_BASE_PATH)-green
                       jinja_templates: ${{ parameters.jinja_templates }}
