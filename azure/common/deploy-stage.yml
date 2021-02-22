@@ -309,7 +309,7 @@ stages:
                       stage_name: ${{ parameters.stage_name }} Green
                       hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
 
-                - {{ if not(parameters.blue_green_deployment) }}:
+                - ${{ if not(parameters.blue_green_deployment) }}:
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}
