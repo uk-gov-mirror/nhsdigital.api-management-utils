@@ -50,6 +50,8 @@ jobs:
           echo instance-id: "${instance_id}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
           echo sudo su - ubuntu
+          or
+          echo ssh ubuntu@${instance_id}
           echo working directory: $(System.DefaultWorkingDirectory)
         displayName: print aws info
 
@@ -205,7 +207,7 @@ jobs:
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
-          tfenv use 0.12.29
+          tfenv use 0.14.6
         displayName: use terraforn
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 

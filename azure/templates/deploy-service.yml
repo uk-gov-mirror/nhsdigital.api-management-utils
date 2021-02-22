@@ -9,6 +9,7 @@ parameters:
   - name: apigee_organization
   - name: service_base_path
   - name: pr_label
+  - name: hosted_target_connection_path_suffix
   - name: aws_account
     values:
       - ptl
@@ -17,7 +18,7 @@ parameters:
     type: object
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
   - name: ping
     type: boolean
@@ -42,7 +43,7 @@ steps:
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
         echo "##vso[task.setvariable variable=deploy_containers]true"
-      else 
+      else
         echo "##vso[task.setvariable variable=deploy_containers]false"
       fi
     workingDirectory: "$(SERVICE_DIR)"
@@ -59,7 +60,7 @@ steps:
     displayName: "Install utils pre-requisites"
 
   - bash: |
-      tfenv use 0.12.29
+      tfenv use 0.14.6
     displayName: setup terraform
     condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
 
@@ -87,6 +88,7 @@ steps:
       export PROXIES_DIR="$(SERVICE_DIR)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export HOSTED_TARGET_CONNECTION_PATH_SUFFIX="${{ parameters.hosted_target_connection_path_suffix }}"
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
       export RELEASE_RELEASEID=$(Build.BuildId)
 
@@ -135,11 +137,6 @@ steps:
         source $(SERVICE_DIR)/.build_env_vars
         deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
 
-        # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
-        export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
-        export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
-        export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
-
         account=${{ parameters.aws_account }} \
         SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
         APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
@@ -170,11 +167,6 @@ steps:
       else
         export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
       fi
-
-      # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
-      export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
-      export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
-      export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
       account=${{ parameters.aws_account }} \
       PROXY_VARS_FILE="${proxy_vars_file}" \

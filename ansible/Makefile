@@ -54,23 +54,11 @@ deploy-apigee-product-and-spec: guard-SERVICE_NAME guard-FULLY_QUALIFIED_SERVICE
 template-proxies: guard-PROXIES_DIR guard-SERVICE_BASE_PATH guard-APIGEE_ENVIRONMENT
 	@poetry run ansible-playbook -i local template-proxies.yml
 
-destroy-ecs-proxies: guard-service_id guard-APIGEE_ENVIRONMENT
-	@poetry run ansible-playbook -i local destroy-ecs-proxies.yml
-
-destroy-api-deployment-dns-entry: guard-service_id guard-APIGEE_ENVIRONMENT
-	@poetry run ansible-playbook -i local destroy-api-deployment-dns-entry.yml
-
-remove-api-deployment-user-access-key: guard-account guard-service_id guard-APIGEE_ENVIRONMENT
-	@poetry run ansible-playbook -i local remove-api-deployment-user-access-key.yml
-
 remove-ecs-proxy-pre-reqs: guard-account guard-service_id guard-APIGEE_ENVIRONMENT
 	@poetry run ansible-playbook -i local remove-ecs-proxy-pre-reqs.yml
 
 create-ecr-build-role: guard-account guard-service_id
 	@poetry run ansible-playbook -i local create-ecr-build-role.yml
-
-remove-ecr-build-user: guard-account guard-service_id
-	@poetry run ansible-playbook -i local remove-ecr-build-user.yml
 
 remove-ecr-build-role: guard-account guard-service_id
 	@poetry run ansible-playbook -i local remove-ecr-build-role.yml
