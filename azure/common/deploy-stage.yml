@@ -229,7 +229,7 @@ stages:
                       service_base_path: $(SERVICE_BASE_PATH)
                       jinja_templates:
                         - ${{ each jt in parameters.jinja_templates }}:
-                          - ${{ jt }}
+                          - ${{ jt.key }}: ${{ jt.value }}
                         - BLUE_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-blue
                         - GREEN_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-green
                       apigee_environment: ${{ parameters.environment }}
