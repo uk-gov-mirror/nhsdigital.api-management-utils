@@ -230,8 +230,6 @@ stages:
                       jinja_templates:
                         - ${{ each jt in parameters.jinja_templates }}:
                           - ${{ jt.key }}: ${{ jt.value }}
-                        - BLUE_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-blue
-                        - GREEN_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-green
                         - key: BLUE_TARGET_BASE_PATH
                           value: $(SERVICE_BASE_PATH)-blue
                         - key: GREEN_TARGET_BASE_PATH
