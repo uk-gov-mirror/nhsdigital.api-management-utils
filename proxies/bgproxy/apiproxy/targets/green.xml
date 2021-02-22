@@ -12,6 +12,6 @@
     </PostFlow>
     <Flows/>
     <LocalTargetConnection>
-        <Path>/canary-api-green-pr-38</Path>
+        <Path>{{ GREEN_TARGET_BASE_PATH }}</Path>
     </LocalTargetConnection>
 </TargetEndpoint>

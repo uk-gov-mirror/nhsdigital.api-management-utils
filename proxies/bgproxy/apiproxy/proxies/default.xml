@@ -31,7 +31,7 @@
         <Response/>
     </PostFlow>
     <HTTPProxyConnection>
-        <BasePath>/ls-test-bgproxy</BasePath>
+        <BasePath>{{ SERVICE_BASE_PATH }}</BasePath>
         <VirtualHost>secure</VirtualHost>
     </HTTPProxyConnection>
     <RouteRule name="NoRouteLB">

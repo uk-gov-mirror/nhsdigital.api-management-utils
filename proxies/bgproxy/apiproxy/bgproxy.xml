@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <APIProxy revision="4" name="ls-test-bgproxy">
-    <Basepaths>/ls-test-bgproxy</Basepaths>
+    <Basepaths>/{{ SERVICE_BASE_PATH }}</Basepaths>
     <ConfigurationVersion majorVersion="4" minorVersion="0"/>
     <CreatedAt>1613650265916</CreatedAt>
     <CreatedBy>laurence.smith2@nhs.net</CreatedBy>
-    <Description>test blue green proxy</Description>
-    <DisplayName>ls-test-bgproxy</DisplayName>
+    <Description>{{ SERVICE_NAME }} blue green proxy</Description>
+    <DisplayName>{{ SERVICE_NAME }}-bgproxy</DisplayName>
     <LastModifiedAt>1613745231186</LastModifiedAt>
     <LastModifiedBy>laurence.smith2@nhs.net</LastModifiedBy>
     <ManifestVersion>SHA-512:b2955436d15e359c8bc317a196f894daa3e28e52463b78320629e065f078da7e6ab7e336f5b4f61c79a2ceb93fcab8e1e9bdc4557dfb760450f460e0cdbb0795:eu-west-1</ManifestVersion>

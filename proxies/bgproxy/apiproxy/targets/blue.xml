@@ -12,6 +12,6 @@
     </PostFlow>
     <Flows/>
     <LocalTargetConnection>
-        <Path>/canary-api-blue-pr-38</Path>
+        <Path>{{ BLUE_TARGET_BASE_PATH }}</Path>
     </LocalTargetConnection>
 </TargetEndpoint>
