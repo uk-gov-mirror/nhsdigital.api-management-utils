@@ -220,94 +220,94 @@ stages:
                     fi
                   displayName: Override SERVICE_BASE_PATH
 
-              - ${{ if parameters.blue_green_deployment }}:
-                - template: '../templates/deploy-service.yml'
-                  parameters:
-                    service_name: ${{ parameters.service_name }}
-                    short_service_name: ${{ parameters.short_service_name }}
-                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
-                    service_base_path: $(SERVICE_BASE_PATH)
-                    jinja_templates:
-                      - BLUE_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-blue
-                      - GREEN_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-green
-                      - ${{ each jt in parameters.jinja_templates }}:
-                        - ${{ jt }}
-                    apigee_environment: ${{ parameters.environment }}
-                    apigee_organization: ${{ parameters.apigee_organization }}
-                    product_display_name: ${{ parameters.product_display_name }}
-                    product_description: ${{ parameters.product_description }}
-                    proxy_path: "../utils/proxies/bgproxy"
-                    pre_template: ${{ parameters.pre_template }}
-                    post_template: ${{ parameters.post_template }}
-                    pre_deploy: ${{ parameters.pre_deploy }}
-                    post_deploy: ${{ parameters.post_deploy }}
-                    ping: ${{ parameters.ping }}
-                    enable_monitoring: ${{ parameters.enable_monitoring }}
-                    enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
-                    portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                    make_spec_visible: ${{ parameters.make_spec_visible }}
-                    friendly_api_name: ${{ parameters.friendly_api_name }}
-                    spec_file: ${{ parameters.spec_file }}
-                    pr_label: $(PR_LABEL)
-                    aws_account: ${{ parameters.aws_account }}
-                    stage_name: ${{ parameters.stage_name }}
-                    hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                - ${{ if parameters.blue_green_deployment }}:
+                  - template: '../templates/deploy-service.yml'
+                    parameters:
+                      service_name: ${{ parameters.service_name }}
+                      short_service_name: ${{ parameters.short_service_name }}
+                      fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
+                      service_base_path: $(SERVICE_BASE_PATH)
+                      jinja_templates:
+                        - BLUE_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-blue
+                        - GREEN_TARGET_BASE_PATH: $(SERVICE_BASE_PATH)-green
+                        - ${{ each jt in parameters.jinja_templates }}:
+                          - ${{ jt }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      product_display_name: ${{ parameters.product_display_name }}
+                      product_description: ${{ parameters.product_description }}
+                      proxy_path: "../utils/proxies/bgproxy"
+                      pre_template: ${{ parameters.pre_template }}
+                      post_template: ${{ parameters.post_template }}
+                      pre_deploy: ${{ parameters.pre_deploy }}
+                      post_deploy: ${{ parameters.post_deploy }}
+                      ping: ${{ parameters.ping }}
+                      enable_monitoring: ${{ parameters.enable_monitoring }}
+                      enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
+                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                      make_spec_visible: ${{ parameters.make_spec_visible }}
+                      friendly_api_name: ${{ parameters.friendly_api_name }}
+                      spec_file: ${{ parameters.spec_file }}
+                      pr_label: $(PR_LABEL)
+                      aws_account: ${{ parameters.aws_account }}
+                      stage_name: ${{ parameters.stage_name }}
+                      hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
 
-                - template: '../templates/deploy-service.yml'
-                  parameters:
-                    service_name: ${{ parameters.service_name }}-blue
-                    short_service_name: ${{ parameters.short_service_name }}-b
-                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)-blue
-                    service_base_path: $(SERVICE_BASE_PATH)-blue
-                    jinja_templates: ${{ parameters.jinja_templates }}
-                    apigee_environment: ${{ parameters.environment }}
-                    apigee_organization: ${{ parameters.apigee_organization }}
-                    product_display_name: ${{ parameters.product_display_name }}
-                    product_description: ${{ parameters.product_description }}
-                    proxy_path: ${{ parameters.proxy_path }}
-                    pre_template: ${{ parameters.pre_template }}
-                    post_template: ${{ parameters.post_template }}
-                    pre_deploy: ${{ parameters.pre_deploy }}
-                    post_deploy: ${{ parameters.post_deploy }}
-                    ping: ${{ parameters.ping }}
-                    enable_monitoring: ${{ parameters.enable_monitoring }}
-                    enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
-                    portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                    make_spec_visible: false
-                    friendly_api_name: ${{ parameters.friendly_api_name }}
-                    spec_file: ${{ parameters.spec_file }}
-                    pr_label: $(PR_LABEL)
-                    aws_account: ${{ parameters.aws_account }}
-                    stage_name: ${{ parameters.stage_name }} Blue
-                    hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                  - template: '../templates/deploy-service.yml'
+                    parameters:
+                      service_name: ${{ parameters.service_name }}-blue
+                      short_service_name: ${{ parameters.short_service_name }}-b
+                      fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)-blue
+                      service_base_path: $(SERVICE_BASE_PATH)-blue
+                      jinja_templates: ${{ parameters.jinja_templates }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      product_display_name: ${{ parameters.product_display_name }}
+                      product_description: ${{ parameters.product_description }}
+                      proxy_path: ${{ parameters.proxy_path }}
+                      pre_template: ${{ parameters.pre_template }}
+                      post_template: ${{ parameters.post_template }}
+                      pre_deploy: ${{ parameters.pre_deploy }}
+                      post_deploy: ${{ parameters.post_deploy }}
+                      ping: ${{ parameters.ping }}
+                      enable_monitoring: ${{ parameters.enable_monitoring }}
+                      enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
+                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                      make_spec_visible: false
+                      friendly_api_name: ${{ parameters.friendly_api_name }}
+                      spec_file: ${{ parameters.spec_file }}
+                      pr_label: $(PR_LABEL)
+                      aws_account: ${{ parameters.aws_account }}
+                      stage_name: ${{ parameters.stage_name }} Blue
+                      hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
 
-                - template: '../templates/deploy-service.yml'
-                  parameters:
-                    service_name: ${{ parameters.service_name }}-green
-                    short_service_name: ${{ parameters.short_service_name }}-g
-                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)-green
-                    service_base_path: $(SERVICE_BASE_PATH)-green
-                    jinja_templates: ${{ parameters.jinja_templates }}
-                    apigee_environment: ${{ parameters.environment }}
-                    apigee_organization: ${{ parameters.apigee_organization }}
-                    product_display_name: ${{ parameters.product_display_name }}
-                    product_description: ${{ parameters.product_description }}
-                    proxy_path: ${{ parameters.proxy_path }}
-                    pre_template: ${{ parameters.pre_template }}
-                    post_template: ${{ parameters.post_template }}
-                    pre_deploy: ${{ parameters.pre_deploy }}
-                    post_deploy: ${{ parameters.post_deploy }}
-                    ping: ${{ parameters.ping }}
-                    enable_monitoring: ${{ parameters.enable_monitoring }}
-                    enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
-                    portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
-                    make_spec_visible: false
-                    friendly_api_name: ${{ parameters.friendly_api_name }}
-                    spec_file: ${{ parameters.spec_file }}
-                    pr_label: $(PR_LABEL)
-                    aws_account: ${{ parameters.aws_account }}
-                    stage_name: ${{ parameters.stage_name }} Green
-                    hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                  - template: '../templates/deploy-service.yml'
+                    parameters:
+                      service_name: ${{ parameters.service_name }}-green
+                      short_service_name: ${{ parameters.short_service_name }}-g
+                      fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)-green
+                      service_base_path: $(SERVICE_BASE_PATH)-green
+                      jinja_templates: ${{ parameters.jinja_templates }}
+                      apigee_environment: ${{ parameters.environment }}
+                      apigee_organization: ${{ parameters.apigee_organization }}
+                      product_display_name: ${{ parameters.product_display_name }}
+                      product_description: ${{ parameters.product_description }}
+                      proxy_path: ${{ parameters.proxy_path }}
+                      pre_template: ${{ parameters.pre_template }}
+                      post_template: ${{ parameters.post_template }}
+                      pre_deploy: ${{ parameters.pre_deploy }}
+                      post_deploy: ${{ parameters.post_deploy }}
+                      ping: ${{ parameters.ping }}
+                      enable_monitoring: ${{ parameters.enable_monitoring }}
+                      enable_status_monitoring : ${{ parameters.enable_status_monitoring  }}
+                      portal_api_requires_callback_url: ${{ parameters.portal_api_requires_callback_url }}
+                      make_spec_visible: false
+                      friendly_api_name: ${{ parameters.friendly_api_name }}
+                      spec_file: ${{ parameters.spec_file }}
+                      pr_label: $(PR_LABEL)
+                      aws_account: ${{ parameters.aws_account }}
+                      stage_name: ${{ parameters.stage_name }} Green
+                      hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
 
                 - {{ if not(parameters.blue_green_deployment) }}:
                   - template: '../templates/deploy-service.yml'
