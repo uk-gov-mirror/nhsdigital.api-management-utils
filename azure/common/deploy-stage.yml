@@ -71,7 +71,6 @@ parameters:
       - depends_on
       - jinja_templates
   - name: blue_green_deployment
-    description: Set to true to use blue-green deployment
     default: false
 
 stages:
