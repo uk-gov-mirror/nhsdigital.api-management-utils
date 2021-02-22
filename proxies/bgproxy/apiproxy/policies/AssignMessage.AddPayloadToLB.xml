@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage continueOnError="false" enabled="true" name="AssignMessage.AddPayloadToLB" async="false">
+    <Set>
+        <Payload>{"active": "{private.active}", "canary_mode": {"enabled": "{private.canary_mode}", "balance": "{private.canary_balance}"}}</Payload>
+        <StatusCode>200</StatusCode>
+        <Verb>GET</Verb>
+        <Version>1.1</Version>
+    </Set>
+    <AssignTo createNew="false" transport="http" type="request"/>
+    <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+</AssignMessage>

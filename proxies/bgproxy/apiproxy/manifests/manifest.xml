@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest name="manifest">
+    <Policies>
+        <VersionInfo resourceName="AssignMessage.AddPayloadToLB" version="SHA-512:0fe36be057b6449fd3ae2865caa464b31bfe1915eaf5487e1205f5798e0e5328e3e94bb8b4897dcf77e0cb44beb28007e0dfa9c1996fa8db025acf6d82ff230c"/>
+        <VersionInfo resourceName="AssignMessage.SetActive" version="SHA-512:98e5ea4acd900a0454d56e2411217196b2aacbaf02b4581c2d7d1bd280d4d88d7dd01d7ef51a7e4af8742c4dfe9e9f5c923795d0ed49ebebc4f30623a934940b"/>
+        <VersionInfo resourceName="AssignMessageSetCanaryMode" version="SHA-512:f9220c2d8405e1c0bcece3c23127c98a146fd95abecfd2bed5311fb788443460a488bb0143a9f078490bda9819ed0b4fdfc47cc4dc8bdba41ae87797ffee616b"/>
+        <VersionInfo resourceName="JavaScriptBalanceManager" version="SHA-512:b99c109cd619637401415a2627e942cf6daf18717b47204d844016ca0a0d71cbbe48125387094b6fa3af94b147b8c695afeeab545676a04457009ea8019c02f9"/>
+    </Policies>
+    <ProxyEndpoints>
+        <VersionInfo resourceName="default" version="SHA-512:46bfdf88429a2543464fc9bc2e9e3003acffb2264c394434df3c72fd729a7a170f31a0ca6bc7d69a7ed5014a2b4406d26f165dbe2c28b4ea6004a88459318f73"/>
+    </ProxyEndpoints>
+    <Resources>
+        <VersionInfo resourceName="jsc://BalanceManager.js" version="SHA-512:7551067649bf2afa6e6c4fb12ff8e5ceebbe1a405b4f8310ae9df806f36ab18d22d98fe5b5b074271f5ecacca007c15ef847d9c4284c6d2dadbb09f847b86ed0"/>
+    </Resources>
+    <SharedFlows/>
+    <TargetEndpoints>
+        <VersionInfo resourceName="blue" version="SHA-512:1056a2aaa8acea296122e8a784f65592be57bf781320ce04af715b418fc6c32f2d7d4eaf92e30bfef74f4afae053013c11bcccb911f9523e2c6a6c17bb8b3af4"/>
+        <VersionInfo resourceName="green" version="SHA-512:d2fbe4f67984956591be00ee596eb9e522d6e5b7e5a90d9d70f202315064cd08199b599417ce3df59eab0e16869fa18ef1bf2371909b60922a70c872df610268"/>
+    </TargetEndpoints>
+</Manifest>

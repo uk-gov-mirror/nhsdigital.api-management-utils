@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AssignMessageSetCanaryMode">
+    <AssignVariable>
+        <Name>private.canary_mode</Name>
+        <Value>true</Value>
+    </AssignVariable>
+    <AssignVariable>
+        <Name>private.canary_balance</Name>
+        <Value>50</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>
