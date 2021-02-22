@@ -220,7 +220,7 @@ stages:
                     fi
                   displayName: Override SERVICE_BASE_PATH
 
-                - {{ if parameters.blue_green_deployment }}:
+              - ${{ if parameters.blue_green_deployment }}:
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}
