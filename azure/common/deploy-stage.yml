@@ -297,6 +297,7 @@ stages:
                       aws_account: ${{ parameters.aws_account }}
                       stage_name: ${{ parameters.stage_name }} Green
                       hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                      deploy_product_and_spec: false
 
                   - bash: |
                       set -euo pipefail
@@ -338,6 +339,7 @@ stages:
                       aws_account: ${{ parameters.aws_account }}
                       stage_name: ${{ parameters.stage_name }}
                       hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                      deploy_product_and_spec: false
 
                 - ${{ if not(parameters.blue_green_deployment) }}:
                   - template: '../templates/deploy-service.yml'

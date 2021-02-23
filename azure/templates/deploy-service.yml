@@ -38,6 +38,9 @@ parameters:
   - name: make_spec_visible
     type: boolean
   - name: stage_name
+  - name: deploy_product_and_spec
+    type: boolean
+    default: false
 
 steps:
   - bash: |
@@ -224,19 +227,21 @@ steps:
 
       make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-proxy
 
-      if [ -f $(SERVICE_DIR)/manifest.yml ]; then
-          export DIST_DIR=$(SERVICE_DIR)
-          export PULL_REQUEST="${{ parameters.pr_label }}"
-          make --no-print-directory -C $(UTILS_DIR)/ansible deploy-manifest
-      else
-          if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
-              if [[ -n "${{ parameters.spec_file }}" ]]; then
-                  export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
+      if [ ${{ parameters.deploy_product_and_spec }} == true ]; then
+          if [ -f $(SERVICE_DIR)/manifest.yml ]; then
+              export DIST_DIR=$(SERVICE_DIR)
+              export PULL_REQUEST="${{ parameters.pr_label }}"
+              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-manifest
+          else
+              if [[ ! -z "${PRODUCT_DISPLAY_NAME}" ]]; then
+                  if [[ -n "${{ parameters.spec_file }}" ]]; then
+                      export SPEC_FILE="$(SERVICE_DIR)/${{ parameters.spec_file }}"
+                  fi
+                  export FRIENDLY_NAME="$(FRIENDLY_NAME)"
+                  export VISIBLE="${{ parameters.make_spec_visible }}"
+                  export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
+                  make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
               fi
-              export FRIENDLY_NAME="$(FRIENDLY_NAME)"
-              export VISIBLE="${{ parameters.make_spec_visible }}"
-              export REQUIRE_CALLBACK_URL="${{ parameters.portal_api_requires_callback_url }}"
-              make --no-print-directory -C $(UTILS_DIR)/ansible deploy-apigee-product-and-spec
           fi
       fi
     displayName: 'Deploy Proxy, Product and Spec'
