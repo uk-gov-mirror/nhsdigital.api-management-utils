@@ -236,6 +236,12 @@ stages:
 
                   - bash: |
                       set -euo pipefail
+                      cp -R $(SERVICE_DIR)/utils $(SERVICE_DIR)/orig_utils
+                      echo "##[debug]Copied utils to orig_utils"
+                    displayName: Save original utils
+
+                  - bash: |
+                      set -euo pipefail
                       export SERVICE_BASE_PATH="$(ORIG_SERVICE_BASE_PATH)-blue"
                       echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
                       echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
@@ -283,6 +289,13 @@ stages:
                       echo "##[debug]Restored proxies from orig_proxies"
                     displayName: Restore original proxy files
 
+                  - bash: |
+                      set -euo pipefail
+                      rm -rf $(SERVICE_DIR)/utils
+                      cp -R $(SERVICE_DIR)/orig_utils $(SERVICE_DIR)/utils
+                      echo "##[debug]Copied orig_utils to utils"
+                    displayName: Restore original utils files
+
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-green
@@ -325,6 +338,13 @@ stages:
                       cp -R $(SERVICE_DIR)/orig_proxies $(SERVICE_DIR)/proxies
                       echo "##[debug]Restored proxies from orig_proxies"
                     displayName: Restore original proxy files
+
+                  - bash: |
+                      set -euo pipefail
+                      rm -rf $(SERVICE_DIR)/utils
+                      cp -R $(SERVICE_DIR)/orig_utils $(SERVICE_DIR)/utils
+                      echo "##[debug]Copied orig_utils to utils"
+                    displayName: Restore original utils files
 
                   - template: '../templates/deploy-service.yml'
                     parameters:
