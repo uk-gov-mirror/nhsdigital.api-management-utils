@@ -79,7 +79,7 @@ def select_unique(
     key: str,
     value: str,
     valid_lengths: typing.Optional[typing.List[int]] = None,
-) -> typing.Optional[typing.Dict[str, typing.Any]]:
+) -> typing.List[typing.Dict[str, typing.Any]]:
 
     selected = [item for item in items if item.get(key) == value]
     if not valid_lengths:
