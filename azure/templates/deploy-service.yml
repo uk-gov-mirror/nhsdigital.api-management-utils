@@ -270,5 +270,37 @@ steps:
         ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
           body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
 
+  - bash: |
+      set -e
+
+      proxy_vars_file=""
+
+      if [ -f  $(SERVICE_DIR)/ecs-deploy-${{ parameters.apigee_environment }}.yml ]; then
+        proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-${{ parameters.apigee_environment }}.yml"
+      else
+        if [ -f  $(SERVICE_DIR)/ecs-deploy-all.yml ]; then
+          proxy_vars_file="$(SERVICE_DIR)/ecs-deploy-all.yml"
+        fi
+      fi
+      deploy_role=""
+
+      if [[ ! -z "${proxy_vars_file}" ]]; then
+        source $(SERVICE_DIR)/.build_env_vars
+
+        deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
+
+        account=${{ parameters.aws_account }} \
+        SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
+        APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
+        SHORT_SERVICE_NAME=${{ parameters.short_service_name }} \
+        make --no-print-directory  -C $(UTILS_DIR)/ansible destroy-api-deployment-pre-reqs
+      fi
+
+      echo "##vso[task.setvariable variable=PROXY_VARS_FILE]"
+      echo "##vso[task.setvariable variable=DEPLOY_ROLE]"
+
+    displayName: Create ECS Prerequisites
+    condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
+
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
