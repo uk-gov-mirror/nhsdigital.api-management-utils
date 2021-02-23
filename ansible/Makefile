@@ -66,9 +66,6 @@ remove-ecr-build-role: guard-account guard-service_id
 create-api-deployment-pre-reqs: guard-service_id guard-APIGEE_ENVIRONMENT guard-account
 	@poetry run ansible-playbook -i local create-api-deployment-pre-reqs.yml
 
-destroy-api-deployment-pre-reqs: guard-service_id guard-APIGEE_ENVIRONMENT guard-account
-	@poetry run ansible-playbook -i local destroy-api-deployment-pre-reqs.yml
-
 remove-old-ecs-pr-deploys:
 	@poetry run ansible-playbook -i local remove-old-ecs-pr-deploys.yml
 
