@@ -221,6 +221,20 @@ stages:
                   displayName: Override SERVICE_BASE_PATH
 
                 - ${{ if parameters.blue_green_deployment }}:
+                  - bash: |
+                      set -euo pipefail
+                      export ORIG_SERVICE_BASE_PATH="$(SERVICE_BASE_PATH)"
+                      echo "##[debug]ORIG_SERVICE_BASE_PATH=$ORIG_SERVICE_BASE_PATH"
+                      echo "##vso[task.setvariable variable=ORIG_SERVICE_BASE_PATH]$ORIG_SERVICE_BASE_PATH"
+                    displayName: Save original service base path
+
+                  - bash: |
+                      set -euo pipefail
+                      export SERVICE_BASE_PATH="$(ORIG_SERVICE_BASE_PATH)-blue"
+                      echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
+                    displayName: Set blue base path
+                  
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-blue
@@ -249,6 +263,13 @@ stages:
                       stage_name: ${{ parameters.stage_name }} Blue
                       hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
 
+                  - bash: |
+                      set -euo pipefail
+                      export SERVICE_BASE_PATH="$(ORIG_SERVICE_BASE_PATH)-green"
+                      echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
+                    displayName: Set green base path
+
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-green
@@ -276,6 +297,13 @@ stages:
                       aws_account: ${{ parameters.aws_account }}
                       stage_name: ${{ parameters.stage_name }} Green
                       hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+
+                  - bash: |
+                      set -euo pipefail
+                      export SERVICE_BASE_PATH="$(ORIG_SERVICE_BASE_PATH)"
+                      echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
+                    displayName: Reset base path to initial value
 
                   - template: '../templates/deploy-service.yml'
                     parameters:
