@@ -230,6 +230,12 @@ stages:
 
                   - bash: |
                       set -euo pipefail
+                      cp -R proxies orig_proxies
+                      echo "##[debug]Copied proxies to orig_proxies"
+                    displayName: Save original proxy files
+
+                  - bash: |
+                      set -euo pipefail
                       export SERVICE_BASE_PATH="$(ORIG_SERVICE_BASE_PATH)-blue"
                       echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
                       echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
@@ -270,6 +276,13 @@ stages:
                       echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
                     displayName: Set green base path
 
+                  - bash: |
+                      set -euo pipefail
+                      rm -rf proxies
+                      cp -R orig_proxies proxies
+                      echo "##[debug]Restored proxies from orig_proxies"
+                    displayName: Restore original proxy files
+
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-green
@@ -305,6 +318,13 @@ stages:
                       echo "##[debug]SERVICE_BASE_PATH=$SERVICE_BASE_PATH"
                       echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]$SERVICE_BASE_PATH"
                     displayName: Reset base path to initial value
+
+                  - bash: |
+                      set -euo pipefail
+                      rm -rf proxies
+                      cp -R orig_proxies proxies
+                      echo "##[debug]Restored proxies from orig_proxies"
+                    displayName: Restore original proxy files
 
                   - template: '../templates/deploy-service.yml'
                     parameters:
