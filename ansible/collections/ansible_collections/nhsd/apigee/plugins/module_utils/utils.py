@@ -25,7 +25,7 @@ def delta(before, after, keys_to_ignore=None):
     )
 
 
-def request(method, url, access_token, json=None, headers=None, status_code=None):
+def request(method, url, access_token, json=None, headers=None, status_code=None, session=None):
     if not status_code:
         status_code = [200]
 
@@ -34,7 +34,9 @@ def request(method, url, access_token, json=None, headers=None, status_code=None
 
     headers["authorization"] = f"Bearer {access_token}"
 
-    response = requests.request(method, url, json=json, headers=headers)
+    if session is None:
+        session = requests
+    response = session.request(method, url, json=json, headers=headers)
 
     response_dict = {
         "response": {"status_code": response.status_code, "reason": response.reason,},
