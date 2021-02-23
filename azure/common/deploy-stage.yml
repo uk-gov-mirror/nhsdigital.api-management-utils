@@ -296,6 +296,13 @@ stages:
                       echo "##[debug]Copied orig_utils to utils"
                     displayName: Restore original utils files
 
+                  - template: ../components/aws-assume-role.yml
+                    parameters:
+                      role: "auto-ops"
+                      profile: "apm_${{ parameters.aws_account }}"
+                      aws_account: "${{ parameters.aws_account }}"
+
+
                   - template: '../templates/deploy-service.yml'
                     parameters:
                       service_name: ${{ parameters.service_name }}-green
@@ -345,6 +352,12 @@ stages:
                       cp -R $(SERVICE_DIR)/orig_utils $(SERVICE_DIR)/utils
                       echo "##[debug]Copied orig_utils to utils"
                     displayName: Restore original utils files
+
+                  - template: ../components/aws-assume-role.yml
+                    parameters:
+                      role: "auto-ops"
+                      profile: "apm_${{ parameters.aws_account }}"
+                      aws_account: "${{ parameters.aws_account }}"
 
                   - template: '../templates/deploy-service.yml'
                     parameters:
