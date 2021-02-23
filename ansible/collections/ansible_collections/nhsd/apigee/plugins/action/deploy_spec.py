@@ -59,7 +59,7 @@ class ActionModule(ApigeeAction):
                         json=spec_resource,
                         status_code=[200, 502],
                     )
-                    if response_dict["status_code"] != 502:
+                    if response_dict["response"]["status_code"] != 502:
                         break
                     # Yet another partially broken API...
                     # Let's honour apigee's request to wait 30s before retry.
