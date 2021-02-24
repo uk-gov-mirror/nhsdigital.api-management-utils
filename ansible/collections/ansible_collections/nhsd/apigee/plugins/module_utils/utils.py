@@ -25,7 +25,7 @@ def delta(before, after, keys_to_ignore=None):
     )
 
 
-def request(method, url, access_token, json=None, headers=None, status_code=None):
+def request(method, url, access_token, json=None, headers=None, status_code=None, session=None):
     if not status_code:
         status_code = [200]
 
@@ -34,7 +34,9 @@ def request(method, url, access_token, json=None, headers=None, status_code=None
 
     headers["authorization"] = f"Bearer {access_token}"
 
-    response = requests.request(method, url, json=json, headers=headers)
+    if session is None:
+        session = requests
+    response = session.request(method, url, json=json, headers=headers)
 
     response_dict = {
         "response": {"status_code": response.status_code, "reason": response.reason,},
@@ -77,7 +79,7 @@ def select_unique(
     key: str,
     value: str,
     valid_lengths: typing.Optional[typing.List[int]] = None,
-) -> typing.Optional[typing.Dict[str, typing.Any]]:
+) -> typing.List[typing.Dict[str, typing.Any]]:
 
     selected = [item for item in items if item.get(key) == value]
     if not valid_lengths:

@@ -1,4 +1,8 @@
+import requests
+import json
+import bisect
 import copy
+
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.add_jwks_resource_url import (
     AddJwksResourceUrlToApp
 )
@@ -8,8 +12,50 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.apigee_action import (
 from ansible_collections.nhsd.apigee.plugins.module_utils import utils
 from ansible_collections.nhsd.apigee.plugins.module_utils import constants
 
-
 ATTRIBUTE_NAME = "jwks-resource-url"
+
+
+class LazyDeveloperDetails:
+    """
+    Gets a list of all developers for an apigee organization.  Lazily
+    looks up details based on __getitem__ access.  Since Apigee
+    returns the entire list developers sorted by their internal
+    'developerId' attribute, this allows us to quickly binary search
+    our way to a developer's details when we only know their
+    developerId.
+    """
+
+    def __init__(self, org, token):
+        self._base_url = (constants.APIGEE_BASE_URL
+                          + f"organizations/{org}/developers/")
+        self._token = token
+        self._session = requests.Session()
+
+        self.emails = self._get("")
+        self.details = [None for email in self.emails]
+
+    def _get(self, email: str):
+        """
+        Get developer details from email.
+        Get all developers if email = ''
+
+        Raises a RuntimeError if the request does not return 200.
+        This allows us to bubble the exception up to an ansible
+        response.
+        """
+        resp = utils.get(self._base_url + email,
+                         self._token, session=self._session)
+        if resp.get("failed"):
+            raise RuntimeError(json.dumps(resp))
+        return resp["response"]["body"]
+
+    def __getitem__(self, i: int):
+        if self.details[i] is None:
+            self.details[i] = self._get(self.emails[i])
+        return self.details[i]["developerId"]
+
+    def __len__(self):
+        return len(self.emails)
 
 
 class ActionModule(ApigeeAction):
@@ -39,15 +85,23 @@ class ActionModule(ApigeeAction):
         if diff_mode:
             result["diff"] = [{"before": before, "after": after}]
 
+        developer_details = LazyDeveloperDetails(args.organization, args.access_token)
+        try:
+            i = bisect.bisect_left(developer_details, args._app_data["developerId"])
+        except RuntimeError as e:
+            return json.loads(str(e))
+        developer = developer_details.details[i]
+
+        result["developer"] = developer
         if check_mode:
             return result
 
-        developer_email = args._app_data["createdBy"]
         app_name = args._app_data["name"]
         app_attribute_url = (
             constants.APIGEE_BASE_URL
-            + f"organizations/{args.organization}/developers/{developer_email}/apps/{app_name}/attributes"
+            + f"organizations/{args.organization}/developers/{developer['email']}/apps/{app_name}/attributes"
         )
+
         app_data2 = utils.post(app_attribute_url, args.access_token,
                                json={"attribute": after["attributes"]})
         if app_data2.get("failed"):
