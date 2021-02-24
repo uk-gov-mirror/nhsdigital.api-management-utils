@@ -366,12 +366,12 @@ stages:
                       fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
                       service_base_path: $(SERVICE_BASE_PATH)
                       jinja_templates:
-                        - ${{ each jt in parameters.jinja_templates }}:
-                          - ${{ jt.key }}: ${{ jt.value }}
                         - key: BLUE_TARGET_BASE_PATH
                           value: $(SERVICE_BASE_PATH)-blue
                         - key: GREEN_TARGET_BASE_PATH
                           value: $(SERVICE_BASE_PATH)-green
+                        - ${{ each jt in parameters.jinja_templates }}:
+                          - ${{ jt.key }}: ${{ jt.value }}
                       apigee_environment: ${{ parameters.environment }}
                       apigee_organization: ${{ parameters.apigee_organization }}
                       product_display_name: ${{ parameters.product_display_name }}
