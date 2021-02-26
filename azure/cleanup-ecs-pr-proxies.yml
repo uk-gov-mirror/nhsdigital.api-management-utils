@@ -30,13 +30,15 @@ jobs:
           echo instance-id: "${instance_id}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
           echo sudo su - ubuntu
+          or
+          echo ssh ubuntu@${instance_id}
           echo working directory: $(System.DefaultWorkingDirectory)
         displayName: print aws info
 
       - template: ./components/aws-assume-role.yml
-         parameters:
-           role: "auto-ops"
-           profile: "apm_ptl"
+        parameters:
+          role: "auto-ops"
+          profile: "apm_ptl"
 
       - bash: |
           tfenv use 0.14.6
