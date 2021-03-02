@@ -62,11 +62,11 @@ REGISTERED_META = [
         "name": "nhs-app",
         "spec_guids": ["f5b9779e-d343-4a0a-8410-6dcae48bc55e"],
     },
-    # {
-    #     "guid": "b26b0249-488d-44f9-93ed-9d2f08f3859c",
-    #     "name": "signing-service-api",
-    #     "spec_guids": ["a062e39c-b843-4833-8d24-8fc1434900a0",],
-    # },
+    {
+        "guid": "b26b0249-488d-44f9-93ed-9d2f08f3859c",
+        "name": "signing-service-api",
+        "spec_guids": ["a062e39c-b843-4833-8d24-8fc1434900a0",],
+    },
     {
         "guid": "3ef873d7-18d3-4c51-b1f4-d36a3749c857",
         "name": "summary-care-record",
