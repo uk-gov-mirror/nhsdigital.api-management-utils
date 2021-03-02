@@ -86,7 +86,7 @@ steps:
           displayName: "Set ${{ jinja_template.key }} to ${{ jinja_template.value }}"
 
   - bash: |
-      cat $(UTILS_DIR)/ansible/group_vars/all/jinja_templates.yml
+      cat $(UTILS_DIR)/ansible/group_vars/all/jinja_templates.yml || true
     displayName: Show jinja_templates.yml
 
   - bash: |
