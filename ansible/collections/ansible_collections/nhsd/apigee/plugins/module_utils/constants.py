@@ -64,7 +64,7 @@ REGISTERED_META = [
     },
     {
         "guid": "b26b0249-488d-44f9-93ed-9d2f08f3859c",
-        "name": "signing-service-api",
+        "name": "signing-service",
         "spec_guids": ["a062e39c-b843-4833-8d24-8fc1434900a0",],
     },
     {
