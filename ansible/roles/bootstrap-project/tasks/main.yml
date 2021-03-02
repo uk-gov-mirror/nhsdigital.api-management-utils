@@ -15,15 +15,19 @@
 - name: load project config oas
   include_vars:
     file: "{{ CONFIG }}"
-    name: config_oas
+    name: config
 
-- name: extract x-nhsd-api-platform data
-  set_fact:
-    config: "{{ config_oas['x-nhsd-api-platform'] }}"
-
-- name: show config values
-  debug:
-    var: config
+- name: check meta.{{ item }} is set
+  fail:
+    msg: "meta.{{ item }} is not defined"
+  when: config.meta[item] is not defined
+  loop:
+    - service_name
+    - short_service_name
+    - service_base_path
+    - product_display_name
+    - product_description
+    - pipeline_name_prefix
 
 - name: set repo_location
   set_fact:
