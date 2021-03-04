@@ -2,14 +2,20 @@ import pydantic
 import typing
 
 
-from ansible_collections.nhsd.apigee.plugins.module_utils import constants
+from ansible_collections.nhsd.apigee.plugins.module_utils.paas import api_registry
 
 SCHEMA_VERSION = "1.1.0"
 
+_REGISTRY_DATA = None
+
+
+def _get_registry_data():
+    return _REGISTRY_DATA
 
 
 class ManifestMetaApi(pydantic.BaseModel):
     name: pydantic.constr(regex=r"^[a-z]+(-[a-z]+)*$")
+    _registry_data: pydantic.PrivateAttr(default_factory=_get_registry_data)
     id: typing.Optional[pydantic.UUID4] = pydantic.Field(
         None, description="This field is deprecated, use guid instead."
     )
@@ -33,43 +39,51 @@ class ManifestMetaApi(pydantic.BaseModel):
 
     @pydantic.validator("guid", pre=True, always=True)
     def id_to_guid(cls, guid, values):
+        """
+        If using an old version of the manifest, this sets the 'guid'
+        attribute from the now deprecated 'id' attribute.
+        """
         _id = values.get("id")
         if _id and not guid:
             return _id
         return guid
 
-    @pydantic.root_validator
-    def validate_meta_api(cls, values):
-        supplied_guid = str(values.get("guid"))
+    @pydantic.validator("name")
+    def set_global_name(cls, name):
+        global _REGISTRY_DATA
+        _REGISTRY_DATA = api_registry.get(name)
+        return name
 
-        try:
-            registered_meta = next(
-                filter(lambda meta: meta["guid"] == supplied_guid, constants.REGISTERED_META)
-            )
-        except StopIteration:
-            raise ValueError(
-                f"Supplied meta.api.guid: '{supplied_guid}' does not match any registered API guid."
-            )
+    @pydantic.validator("guid")
+    def validate_guid(cls, guid, values):
+        if _REGISTRY_DATA is None:
+            return  # Other problems.
+        if guid is None:
+            guid = _REGISTRY_DATA["guid"]
+        registered_guid = _REGISTRY_DATA["guid"]
+        if str(guid) != registered_guid:
+            raise ValueError(f"Supplied guid {guid} does not match registered guid {registered_guid}")
+        return guid
 
-        registered_name = registered_meta["name"]
-        supplied_name = values.get("name")
-        if supplied_name != registered_name:
-            raise ValueError(
-                f"Supplied meta.api.name '{supplied_name}' does not match registered name {registered_name} for API guid {supplied_guid}."
-            )
+    @pydantic.validator("spec_guids")
+    def validate_spec_guids(cls, spec_guids, values):
+        # In theory these could be added over time, so for backwards
+        # compatibility we just assert that the presented spec guids
+        # are present
+        if _REGISTRY_DATA is None:
+            return  # Other problems.
+        if spec_guids is None:
+            spec_guids = _REGISTRY_DATA["spec_guids"]
+        registered_spec_guids = _REGISTRY_DATA["spec_guids"]
 
-        supplied_spec_guids = values.get("spec_guids")
-        if supplied_spec_guids is None:  # For backwards compatibility
-            return values
+        invalid = []
+        for spec_guid in spec_guids:
+            if str(spec_guid) not in registered_spec_guids:
+                invalid.append(str(spec_guid))
+        if len(invalid) > 0:
+            raise ValueError(f"Supplied spec_guids {invalid} do not match registered spec_guids {registered_spec_guids}")
+        return spec_guids
 
-        registered_spec_guids = registered_meta["spec_guids"]
-        for supplied_spec_guid in supplied_spec_guids:
-            if str(supplied_spec_guid) not in registered_spec_guids:
-                raise ValueError(
-                    f"Supplied meta.api.spec_guids entry '{supplied_spec_guid}' is not in list of registered spec_guids {registered_spec_guids} for API guid '{supplied_guid}'"
-                )
-
-        return values
 
 
 class ManifestMeta(pydantic.BaseModel):
