@@ -6,20 +6,16 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.paas import api_regist
 
 SCHEMA_VERSION = "1.1.0"
 
-_REGISTRY_DATA = None
+_REGISTRY_DATA = {}
 
-
-def _get_registry_data():
-    return _REGISTRY_DATA
 
 
 class ManifestMetaApi(pydantic.BaseModel):
     name: pydantic.constr(regex=r"^[a-z]+(-[a-z]+)*$")
-    _registry_data: pydantic.PrivateAttr(default_factory=_get_registry_data)
     id: typing.Optional[pydantic.UUID4] = pydantic.Field(
         None, description="This field is deprecated, use guid instead."
     )
-    guid: pydantic.UUID4 = None
+    guid: typing.Optional[pydantic.UUID4] = None
     spec_guids: typing.Optional[typing.Set[pydantic.UUID4]] = None
 
     def dict(self, **kwargs):
@@ -50,17 +46,17 @@ class ManifestMetaApi(pydantic.BaseModel):
 
     @pydantic.validator("name")
     def set_global_name(cls, name):
-        global _REGISTRY_DATA
-        _REGISTRY_DATA = api_registry.get(name)
+        _REGISTRY_DATA[name] = api_registry.get(name)
         return name
 
     @pydantic.validator("guid")
     def validate_guid(cls, guid, values):
-        if _REGISTRY_DATA is None:
+        name = values.get("name")
+        if name not in _REGISTRY_DATA:
             return  # Other problems.
         if guid is None:
-            guid = _REGISTRY_DATA["guid"]
-        registered_guid = _REGISTRY_DATA["guid"]
+            guid = _REGISTRY_DATA[name]["guid"]
+        registered_guid = _REGISTRY_DATA[name]["guid"]
         if str(guid) != registered_guid:
             raise ValueError(f"Supplied guid {guid} does not match registered guid {registered_guid}")
         return guid
@@ -70,11 +66,12 @@ class ManifestMetaApi(pydantic.BaseModel):
         # In theory these could be added over time, so for backwards
         # compatibility we just assert that the presented spec guids
         # are present
-        if _REGISTRY_DATA is None:
+        name = values.get("name")
+        if name not in _REGISTRY_DATA:
             return  # Other problems.
         if spec_guids is None:
-            spec_guids = _REGISTRY_DATA["spec_guids"]
-        registered_spec_guids = _REGISTRY_DATA["spec_guids"]
+            spec_guids = _REGISTRY_DATA[name]["spec_guids"]
+        registered_spec_guids = _REGISTRY_DATA[name]["spec_guids"]
 
         invalid = []
         for spec_guid in spec_guids:
