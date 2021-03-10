@@ -29,6 +29,17 @@
     - product_description
     - pipeline_name_prefix
 
+- name: append guids to config
+  set_fact:
+    config: "{{ config | combine(item) }}"
+  with_items:
+    - spec_guid: "{{ config['x-nhs-api-spec-guid'] }}"
+    - guid: "{{ GUID }}"
+
+- name: show config values
+  debug:
+    var: config
+
 - name: set repo_location
   set_fact:
     repo_location: "{{ DEST }}/{{ config.meta.service_name }}"
@@ -69,6 +80,7 @@
     - "{{ repo_location }}/azure/azure-pr-pipeline.yml"
     - "{{ repo_location }}/azure/azure-release-pipeline.yml"
     - "{{ repo_location }}/azure/project.yml"
+    - "{{ repo_location }}/manifest_template.yml"
 
 - name: rename live proxy file
   command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_service_name }}.xml"

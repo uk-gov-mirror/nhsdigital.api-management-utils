@@ -4,14 +4,14 @@ import typing
 
 from ansible_collections.nhsd.apigee.plugins.module_utils.paas import api_registry
 
-SCHEMA_VERSION = "1.1.0"
+SCHEMA_VERSION = "1.1.1"
 
 _REGISTRY_DATA = {}
 
 
 
 class ManifestMetaApi(pydantic.BaseModel):
-    name: pydantic.constr(regex=r"^[a-z]+(-[a-z]+)*$")
+    name: pydantic.constr(regex=r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
     id: typing.Optional[pydantic.UUID4] = pydantic.Field(
         None, description="This field is deprecated, use guid instead."
     )
