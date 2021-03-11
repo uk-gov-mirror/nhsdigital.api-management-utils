@@ -9,7 +9,7 @@
 
 - name: download swagger-codegen
   get_url:
-    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.20/swagger-codegen-cli-3.0.20.jar"
+    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.25/swagger-codegen-cli-3.0.25.jar"
     dest: "{{ build_dir }}/swagger-codegen-cli.jar"
 
 - name: load project config oas
@@ -49,6 +49,7 @@
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
     depth: 1
+    version: APM-1910-resolve-template-issues
 
 - name: delete git history
   file:
@@ -68,7 +69,6 @@
     - "{{ repo_location }}/README.md"
     - "{{ repo_location }}/package.json"
     - "{{ repo_location }}/pyproject.toml"
-    - "{{ repo_location }}/terraform/main.tf"
     - "{{ repo_location }}/Makefile"
     - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
@@ -108,5 +108,11 @@
 - name: set sandbox server default port to 9000
   replace:
     path: "{{ repo_location }}/sandbox/index.js"
+    regexp: "8080"
+    replace: "9000"
+
+- name: set README server port to 9000
+  replace:
+    path: "{{ repo_location }}/sandbox/README.md"
     regexp: "8080"
     replace: "9000"
