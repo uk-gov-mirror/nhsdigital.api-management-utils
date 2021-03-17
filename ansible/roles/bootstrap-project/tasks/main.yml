@@ -9,7 +9,7 @@
 
 - name: download swagger-codegen
   get_url:
-    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.20/swagger-codegen-cli-3.0.20.jar"
+    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.25/swagger-codegen-cli-3.0.25.jar"
     dest: "{{ build_dir }}/swagger-codegen-cli.jar"
 
 - name: load project config oas
@@ -17,10 +17,10 @@
     file: "{{ CONFIG }}"
     name: config
 
-- name: check meta.{{ item }} is set
+- name: check ['x-meta'].{{ item }} is set
   fail:
-    msg: "meta.{{ item }} is not defined"
-  when: config.meta[item] is not defined
+    msg: "x-meta.{{ item }} is not defined"
+  when: config['x-meta'][item] is not defined
   loop:
     - service_name
     - short_service_name
@@ -42,7 +42,7 @@
 
 - name: set repo_location
   set_fact:
-    repo_location: "{{ DEST }}/{{ config.meta.service_name }}"
+    repo_location: "{{ DEST }}/{{ config['x-meta'].service_name }}"
 
 - name: clone template repository
   git:
@@ -68,8 +68,6 @@
     - "{{ repo_location }}/README.md"
     - "{{ repo_location }}/package.json"
     - "{{ repo_location }}/pyproject.toml"
-    - "{{ repo_location }}/terraform/main.tf"
-    - "{{ repo_location }}/Makefile"
     - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
@@ -81,15 +79,19 @@
     - "{{ repo_location }}/azure/azure-release-pipeline.yml"
     - "{{ repo_location }}/azure/project.yml"
     - "{{ repo_location }}/manifest_template.yml"
+    - "{{ repo_location }}/ecs-proxies-containers.yml"
+    - "{{ repo_location }}/ecs-proxies-deploy.yml"
+    - "{{ repo_location }}/tests/test_endpoints.py"
+    - "{{ repo_location }}/pyproject.toml"
 
 - name: rename live proxy file
-  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config.meta.short_service_name }}.xml"
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config['x-meta'].short_service_name }}.xml"
 
 - name: rename sandbox proxy file
-  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config.meta.short_service_name }}.xml"
+  command: mv "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml" "{{ repo_location }}/proxies/sandbox/apiproxy/{{ config['x-meta'].short_service_name }}.xml"
 
 - name: rename live target file
-  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config.meta.short_service_name }}-target.xml"
+  command: mv "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml" "{{ repo_location }}/proxies/live/apiproxy/targets/{{ config['x-meta'].short_service_name }}-target.xml"
   
 - name: ensure specification folder exists
   file:
@@ -99,14 +101,17 @@
 - name: copy config oas to repo
   copy:
     src: "{{ CONFIG }}"
-    dest: "{{ repo_location }}/specification/{{ config.meta.service_name }}.yaml"
+    dest: "{{ repo_location }}/specification/{{ config['x-meta'].service_name }}.yaml"
 
 - name: generate sandbox server
   shell:
-    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config.meta.service_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
+    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config['x-meta'].service_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
 
 - name: set sandbox server default port to 9000
   replace:
-    path: "{{ repo_location }}/sandbox/index.js"
+    path: "{{ item }}"
     regexp: "8080"
     replace: "9000"
+  with_items:
+    - "{{ repo_location }}/sandbox/index.js"
+    - "{{ repo_location }}/sandbox/README.md"
