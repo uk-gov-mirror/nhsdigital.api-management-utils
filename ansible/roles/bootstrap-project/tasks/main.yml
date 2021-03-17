@@ -109,12 +109,9 @@
 
 - name: set sandbox server default port to 9000
   replace:
-    path: "{{ repo_location }}/sandbox/index.js"
+    path: "{{ item }}"
     regexp: "8080"
     replace: "9000"
-
-- name: set README server port to 9000
-  replace:
-    path: "{{ repo_location }}/sandbox/README.md"
-    regexp: "8080"
-    replace: "9000"
+  with_items:
+    - "{{ repo_location }}/sandbox/index.js"
+    - "{{ repo_location }}/sandbox/README.md"
