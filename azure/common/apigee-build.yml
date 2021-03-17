@@ -260,6 +260,7 @@ jobs:
           elif [ -f manifest_template.yml ]; then
              rsync -a manifest_template.yml dist
              make -C utils/ansible template-manifest
+             make -C utils/ansible validate-manifest
           fi
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Validate manifest (template) and copy to artifact"
@@ -267,6 +268,7 @@ jobs:
       - bash: |
           cd ${{ parameters.service_name }}/utils
           git rev-parse HEAD > ../dist/.utils-version
+        displayName: Snapshot utils version
 
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"
