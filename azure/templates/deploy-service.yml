@@ -103,11 +103,13 @@ steps:
       fi
 
       cd $(UTILS_DIR)
+      ANSIBLE_FORCE_COLOR=yes \
       make --no-print-directory -C ansible template-proxies
 
       if [ -f $(SERVICE_DIR)/manifest.yml ]; then
           DIST_DIR=$(SERVICE_DIR) \
           PROXY_DIR=${{ parameters.proxy_path }} \
+          ANSIBLE_FORCE_COLOR=yes \
           make --no-print-directory -C ansible add-apim-guids-policy
       fi
 
