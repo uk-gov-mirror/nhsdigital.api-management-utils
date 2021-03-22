@@ -83,3 +83,6 @@ remove-old-pr-proxies:
 
 deploy-api-pipelines: guard-PREFIX guard-REPO guard-SERVICE_CONNECTION_ID
 	PREFIX="$(PREFIX)" ORG="NHSD-APIM" PROJECT="API Platform" REPO="https://github.com/NHSDigital/$(REPO)" SERVICE_CONNECTION="$(SERVICE_CONNECTION_ID)" poetry run ansible-playbook ansible/deploy-api-pipelines.yml
+
+get-developer-emails:
+	@poetry run ansible-playbook -i local get-developer-emails.yml
