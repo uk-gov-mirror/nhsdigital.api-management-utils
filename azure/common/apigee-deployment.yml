@@ -47,6 +47,9 @@ parameters:
   - name: hosted_target_connection_path_suffix
     type: string
     default: ''
+  - name: hosted_target_healthcheck_suffix
+    type: string
+    default: ''
   - name: jinja_templates
     type: object
     displayName:  Key/values for custom jinja templating
@@ -99,6 +102,7 @@ parameters:
       - short_service_name
       - service_base_path
       - hosted_target_connection_path_suffix
+      - hosted_target_healthcheck_suffix
       - product_display_name
       - product_description
       - fully_qualified_service_name
