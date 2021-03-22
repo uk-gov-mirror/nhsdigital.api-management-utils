@@ -10,6 +10,7 @@ parameters:
   - name: service_base_path
   - name: pr_label
   - name: hosted_target_connection_path_suffix
+  - name: hosted_target_healthcheck_suffix
   - name: aws_account
     values:
       - ptl
@@ -89,6 +90,7 @@ steps:
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
       export HOSTED_TARGET_CONNECTION_PATH_SUFFIX="${{ parameters.hosted_target_connection_path_suffix }}"
+      export HOSTED_TARGET_HEALTHCHECK_SUFFIX="${{ parameters.hosted_target_healthcheck_suffix }}"
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
       export RELEASE_RELEASEID=$(Build.BuildId)
 

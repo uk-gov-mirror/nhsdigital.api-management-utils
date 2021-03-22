@@ -51,7 +51,9 @@ parameters:
   - name: hosted_target_connection_path_suffix
     type: string
     default: ''
-
+  - name: hosted_target_healthcheck_suffix
+    type: string
+    default: ''
 
 
 stages:
