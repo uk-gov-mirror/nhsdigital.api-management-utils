@@ -57,6 +57,8 @@ parameters:
     type: boolean
   - name: hosted_target_connection_path_suffix
     type: string
+  - name: hosted_target_healthcheck_suffix
+    type: string
   - name: _expose_blacklist
     type: object
     default:
@@ -230,6 +232,7 @@ stages:
                     product_display_name: ${{ parameters.product_display_name }}
                     product_description: ${{ parameters.product_description }}
                     hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                    hosted_target_healthcheck_suffix: ${{ parameters.hosted_target_healthcheck_suffix }}
                     proxy_path: ${{ parameters.proxy_path }}
                     pre_template: ${{ parameters.pre_template }}
                     post_template: ${{ parameters.post_template }}

@@ -21,6 +21,7 @@ parameters:
   - name: product_display_name
   - name: product_description
   - name: hosted_target_connection_path_suffix
+  - name: hosted_target_healthcheck_suffix
   - name: proxy_path
   - name: secret_file_ids
     type: object
