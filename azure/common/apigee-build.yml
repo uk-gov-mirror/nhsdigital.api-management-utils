@@ -24,6 +24,9 @@ parameters:
   - name: notify
     type: boolean
     default: true
+  - name: global_install
+    type: boolean
+    default: true
   - name: pre_install_steps
     type: stepList
     default: []
@@ -156,7 +159,7 @@ jobs:
             n=$((n+1))
           done
         workingDirectory: "${{ parameters.service_name }}"
-        condition: and( ne(gt(length( ${{ parameters.pre_install_steps }} ), 0), 'true'), ne(variables['CacheRestored-${{ parameters.cache_alias }}'], 'true') )
+        condition: and( eq(${{ parameters.global_install }}, 'true'), ne(variables['CacheRestored-${{ parameters.cache_alias }}'], 'true'))
         displayName: Install project dependencies
 
       - bash: "make lint"
