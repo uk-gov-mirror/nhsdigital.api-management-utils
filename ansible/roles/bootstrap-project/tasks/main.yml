@@ -44,7 +44,6 @@
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
     depth: 1
-    version: APM-1910-fix-templating-issues
 
 - name: delete git history
   file:
