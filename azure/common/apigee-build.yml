@@ -24,6 +24,12 @@ parameters:
   - name: notify
     type: boolean
     default: true
+  - name: pre_install_steps
+    type: stepList
+    default: []
+  - name: cache_alias
+    type: string
+    default: no_cache_alias
 
 jobs:
   - job: build
@@ -139,6 +145,9 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
+      - ${{ each pre_install_step in parameters.pre_install_steps }}:
+          - ${{ pre_install_step }}
+
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -147,6 +156,7 @@ jobs:
             n=$((n+1))
           done
         workingDirectory: "${{ parameters.service_name }}"
+        condition: and( ne(gt(length( ${{ parameters.pre_install_steps }} ), 0), 'true'), ne(variables['CacheRestored-${{ parameters.cache_alias }}'], 'true') )
         displayName: Install project dependencies
 
       - bash: "make lint"
@@ -175,13 +185,6 @@ jobs:
 
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
-
-# don't use cache in  aws build agents safely, currently
-#       - task: Cache@2
-#         inputs:
-#           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
-#           path: "${{ parameters.service_name }}/utils/.venv"
-#         displayName: cache utils dependencies
 
       - task: s3-cache-action@1
         inputs:
