@@ -192,13 +192,6 @@ jobs:
         displayName: cache utils dependencies
 
       - bash: |
-          cd scripts
-          export VIRTUAL_ENV_PATH="../.venv"
-          sh check-python-venv-fixed.sh
-          exit $?
-        displayName: check python venv fixed
-
-      - bash: |
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
