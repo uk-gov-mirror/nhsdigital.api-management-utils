@@ -44,7 +44,6 @@
     repo: "https://github.com/NHSDigital/api-management-service-template.git"
     dest: "{{ repo_location }}"
     depth: 1
-    version: APM-1910-fix-templating-issues
 
 - name: delete git history
   file:
@@ -66,8 +65,8 @@
     - "{{ repo_location }}/pyproject.toml"
     - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
-    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/ServiceCallout.CallHealthcheckEndpoint.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
@@ -81,7 +80,6 @@
     - "{{ repo_location }}/sandbox/package.json"
     - "{{ repo_location }}/sandbox/app.js"
     - "{{ repo_location }}/sandbox/app.spec.js"
-    
 
 - name: rename live proxy file
   command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config['x-meta'].short_service_name }}.xml"
