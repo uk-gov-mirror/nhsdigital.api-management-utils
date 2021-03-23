@@ -296,3 +296,8 @@ jobs:
             state: failure
             on_failure: true
             description: "Build failed"
+
+      - checkout: self
+        path: "s/${{ parameters.service_name }}"
+        submodules: true
+        displayName: checkout repo for caching
