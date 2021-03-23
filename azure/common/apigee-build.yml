@@ -183,10 +183,26 @@ jobs:
 #           path: "${{ parameters.service_name }}/utils/.venv"
 #         displayName: cache utils dependencies
 
+      - task: s3-cache-action@1
+        inputs:
+          key: poetry | $(System.DefaultWorkingDirectory) | ${{ parameters.service_name }}/utils/poetry.lock
+          location: "${{ parameters.service_name }}/utils/.venv"
+          debug: true
+          alias: 'Poetry'
+        displayName: cache utils dependencies
+
+      - bash: |
+          cd scripts
+          export VIRTUAL_ENV_PATH="../.venv"
+          sh check-python-venv-fixed.sh
+          exit $?
+        displayName: check python venv fixed
+
       - bash: |
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
+        condition: ne(variables['CacheRestored-Poetry'], 'true')
         displayName: "Install utils "
 
       - bash: |
