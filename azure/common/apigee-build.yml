@@ -194,14 +194,14 @@ jobs:
           key: poetry | $(System.DefaultWorkingDirectory) | ${{ parameters.service_name }}/utils/poetry.lock
           location: "${{ parameters.service_name }}/utils/.venv"
           debug: true
-          alias: 'Poetry'
+          alias: 'Utils'
         displayName: cache utils dependencies
 
       - bash: |
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
-        condition: ne(variables['CacheRestored-Poetry'], 'true')
+        condition: ne(variables['CacheRestored-Utils'], 'true')
         displayName: "Install utils "
 
       - bash: |
@@ -296,8 +296,3 @@ jobs:
             state: failure
             on_failure: true
             description: "Build failed"
-
-      - checkout: self
-        path: "s/${{ parameters.service_name }}"
-        submodules: true
-        displayName: checkout repo for caching
