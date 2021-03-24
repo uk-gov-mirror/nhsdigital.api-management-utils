@@ -7,11 +7,6 @@
   set_fact:
     build_dir: "{{ build_temp_dir.path }}"
 
-- name: download swagger-codegen
-  get_url:
-    url: "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.25/swagger-codegen-cli-3.0.25.jar"
-    dest: "{{ build_dir }}/swagger-codegen-cli.jar"
-
 - name: load project config oas
   include_vars:
     file: "{{ CONFIG }}"
@@ -70,8 +65,8 @@
     - "{{ repo_location }}/pyproject.toml"
     - "{{ repo_location }}/proxies/live/apiproxy/proxy.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/proxy.xml"
-    - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetSecureVariables.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/policies/KeyValueMapOperations.GetVariables.xml"
+    - "{{ repo_location }}/proxies/live/apiproxy/policies/ServiceCallout.CallHealthcheckEndpoint.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/proxies/default.xml"
     - "{{ repo_location }}/proxies/live/apiproxy/targets/target.xml"
     - "{{ repo_location }}/proxies/sandbox/apiproxy/policies/KeyValueMapOperations.GetAsid.xml"
@@ -79,10 +74,12 @@
     - "{{ repo_location }}/azure/azure-release-pipeline.yml"
     - "{{ repo_location }}/azure/project.yml"
     - "{{ repo_location }}/manifest_template.yml"
-    - "{{ repo_location }}/ecs-proxies-containers.yml"
     - "{{ repo_location }}/ecs-proxies-deploy.yml"
     - "{{ repo_location }}/tests/test_endpoints.py"
     - "{{ repo_location }}/pyproject.toml"
+    - "{{ repo_location }}/sandbox/package.json"
+    - "{{ repo_location }}/sandbox/app.js"
+    - "{{ repo_location }}/sandbox/app.spec.js"
 
 - name: rename live proxy file
   command: mv "{{ repo_location }}/proxies/live/apiproxy/proxy.xml" "{{ repo_location }}/proxies/live/apiproxy/{{ config['x-meta'].short_service_name }}.xml"
@@ -102,16 +99,3 @@
   copy:
     src: "{{ CONFIG }}"
     dest: "{{ repo_location }}/specification/{{ config['x-meta'].service_name }}.yaml"
-
-- name: generate sandbox server
-  shell:
-    cmd: "java -jar {{ build_dir }}/swagger-codegen-cli.jar generate -i {{ repo_location }}/specification/{{ config['x-meta'].service_name }}.yaml -l nodejs-server -o {{ repo_location }}/sandbox"
-
-- name: set sandbox server default port to 9000
-  replace:
-    path: "{{ item }}"
-    regexp: "8080"
-    replace: "9000"
-  with_items:
-    - "{{ repo_location }}/sandbox/index.js"
-    - "{{ repo_location }}/sandbox/README.md"
