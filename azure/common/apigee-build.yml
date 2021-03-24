@@ -24,15 +24,9 @@ parameters:
   - name: notify
     type: boolean
     default: true
-  - name: global_install
-    type: boolean
-    default: true
-  - name: pre_install_steps
+  - name: cache_steps
     type: stepList
     default: []
-  - name: cache_alias
-    type: string
-    default: no_cache_alias
 
 jobs:
   - job: build
@@ -148,8 +142,8 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
-      - ${{ each pre_install_step in parameters.pre_install_steps }}:
-          - ${{ pre_install_step }}
+      - ${{ each cache_step in parameters.cache_steps }}:
+          - ${{ cache_step }}
 
       - bash: |
           n=0
@@ -159,7 +153,6 @@ jobs:
             n=$((n+1))
           done
         workingDirectory: "${{ parameters.service_name }}"
-        condition: and( eq(${{ parameters.global_install }}, 'true'), ne(variables['CacheRestored-${{ parameters.cache_alias }}'], 'true'))
         displayName: Install project dependencies
 
       - bash: "make lint"
