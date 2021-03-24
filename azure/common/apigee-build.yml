@@ -24,6 +24,9 @@ parameters:
   - name: notify
     type: boolean
     default: true
+  - name: cache_steps
+    type: stepList
+    default: []
 
 jobs:
   - job: build
@@ -139,6 +142,9 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
+      - ${{ each cache_step in parameters.cache_steps }}:
+          - ${{ cache_step }}
+
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -176,17 +182,19 @@ jobs:
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
-# don't use cache in  aws build agents safely, currently
-#       - task: Cache@2
-#         inputs:
-#           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
-#           path: "${{ parameters.service_name }}/utils/.venv"
-#         displayName: cache utils dependencies
+      - task: s3-cache-action@1
+        inputs:
+          key: poetry | $(System.DefaultWorkingDirectory) | ${{ parameters.service_name }}/utils/poetry.lock
+          location: "${{ parameters.service_name }}/utils/.venv"
+          debug: true
+          alias: 'Utils'
+        displayName: cache utils dependencies
 
       - bash: |
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
+        condition: ne(variables['CacheRestored-Utils'], 'true')
         displayName: "Install utils "
 
       - bash: |
