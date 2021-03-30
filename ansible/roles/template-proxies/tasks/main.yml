@@ -10,13 +10,13 @@
 
 - name: get_ptl_account_id
   command: >
-    aws ssm get-parameter --name /account-ids/ptl --query Parameter.Value --output text
+    aws --region eu-west-2 ssm get-parameter --name /account-ids/ptl --query Parameter.Value --output text
   register: get_ptl_account_id
   changed_when: no
 
 - name: get_prod_account_id
   command: >
-    aws ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text
+    aws --region eu-west-2 ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text
   register: get_prod_account_id
   changed_when: no
   
