@@ -52,7 +52,7 @@ steps:
 
   - task: s3-cache-action@1
     inputs:
-      key: poetry | $(UTILS_DIR) | $(UTILS_DIR)/poetry.lock
+      key: poetry | utils | $(UTILS_DIR)/poetry.lock
       location: "$(UTILS_DIR)/.venv"
       debug: true
       alias: 'UtilsPreReq'
