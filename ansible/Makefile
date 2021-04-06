@@ -72,6 +72,9 @@ remove-old-ecs-pr-deploys:
 remove-old-pr-portal-apis:
 	@poetry run ansible-playbook -i local remove-old-pr-portal-apis.yml
 
+remove-old-auto-apps:
+	@poetry run ansible-playbook -i local remove-old-auto-apps.yml
+
 remove-old-pr-specs:
 	@poetry run ansible-playbook -i local remove-old-pr-specs.yml
 
