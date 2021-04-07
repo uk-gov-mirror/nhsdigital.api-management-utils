@@ -15,14 +15,14 @@ guard-%:
 	    exit 1; \
 	fi
 
-CHECK := $(if $(filter 1,${CHECK}),--check,)
+CHECK := $(if $(filter 1,${CHECK})$(filter True,${CHECK}),--check,)
 VERBOSE := $(if $(filter 1,${VERBOSE}),-vvv,)
 
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
 
 add-jwks-resource-url-to-app: guard-APIGEE_ENVIRONMENT guard-APIGEE_ACCESS_TOKEN guard-APP_ID
-	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-jwks-resource-url-to-app.yml
+	poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-jwks-resource-url-to-app.yml
 
 add-apim-guids-policy:
 	@poetry run ansible-playbook $(VERBOSE) --diff $(CHECK) -i local add-apim-guids-policy.yml
