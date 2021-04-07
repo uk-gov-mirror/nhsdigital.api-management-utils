@@ -15,8 +15,8 @@ guard-%:
 	    exit 1; \
 	fi
 
-CHECK := $(if ${CHECK},--check , )
-VERBOSE := $(if ${VERBOSE},-vvv , )
+CHECK := $(if $(filter 1,${CHECK}),--check,)
+VERBOSE := $(if $(filter 1,${VERBOSE}),-vvv,)
 
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
