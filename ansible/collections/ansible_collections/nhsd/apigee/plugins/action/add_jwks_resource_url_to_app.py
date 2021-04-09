@@ -4,7 +4,7 @@ import bisect
 import copy
 
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.add_jwks_resource_url import (
-    AddJwksResourceUrlToApp
+    AddJwksResourceUrlToApp,
 )
 from ansible_collections.nhsd.apigee.plugins.module_utils.apigee_action import (
     ApigeeAction,
@@ -26,8 +26,7 @@ class LazyDeveloperDetails:
     """
 
     def __init__(self, org, token):
-        self._base_url = (constants.APIGEE_BASE_URL
-                          + f"organizations/{org}/developers/")
+        self._base_url = constants.APIGEE_BASE_URL + f"organizations/{org}/developers/"
         self._token = token
         self._session = requests.Session()
 
@@ -43,8 +42,7 @@ class LazyDeveloperDetails:
         This allows us to bubble the exception up to an ansible
         response.
         """
-        resp = utils.get(self._base_url + email,
-                         self._token, session=self._session)
+        resp = utils.get(self._base_url + email, self._token, session=self._session)
         if resp.get("failed"):
             raise RuntimeError(json.dumps(resp))
         return resp["response"]["body"]
@@ -74,16 +72,12 @@ class ActionModule(ApigeeAction):
         jwks_attribute = {"name": ATTRIBUTE_NAME, "value": str(args.jwks_resource_url)}
 
         # Delete any existing jwks attributes, for now there can only be one.
-        after["attributes"] = [attr for attr in after["attributes"] if attr["name"] != ATTRIBUTE_NAME]
+        after["attributes"] = [
+            attr for attr in after["attributes"] if attr["name"] != ATTRIBUTE_NAME
+        ]
         # Append the desired jwks attributes and sort
         after["attributes"].append(jwks_attribute)
         after["attributes"] = sorted(after["attributes"], key=lambda attr: attr["name"])
-
-        delta = utils.delta(before, after)
-        result = {"changed": bool(delta), "app": after}
-
-        if diff_mode:
-            result["diff"] = [{"before": before, "after": after}]
 
         developer_details = LazyDeveloperDetails(args.organization, args.access_token)
         try:
@@ -92,18 +86,31 @@ class ActionModule(ApigeeAction):
             return json.loads(str(e))
         developer = developer_details.details[i]
 
-        result["developer"] = developer
+        delta = utils.delta(before, after)
+        result = {"changed": bool(delta), "app": after, "developer": developer}
+        app_name = args._app_data["name"]
+        app_path = f"organizations/{args.organization}/developers/{developer['email']}/apps/{app_name}/attributes"
+
+        if diff_mode:
+            result["diff"] = [
+                {
+                    "before": before,
+                    "before_header": app_path,
+                    "after": after,
+                    "after_header": app_path,
+                }
+            ]
+
         if check_mode:
             return result
 
-        app_name = args._app_data["name"]
-        app_attribute_url = (
-            constants.APIGEE_BASE_URL
-            + f"organizations/{args.organization}/developers/{developer['email']}/apps/{app_name}/attributes"
-        )
+        app_attribute_url = constants.APIGEE_BASE_URL + app_path
 
-        app_data2 = utils.post(app_attribute_url, args.access_token,
-                               json={"attribute": after["attributes"]})
+        app_data2 = utils.post(
+            app_attribute_url,
+            args.access_token,
+            json={"attribute": after["attributes"]},
+        )
         if app_data2.get("failed"):
             return app_data2
 
