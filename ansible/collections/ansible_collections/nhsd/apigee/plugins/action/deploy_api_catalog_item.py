@@ -169,6 +169,7 @@ class ActionModule(ApigeeAction):
             )
 
         # Once spec apidoc deployed, update the snapshot
+        apidoc_id = result["apidoc"]["id"]
         url = constants.portal_uri(args.organization) + f"/{apidoc_id}/snapshot"
         apidoc_snapshot_request = utils.put(url, args.access_token)
         if apidoc_snapshot_request.get("failed"):
