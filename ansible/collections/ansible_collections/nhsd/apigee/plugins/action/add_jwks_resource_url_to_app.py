@@ -13,47 +13,7 @@ from ansible_collections.nhsd.apigee.plugins.module_utils import utils
 from ansible_collections.nhsd.apigee.plugins.module_utils import constants
 
 ATTRIBUTE_NAME = "jwks-resource-url"
-
-
-class LazyDeveloperDetails:
-    """
-    Gets a list of all developers for an apigee organization.  Lazily
-    looks up details based on __getitem__ access.  Since Apigee
-    returns the entire list developers sorted by their internal
-    'developerId' attribute, this allows us to quickly binary search
-    our way to a developer's details when we only know their
-    developerId.
-    """
-
-    def __init__(self, org, token):
-        self._base_url = constants.APIGEE_BASE_URL + f"organizations/{org}/developers/"
-        self._token = token
-        self._session = requests.Session()
-
-        self.emails = self._get("")
-        self.details = [None for email in self.emails]
-
-    def _get(self, email: str):
-        """
-        Get developer details from email.
-        Get all developers if email = ''
-
-        Raises a RuntimeError if the request does not return 200.
-        This allows us to bubble the exception up to an ansible
-        response.
-        """
-        resp = utils.get(self._base_url + email, self._token, session=self._session)
-        if resp.get("failed"):
-            raise RuntimeError(json.dumps(resp))
-        return resp["response"]["body"]
-
-    def __getitem__(self, i: int):
-        if self.details[i] is None:
-            self.details[i] = self._get(self.emails[i])
-        return self.details[i]["developerId"]
-
-    def __len__(self):
-        return len(self.emails)
+DEVELOPER_DETAILS = "APIGEE_DEVELOPER_DETAILS"
 
 
 class ActionModule(ApigeeAction):
@@ -79,15 +39,33 @@ class ActionModule(ApigeeAction):
         after["attributes"].append(jwks_attribute)
         after["attributes"] = sorted(after["attributes"], key=lambda attr: attr["name"])
 
-        developer_details = LazyDeveloperDetails(args.organization, args.access_token)
+        developer_details = task_vars.get(DEVELOPER_DETAILS)
+        if not developer_details:
+            url = (
+                constants.APIGEE_BASE_URL
+                + f"organizations/{args.organization}/developers?expand=true"
+            )
+            resp = utils.get(url, args.access_token)
+            if resp.get("failed"):
+                return resp
+            developer_details = resp["response"]["body"]["developer"]
         try:
-            i = bisect.bisect_left(developer_details, args._app_data["developerId"])
+            i = bisect.bisect_left(
+                [d["developerId"] for d in developer_details],
+                args._app_data["developerId"],
+            )
         except RuntimeError as e:
             return json.loads(str(e))
-        developer = developer_details.details[i]
+        developer = developer_details[i]
 
         delta = utils.delta(before, after)
-        result = {"changed": bool(delta), "app": after, "developer": developer}
+        result = {
+            "changed": bool(delta),
+            "app": after,
+            "developer": developer,
+            "ansible_facts": {DEVELOPER_DETAILS: developer_details},
+        }
+
         app_name = args._app_data["name"]
         app_path = f"organizations/{args.organization}/developers/{developer['email']}/apps/{app_name}/attributes"
 
