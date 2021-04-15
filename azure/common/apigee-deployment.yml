@@ -116,6 +116,8 @@ parameters:
       - post_deploy
       - make_spec_visible
       - secret_file_ids
+      - secret_ids
+      - config_ids
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
@@ -164,8 +166,6 @@ extends:
                 - environment: manual-approval
                   stage_name: manual_approval
                   depends_on: []
-                  # ${{ each var in parameters._scoped_pipeline_vars }}:
-                  #     ${{ var }}: ${{ parameters[var] }}
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:
               - environment: ${{ apigee_deployment.environment }}
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
