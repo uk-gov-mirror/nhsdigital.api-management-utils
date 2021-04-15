@@ -15,8 +15,8 @@ guard-%:
 	    exit 1; \
 	fi
 
-CHECK := $(if ${CHECK},--check , )
-VERBOSE := $(if ${VERBOSE},-vvv , )
+CHECK := $(if $(filter 1,${CHECK}),--check,)
+VERBOSE := $(if $(filter 1,${VERBOSE}),-vvv,)
 
 template-manifest: guard-DIST_DIR
 	@poetry run ansible-playbook $(VERBOSE) -i local template-manifest.yml
@@ -71,6 +71,9 @@ remove-old-ecs-pr-deploys:
 
 remove-old-pr-portal-apis:
 	@poetry run ansible-playbook -i local remove-old-pr-portal-apis.yml
+
+remove-old-auto-apps:
+	@poetry run ansible-playbook -i local remove-old-auto-apps.yml
 
 remove-old-pr-specs:
 	@poetry run ansible-playbook -i local remove-old-pr-specs.yml

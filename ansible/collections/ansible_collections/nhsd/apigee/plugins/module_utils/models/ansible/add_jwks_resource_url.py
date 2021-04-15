@@ -1,7 +1,7 @@
 import pydantic
 import typing
 import requests
-
+import os
 
 from ansible_collections.nhsd.apigee.plugins.module_utils import utils
 from ansible_collections.nhsd.apigee.plugins.module_utils.constants import (
@@ -96,6 +96,10 @@ class AddJwksResourceUrlToApp(pydantic.BaseModel):
 
     @pydantic.validator("jwks_resource_url", always=True)
     def check_jwks_url(cls, jwks_resource_url):
+        skip_validation = os.environ.get("SKIP_JWKS_RESOURCE_URL_VALIDATION")
+        if skip_validation:
+            return jwks_resource_url
+
         resp = requests.get(jwks_resource_url)
         if resp.status_code != 200:
             raise ValueError(f"Invalid jwks_resource_url: GET {jwks_resource_url} returned {resp.status_code}")
