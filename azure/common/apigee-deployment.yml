@@ -166,6 +166,8 @@ extends:
                 - environment: manual-approval
                   stage_name: manual_approval
                   depends_on: []
+                  ${{ each var in parameters._scoped_pipeline_vars }}:
+                      ${{ var }}: ${{ parameters[var] }}
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:
               - environment: ${{ apigee_deployment.environment }}
                 stage_name: ${{ replace(coalesce (apigee_deployment.stage_name, apigee_deployment.environment), '-', '_') }}
